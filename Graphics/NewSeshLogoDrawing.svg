@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="800"
+   height="150"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="NewSeshLogoDrawing.svg"
+   inkscape:export-filename="C:\Users\Radu\Dropbox\py_QT\Arcontrol_1\Graphics\NewSeshLogoDrawing.png"
+   inkscape:export-xdpi="112.33018"
+   inkscape:export-ydpi="112.33018">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="183.91793"
+     inkscape:cy="88.178369"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1536"
+     inkscape:window-height="803"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-902.36218)">
+    <rect
+       style="fill:#002057;fill-opacity:1;stroke:none"
+       id="rect3150"
+       width="801.42859"
+       height="151.42857"
+       x="1.5994433e-006"
+       y="902.36218" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       inkscape:connector-curvature="0"
+       d="m 135.09365,961.16492 c -2.83606,-6.70455 -6.89482,-12.72524 -12.06243,-17.89597 -5.17073,-5.16917 -11.19298,-9.22793 -17.89598,-12.06399 -6.945508,-2.939 -14.3199,-4.4276 -21.918867,-4.4276 -7.597406,0 -14.973355,1.4886 -21.917305,4.4276 -6.704557,2.83606 -12.724466,6.89482 -17.895194,12.06399 -5.168389,5.17073 -9.227929,11.1922 -12.063213,17.89597 -2.938214,6.94395 -4.428376,14.31756 -4.428376,21.91653 v 44.86475 h 9.576491 v -44.86397 c 0,-6.30999 1.236732,-12.42815 3.670429,-18.1876 2.353379,-5.56219 5.723593,-10.56137 10.017067,-14.85327 4.290355,-4.2927 9.289531,-7.66369 14.853269,-10.01629 5.758683,-2.43605 11.876844,-3.67121 18.186832,-3.67121 6.309988,0 12.429713,1.23517 18.187617,3.67121 5.56374,2.3526 10.56057,5.72358 14.85561,10.01629 4.29191,4.29191 7.66291,9.29109 10.01707,14.85327 2.43369,5.75945 3.66731,11.87761 3.66731,18.1876 v 44.86477 h 9.57805 v -44.86477 c 0,-7.59897 -1.49251,-14.97258 -4.42838,-21.91731"
+       id="path3071" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       inkscape:connector-curvature="0"
+       d="m 99.045152,947.53781 c -5.005418,-2.17403 -10.329763,-3.2782 -15.827999,-3.2782 -5.361774,0 -10.564473,1.05036 -15.466956,3.12536 -4.733271,1.99936 -8.982298,4.86427 -12.629334,8.51209 -3.648595,3.64859 -6.511951,7.89684 -8.513649,12.62933 -2.073438,4.90015 -3.123803,10.10596 -3.123803,15.46774 v 38.14847 l 9.574152,-9.2006 v -28.94787 c 0,-4.07514 0.797716,-8.02239 2.369754,-11.73727 1.519014,-3.59167 3.693823,-6.81762 6.465945,-9.5874 2.769782,-2.77212 5.995736,-4.94771 9.586627,-6.46517 3.715657,-1.57281 7.664468,-2.36974 11.737264,-2.36974 4.174948,0 8.215773,0.83669 12.008631,2.48594 3.66887,1.59309 6.939266,3.87083 9.726206,6.76616 l 6.90028,-6.6375 c -3.66653,-3.81391 -7.97482,-6.8106 -12.807118,-8.91133"
+       id="path3073" />
+    <polygon
+       style="fill:#ffffff;fill-opacity:1"
+       points="134.209,14.317 134.209,19.88 132.648,19.88 132.648,14.317 130.762,14.317 130.762,13.01 136.094,13.01 136.094,14.317 "
+       id="polygon3075"
+       transform="matrix(0.77978102,0,0,0.77978102,23.768988,927.79361)" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       inkscape:connector-curvature="0"
+       d="m 130.31593,937.93856 h 1.28118 l 0.89519,2.40641 0.32283,0.93651 h 0.032 l 0.31971,-0.93651 0.87258,-2.40641 h 1.27026 v 5.3571 h -1.12367 v -1.96505 c 0,-0.13178 0.003,-0.27604 0.0156,-0.43512 0.0109,-0.15907 0.0242,-0.32049 0.0429,-0.48112 0.0164,-0.15986 0.032,-0.32049 0.0491,-0.47645 0.0156,-0.15673 0.0304,-0.29943 0.0491,-0.43122 h -0.0335 l -0.44292,1.24063 -0.82111,2.07734 h -0.4858 l -0.82111,-2.07734 -0.42654,-1.24063 h -0.0351 c 0.0195,0.13179 0.0351,0.27449 0.0515,0.43122 0.0164,0.15596 0.0304,0.31659 0.0444,0.47645 0.014,0.16063 0.0257,0.32205 0.0382,0.48112 0.0125,0.1583 0.0156,0.30334 0.0156,0.43512 v 1.96505 h -1.10885 v -5.3571 z"
+       id="path3077" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       inkscape:connector-curvature="0"
+       d="m 93.168719,993.47237 c -2.506217,2.62942 -6.033946,4.27553 -9.953125,4.27553 -7.595847,0 -13.755337,-6.15715 -13.755337,-13.75455 0,-7.59741 6.15871,-13.75534 13.755337,-13.75534 3.87941,0 7.375169,1.61025 9.876706,4.19132 l 6.857397,-6.55873 c -4.226413,-4.38549 -10.15821,-7.12018 -16.734103,-7.12018 -12.836755,0 -23.242933,10.40617 -23.242933,23.24293 0,12.83597 10.406178,23.24295 23.242933,23.24295 6.600066,0 12.552918,-2.755 16.784786,-7.1701 l -6.831661,-6.59383 z"
+       id="path3079" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       inkscape:connector-curvature="0"
+       d="m 119.89806,970.52639 c -0.92482,-2.18728 -2.04303,-4.26462 -3.32811,-6.23434 l -7.0695,6.7919 c 0.58328,1.02307 1.11665,2.07811 1.5775,3.17292 0.59264,1.40127 1.07376,2.83451 1.44416,4.29426 h 9.79795 c -0.5209,-2.74561 -1.32329,-5.42806 -2.422,-8.02473"
+       id="path3081" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       inkscape:connector-curvature="0"
+       d="m 113.43913,985.68378 c 0,0.10293 0.006,0.20664 0.006,0.30957 v 28.94785 l 9.57727,9.2006 v -38.14766 c 0,-0.10371 -0.006,-0.20742 -0.008,-0.30957 h -9.57547 z"
+       id="path3083" />
+    <text
+       xml:space="preserve"
+       style="font-size:25.18139267px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:103.99999619%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Montserrat Ultra Light;-inkscape-font-specification:Montserrat Ultra Light"
+       x="154.26013"
+       y="994.66925"
+       id="text3135"
+       sodipodi:linespacing="104%"><tspan
+         sodipodi:role="line"
+         id="tspan3137"
+         x="154.26013"
+         y="994.66925"
+         style="font-size:57.55746841px;font-weight:normal;line-height:103.99999619%;fill:#ffffff;fill-opacity:1;font-family:Montserrat;-inkscape-font-specification:Montserrat">ArC ONE</tspan><tspan
+         sodipodi:role="line"
+         x="154.26013"
+         y="1027.8076"
+         id="tspan3139"
+         style="line-height:103.99999619%;fill:#ffffff;fill-opacity:1;font-family:Montserrat;-inkscape-font-specification:Montserrat">Memristor Characterisation Platform</tspan></text>
+  </g>
+</svg>
