@@ -798,6 +798,13 @@ class Arcontrol(QtGui.QMainWindow):
                     confirmation=int(g.ser.readline())
                     if (confirmation==1):
                         f.interfaceAntenna.disable.emit(False)
+
+                        job='01'
+                        g.ser.write(job+"\n")
+                        g.ser.write(str(g.readOption)+"\n")
+                        g.ser.write(str(g.Vread)+"\n")
+
+
                     else:
                         try:
                             g.ser.close()
