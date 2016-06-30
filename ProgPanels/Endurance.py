@@ -99,11 +99,13 @@ class Endurance(QtGui.QWidget):
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
 
-        leftLabels=['Pulse amplitude (V)', \
+        leftLabels=['Positive pulse amplitude (V)', \
+                    'Negative pulse amplitude (V)', \
                     'Pulse width (us)', \
                     'Cycles', \
                     'Interpulse (ms)']
         leftInit=  ['1',\
+                    '1', \
                     '100',\
                     '10',\
                     '1']
@@ -215,9 +217,10 @@ class Endurance(QtGui.QWidget):
 
     def sendParams(self):
         g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        g.ser.write(str(float(self.leftEdits[1].text())*-1)+"\n")
+        g.ser.write(str(float(self.leftEdits[2].text())/1000000)+"\n")
+        g.ser.write(str(int(self.leftEdits[4].text()))+"\n")
         g.ser.write(str(int(self.leftEdits[3].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[2].text()))+"\n")
 
 
     def programOne(self):
