@@ -595,7 +595,9 @@ class Arcontrol(QtGui.QMainWindow):
                             a=float(values[3])
                             pw=float(values[4])
                             tag=str(values[5])    
-                            g.Mhistory[w][b].append([m,a,pw,str(tag)])   
+                            readTag=str(values[6])
+                            readVoltage=float(values[7])
+                            g.Mhistory[w][b].append([m,a,pw,str(tag),readTag,readVoltage])   
 
                             if 'S R' in tag or tag[-1]=='e' or tag[0]=='P': # ignore read all points
                                 f.historyTreeAntenna.updateTree.emit(w,b) 
@@ -692,7 +694,7 @@ class Arcontrol(QtGui.QMainWindow):
                 ########################
 
 
-                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag'])
+                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag', 'ReadTag','ReadVoltage'])
                 for w in range(1,g.wline_nr+1):
                     for b in range(1,g.bline_nr+1):
                         for row in range(len(g.Mhistory[w][b])):
@@ -722,7 +724,7 @@ class Arcontrol(QtGui.QMainWindow):
         if not path.isEmpty():
             with open(unicode(path), 'wb') as stream:
                 writer = csv.writer(stream)
-                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag'])
+                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag', 'ReadTag','ReadVoltage'])
                 for w in range(1,g.wline_nr+1):
                     for b in range(1,g.bline_nr+1):
                         for row in range(len(g.Mhistory[w][b])):
