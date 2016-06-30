@@ -39,6 +39,13 @@ class dataDisplay_panel(QtGui.QWidget):
         brushPW=QtGui.QBrush()
         brushPW.setColor(QtCore.Qt.darkGreen)
 
+        self.readSymbol=QtGui.QPainterPath()
+        self.readSymbol.moveTo(-3,0)
+        self.readSymbol.lineTo(3,0)
+        #self.readSymbol.lineTo(5,1)
+        #self.readSymbol.lineTo(-4,1)
+        #self.readSymbol.closeSubpath()
+
         view=pg.GraphicsLayoutWidget()
 
         self.plot_mem=view.addPlot()
@@ -64,6 +71,8 @@ class dataDisplay_panel(QtGui.QWidget):
         self.curveP=self.plot_pls.plot(pen=penP)
         self.curvePMarkers=self.plot_pls.plot(pen=None, symbolPen=None, symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
 
+        self.curveReadMarkers=self.plot_pls.plot(pen=None, symbolPen=(0,0,255), symbolBrush=None, symbol=self.readSymbol, symbolSize=6, pxMode=True)
+
 
         self.plot_pls.setFixedHeight(150)
         labelV_style = {'color': '#000000', 'font-size': '10pt'}
@@ -77,6 +86,7 @@ class dataDisplay_panel(QtGui.QWidget):
         self.plot_pls.scene().addItem(self.plot_width)
         self.plot_pls.showAxis('right')
         self.plot_pls.getAxis('right').setLabel('Pulse width', units='s', **labelPn_style)
+        #self.plot_pls.getAxis('right').setLogMode(True)
         self.plot_pls.getAxis('right').setPen(penPW)
         self.plot_width.setXLink(self.plot_pls)
         self.plot_pls.getAxis('right').linkToView(self.plot_width)
@@ -95,22 +105,9 @@ class dataDisplay_panel(QtGui.QWidget):
         mainLayout.addWidget(view)
         mainLayout.setContentsMargins(0,0,3,3)
 
-        # Changed Here
-        #self.mainPanel = QtGui.QGroupBox('')
-        #self.mainPanel.setStyleSheet(s.groupStyleDisplay)
-        #self.mainPanel.setLayout(mainLayout)
-
-        #container=QtGui.QVBoxLayout()
-        #container.addWidget(self.mainPanel)
-        #container.setContentsMargins(0,0,0,0)
-
         self.log=0
-        
-
 
         self.setLayout(mainLayout)
-
-        #self.setLayout(mainLayout)
 
         f.displayUpdate.updateSignal.connect(self.updateDisplay)
         f.displayUpdate.updateSignal_short.connect(self.updateDisplay_short)
@@ -168,11 +165,6 @@ class dataDisplay_panel(QtGui.QWidget):
         
         """
 
-        #if g.Mhistory[g.w][g.b]:
-        #    lastPoint=len(g.Mhistory[g.w][g.b])-1
-
-
-
         lastPoint2=len(g.Mhistory[g.w][g.b])
         lastPoint=lastPoint2
         firstPoint=lastPoint-points+1
@@ -180,14 +172,6 @@ class dataDisplay_panel(QtGui.QWidget):
             firstPoint=0
         if lastPoint<1:
             lastPoint=1
-
-        #pNrList=np.asarray(range(firstPoint,lastPoint))
-
-       # print "---"
-       # print firstPoint
-       # print lastPoint
-       # print pNrList
-       # print "---"
 
         if lastPoint2:
             if type==1:
@@ -203,14 +187,21 @@ class dataDisplay_panel(QtGui.QWidget):
             PList=[]
             PWList=[]
             PMarkerList=[]
+            ReadMarkerList=[]
 
             for item in g.Mhistory[g.w][g.b][firstPoint:lastPoint]:
                 Mlist.append(item[0])
                 PList.append(0)
                 PList.append(item[1])
                 PList.append(0)
-                PMarkerList.append(item[1])
-                PWList.append(item[2])
+                if (item[2]==0):
+                    PMarkerList.append(None)
+                    PWList.append(None)
+                else:
+                    PMarkerList.append(item[1])
+                    PWList.append(item[2])
+                
+                ReadMarkerList.append(item[5])
 
             pNrList=np.asarray(range(firstPoint,lastPoint))
             
@@ -234,6 +225,7 @@ class dataDisplay_panel(QtGui.QWidget):
             self.curveP.setData(np.repeat(pNrList,3),np.asarray(PList))
             self.curvePW.setData(pNrList,np.asarray(PWList))
             self.curvePMarkers.setData(pNrList,np.asarray(PMarkerList))
+            self.curveReadMarkers.setData(pNrList, np.asarray(ReadMarkerList))
 
             #self.curveM.setData(pNrList,g.MList[g.w][g.b])
             #self.curveP.setData(np.repeat(pNrList,3),g.PList[g.w][g.b])
@@ -241,6 +233,9 @@ class dataDisplay_panel(QtGui.QWidget):
             #self.curvePMarkers.setData(pNrList,g.PMarkerList[w][b])
             #print min(Mlist)/2
             #print max(Mlist)*2
+            #self.plot_width.setLogMode(False,True)
+            #self.plot_width.setYRange(np.log10(min(PWList)/2),np.log10(max(PWList)*1.5))
+            #self.plot_pulses.setYRange(min(PList)-1,max(PList)+1)
 
             #try:
             if self.log==0: 

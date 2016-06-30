@@ -34,7 +34,8 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         self.changeArcStatus.emit('Busy')
         global tag
-        print "Start"
+
+        readTag='R'+str(g.readOption)+' V='+str(g.Vread)
 
         g.ser.write(str(int(len(self.deviceList)))+"\n")
 
@@ -317,7 +318,7 @@ class CurveTracer(QtGui.QWidget):
         self.getData.finished.connect(self.thread.quit)
         self.getData.finished.connect(self.getData.deleteLater)
         self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
+        self.getData.sendData.connect(f.updateHistory_CT)
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
@@ -350,7 +351,7 @@ class CurveTracer(QtGui.QWidget):
         self.getData.finished.connect(self.thread.quit)
         self.getData.finished.connect(self.getData.deleteLater)
         self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
+        self.getData.sendData.connect(f.updateHistory_CT)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
@@ -375,7 +376,7 @@ class CurveTracer(QtGui.QWidget):
         self.getData.finished.connect(self.thread.quit)
         self.getData.finished.connect(self.getData.deleteLater)
         self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
+        self.getData.sendData.connect(f.updateHistory_CT)
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)

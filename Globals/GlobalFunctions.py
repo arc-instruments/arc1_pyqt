@@ -78,15 +78,18 @@ SAantenna=SAantenna()
 # Update history function
 ###########################################
 def updateHistory(w,b,m,a,pw,tag):
-	g.Mhistory[w][b].append([m,a,pw,tag])
+	readTag='R'+str(g.readOption)
+	g.Mhistory[w][b].append([m,a,pw,tag,readTag,g.Vread])
 	g.Mnow=m
-	# for data display purposes
-	#g.MList[w][b]=np.append(g.MList[w][b],m)
-	#g.PList[w][b]=np.append(g.PList[w][b],0)
-	#g.PList[w][b]=np.append(g.PList[w][b],a)
-	#g.PList[w][b]=np.append(g.PList[w][b],0)
-	#g.PMarkerList[w][b]=np.append(g.PMarkerList[w][b],a)
-	#g.PWList[w][b]=np.append(g.PWList[w][b],pw)
+
+	g.w=w
+	g.b=b
+	cbAntenna.recolor.emit(m,w,b)
+
+def updateHistory_CT(w,b,m,a,pw,tag):
+	readTag='R2'
+	g.Mhistory[w][b].append([m,a,pw,tag,readTag,a])
+	g.Mnow=m
 
 	g.w=w
 	g.b=b
@@ -94,7 +97,8 @@ def updateHistory(w,b,m,a,pw,tag):
 
 
 def updateHistory_short(m,a,pw,tag):
-	g.Mhistory[g.w][g.b].append([m,a,pw,tag])
+	readTag='R'+str(g.readOption)
+	g.Mhistory[g.w][g.b].append([m,a,pw,tag,readTag, g.Vread])
 	#g.MList[g.w][g.b]=np.append(g.MList[g.w][g.b],m)
 	#g.PList[g.w][g.b]=np.append(g.PList[g.w][g.b],0)
 	#g.PList[g.w][g.b]=np.append(g.PList[g.w][g.b],a)
