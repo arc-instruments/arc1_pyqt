@@ -91,6 +91,9 @@ class dataDisplay_panel(QtGui.QWidget):
         self.plot_width.setXLink(self.plot_pls)
         self.plot_pls.getAxis('right').linkToView(self.plot_width)
 
+        #print self.plot_pls.getAxis('right')
+        self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
+        
         self.plot_pls.getAxis('left').setWidth(60)
         self.plot_pls.getAxis('right').setWidth(60)
 
@@ -98,6 +101,8 @@ class dataDisplay_panel(QtGui.QWidget):
         self.curvePW.setBrush(brushPW)
         self.curvePW.setPen(penPW)
         self.plot_width.addItem(self.curvePW)
+
+        #self.plot_pls.getAxis('right').setLogMode(True)
 
         self.plot_pls.getViewBox().setXLink(self.plot_mem.getViewBox()) # link x axes
 
@@ -233,10 +238,10 @@ class dataDisplay_panel(QtGui.QWidget):
             #self.curvePMarkers.setData(pNrList,g.PMarkerList[w][b])
             #print min(Mlist)/2
             #print max(Mlist)*2
-            #self.plot_width.setLogMode(False,True)
+            
             #self.plot_width.setYRange(np.log10(min(PWList)/2),np.log10(max(PWList)*1.5))
             #self.plot_pulses.setYRange(min(PList)-1,max(PList)+1)
-
+            self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
             #try:
             if self.log==0: 
                 self.plot_mem.setYRange(min(Mlist)/1.2,max(Mlist)*1.2)
