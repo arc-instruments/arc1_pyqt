@@ -287,6 +287,19 @@ class history_panel(QtGui.QWidget):
 
                 self.resultWindow[-1].setLayout(resLayout)
 
+                # setup range for resistance plot
+                maxRes_arr=[]
+                minRes_arr=[]
+
+                for cycle in range(1,totalCycles+1):
+                    maxRes_arr.append(max(resistance[cycle-1]))
+                    minRes_arr.append(min(resistance[cycle-1]))
+
+                maxRes=max(maxRes_arr)
+                minRes=max(minRes_arr)
+
+                self.plot_R.setYRange(np.log10(minRes/10), np.log10(maxRes*10))
+
                 for cycle in range(1,totalCycles+1):
                     aux1=self.plot_abs.plot(pen=(cycle,totalCycles), symbolPen=None, symbolBrush=(cycle,totalCycles), symbol='s', symbolSize=5, pxMode=True, name='Cycle '+str(cycle))
                     aux1.setData(np.asarray(voltage[cycle-1]),np.asarray(abs_current[cycle-1]))

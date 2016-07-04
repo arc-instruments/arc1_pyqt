@@ -23,7 +23,7 @@ import GlobalVars as g
 import GlobalStyles as s
 
 tag="RET"
-g.tagDict.update({tag:"Retention"})
+g.tagDict.update({tag:"Retention*"})
 
 class getData(QtCore.QObject):
 

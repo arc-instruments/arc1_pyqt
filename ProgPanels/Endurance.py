@@ -144,7 +144,7 @@ class Endurance(QtGui.QWidget):
         #lineRight.setFrameShadow(QtGui.QFrame.Raised);
         #lineRight.setLineWidth(1)
 
-        gridLayout.addWidget(lineLeft, 0, 2, 4, 1)
+        gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
         #gridLayout.addWidget(lineRight, 0, 6, 5, 1)
 
         #label1=QtGui.QLabel('Pulse Amplitude (V)')
@@ -228,8 +228,12 @@ class Endurance(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[1].text())*-1)+"\n")
         g.ser.write(str(float(self.leftEdits[2].text())/1000000)+"\n")
-        g.ser.write(str(int(self.leftEdits[4].text()))+"\n")
+        g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
         g.ser.write(str(int(self.leftEdits[3].text()))+"\n")
+
+        for i in range(5):
+            print self.leftEdits[i].text()
+
 
 
     def programOne(self):

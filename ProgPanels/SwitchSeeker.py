@@ -20,7 +20,7 @@ import GlobalVars as g
 import GlobalStyles as s
 
 tag="SS2"
-g.tagDict.update({tag:"SwitchSeeker"})
+g.tagDict.update({tag:"SwitchSeeker*"})
 
 class getData(QtCore.QObject):
 

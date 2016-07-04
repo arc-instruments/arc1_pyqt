@@ -20,7 +20,7 @@ import GlobalVars as g
 import GlobalStyles as s
 
 tag="CT"
-g.tagDict.update({tag:"CurveTracer"})
+g.tagDict.update({tag:"CurveTracer*"})
 
 class getData(QtCore.QObject):
 
