@@ -81,7 +81,7 @@ class configHardware(QtGui.QWidget):
         startLay_group.setStyleSheet(s.groupStyle)
         startLay=QtGui.QHBoxLayout()
 
-        start_btn=QtGui.QPushButton('Start')
+        start_btn=QtGui.QPushButton('Apply')
         start_btn.setStyleSheet(s.btnStyle2)
         start_btn.setMinimumWidth(100)
         start_btn.clicked.connect(self.updateHW)

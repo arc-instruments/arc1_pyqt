@@ -87,8 +87,12 @@ SAantenna=SAantenna()
 ###########################################
 def updateHistory(w,b,m,a,pw,tag):
 	readTag='R'+str(g.readOption)
-	g.Mhistory[w][b].append([m,a,pw,tag,readTag,g.Vread])
-	g.Mnow=m
+	if g.sessionMode==1:
+		g.Mnow=m/2
+	else:
+		g.Mnow=m
+	g.Mhistory[w][b].append([g.Mnow,a,pw,tag,readTag,g.Vread])
+	
 
 	g.w=w
 	g.b=b
@@ -96,8 +100,13 @@ def updateHistory(w,b,m,a,pw,tag):
 
 def updateHistory_CT(w,b,m,a,pw,tag):
 	readTag='R2'
-	g.Mhistory[w][b].append([m,a,pw,tag,readTag,a])
-	g.Mnow=m
+	
+	if g.sessionMode==1:
+		g.Mnow=m/2
+	else:
+		g.Mnow=m
+
+	g.Mhistory[w][b].append([g.Mnow,a,pw,tag,readTag,a])
 
 	g.w=w
 	g.b=b
@@ -106,7 +115,11 @@ def updateHistory_CT(w,b,m,a,pw,tag):
 
 def updateHistory_short(m,a,pw,tag):
 	readTag='R'+str(g.readOption)
-	g.Mhistory[g.w][g.b].append([m,a,pw,tag,readTag, g.Vread])
+	if g.sessionMode==1:
+		g.Mnow=m/2
+	else:
+		g.Mnow=m
+	g.Mhistory[g.w][g.b].append([g.Mnow,a,pw,tag,readTag, g.Vread])
 	#g.MList[g.w][g.b]=np.append(g.MList[g.w][g.b],m)
 	#g.PList[g.w][g.b]=np.append(g.PList[g.w][g.b],0)
 	#g.PList[g.w][g.b]=np.append(g.PList[g.w][g.b],a)
