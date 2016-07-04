@@ -1,3 +1,12 @@
+####################################
+
+# (c) Radu Berdan
+# ArC Instruments Ltd.
+
+# This code is licensed under GNU v3 license (see LICENSE.txt for details)
+
+####################################
+
 import sys
 import os
 sys.path.append(os.path.abspath(os.getcwd()+'/Graphics/'))

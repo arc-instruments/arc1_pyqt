@@ -1,3 +1,12 @@
+####################################
+
+# (c) Radu Berdan
+# ArC Instruments Ltd.
+
+# This code is licensed under GNU v3 license (see LICENSE.txt for details)
+
+####################################
+
 import sys
 import os
 from PyQt4 import QtGui, QtCore

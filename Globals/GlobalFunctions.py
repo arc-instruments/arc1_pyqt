@@ -1,3 +1,11 @@
+####################################
+
+# (c) Radu Berdan
+# ArC Instruments Ltd.
+
+# This code is licensed under GNU v3 license (see LICENSE.txt for details)
+
+####################################
 
 import GlobalVars as g
 from PyQt4.QtCore import QObject, pyqtSignal
