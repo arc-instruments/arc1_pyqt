@@ -422,7 +422,8 @@ class manualOperations_panel(QtGui.QWidget):
     def setM(self,w,b):
         try:
             g.Mnow=g.Mhistory[w][b][-1][0]
-            self.resistance.setText(str(int(g.Mnow))+' Ohms')
+            #self.resistance.setText(str(int(g.Mnow))+' Ohms')
+			self.resistance.setText(str('%.0f' % g.Mnow)+' Ohms')
         except IndexError:
             self.resistance.setText('Not Read')
         self.position.setText('W='+str(w)+ ' | ' + 'B='+str(b))
