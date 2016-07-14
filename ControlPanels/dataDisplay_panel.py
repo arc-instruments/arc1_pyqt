@@ -253,9 +253,9 @@ class dataDisplay_panel(QtGui.QWidget):
             self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
             #try:
             if self.log==0: 
-                self.plot_mem.setYRange(min(Mlist)/1.2,min(max(Mlist)+[1000000000])*1.2) #If any infinite numbers arise, deal appropriately.
+                self.plot_mem.setYRange(min(Mlist)/1.2,min([max(Mlist),1000000000])*1.2) #If any infinite numbers arise, deal appropriately.
             else:
-                self.plot_mem.setYRange(np.log10(min(Mlist)/1.2),np.log10(min(max(Mlist)+[1000000000])*1.2))
+                self.plot_mem.setYRange(np.log10(min(Mlist)/1.2),np.log10(min([max(Mlist), 1000000000])*1.2))
         #except ValueError:
         else:
             self.curveM.setData([],[])

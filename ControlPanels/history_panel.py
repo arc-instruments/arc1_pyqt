@@ -298,7 +298,7 @@ class history_panel(QtGui.QWidget):
                 maxRes=max(maxRes_arr)
                 minRes=max(minRes_arr)
 
-                self.plot_R.setYRange(np.log10(minRes/10), np.log10(maxRes*10))
+                self.plot_R.setYRange(np.log10(min([minRes, 1000000000])/10), np.log10(min([maxRes, 1000000000])*10)) #Deal with infinities appropriately.
 
                 for cycle in range(1,totalCycles+1):
                     aux1=self.plot_abs.plot(pen=(cycle,totalCycles), symbolPen=None, symbolBrush=(cycle,totalCycles), symbol='s', symbolSize=5, pxMode=True, name='Cycle '+str(cycle))
