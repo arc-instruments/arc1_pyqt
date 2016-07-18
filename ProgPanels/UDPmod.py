@@ -97,113 +97,87 @@ class UDPmod(QtGui.QWidget):
         
     def initUI(self):      
 
+        ### Define GUI elements ###
+        #Define module as a QVBox.
         vbox1=QtGui.QVBoxLayout()
 
+        #Configure module title and description and text formats.
         titleLabel = QtGui.QLabel('UDPmod')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Measurement protocol for volatile memristors.')
+        descriptionLabel = QtGui.QLabel('UDP connectivity for neuromorphic applications.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
 
-        leftLabels=['Pulse Amplitude (V)', \
-                    'Pulse Width (us)', \
-                    'Read Batch Size (B)', \
-                    'Average cycles/point M']
+        topLabels=['Recipient partner IP', \
+                    'Recipient partner port']
 
-        self.leftEdits=[]
+        self.topEdits=[]
 
-        rightLabels=['Stop time (s)', \
-                    'Stop Batch Size', \
-                    'Stop Tolerance (%)']
+        btmLabels=['Sender partner IP', \
+                    'Sender partner port']
 
-        self.rightEdits=[]
+        self.btmEdits=[]
 
-        leftInit=  ['2', \
-                    '100', \
-                    '1000', \
-                    '100']
-        rightInit= ['10', \
-                    '100', \
-                    '10']
-
-        # Setup the two combo boxes
-        stopOptions=['LinearFit', 'T-Test']
-                    #     0     ,     1
-
-        self.combo_stopOptions=QtGui.QComboBox()
-
-        self.combo_stopOptions.insertItems(1,stopOptions)
-
-        self.combo_stopOptions.currentIndexChanged.connect(self.updateStopOptions)
+        leftInit=  ['10.9.166.168', \
+                    '5005']
+        rightInit= ['10.9.166.168', \
+                    '5005']
 
 
-        # Setup the two combo boxes
+        # Setup the column 'length' ratios.
         gridLayout=QtGui.QGridLayout()
-        gridLayout.setColumnStretch(0,3)
+        gridLayout.setColumnStretch(0,1)
         gridLayout.setColumnStretch(1,1)
-        gridLayout.setColumnStretch(2,1)
-        gridLayout.setColumnStretch(3,1)
-        gridLayout.setColumnStretch(4,3)
-        gridLayout.setColumnStretch(5,1)
-        gridLayout.setColumnStretch(6,1)
-        gridLayout.setColumnStretch(7,2)
         #gridLayout.setSpacing(2)
 
-        #setup a line separator
+        #Setup the line separators
         lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
+        lineLeft.setFrameShape(QtGui.QFrame.HLine);
         lineLeft.setFrameShadow(QtGui.QFrame.Raised);
         lineLeft.setLineWidth(1)
         lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.VLine); 
+        lineRight.setFrameShape(QtGui.QFrame.HLine);
         lineRight.setFrameShadow(QtGui.QFrame.Raised);
         lineRight.setLineWidth(1)
 
-        gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
-        gridLayout.addWidget(lineRight, 0, 6, 5, 1)
-        #gridLayout.addWidget(line,1,2)
-        #gridLayout.addWidget(line,2,2)
-        #gridLayout.addWidget(line,3,2)
-        #gridLayout.addWidget(line,4,2)
+
+        ### Build GUI insides ###
+        gridLayout.addWidget(lineLeft, 2, 0, 1, 2)
+        gridLayout.addWidget(lineRight, 5, 0, 1, 2)
 
 
-        for i in range(len(leftLabels)):
+        for i in range(len(topLabels)):
             lineLabel=QtGui.QLabel()
             #lineLabel.setFixedHeight(50)
-            lineLabel.setText(leftLabels[i])
+            lineLabel.setText(topLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
             lineEdit=QtGui.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
-            self.leftEdits.append(lineEdit)
+            self.topEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,1)
 
-        for i in range(len(rightLabels)):
+        offset = len(topLabels)+1 #offset parameter is simply the first row of the bottom panel/label section.
+
+        for i in range(len(btmLabels)):
             lineLabel=QtGui.QLabel()
-            lineLabel.setText(rightLabels[i])
+            lineLabel.setText(btmLabels[i])
             #lineLabel.setFixedHeight(50)
-            gridLayout.addWidget(lineLabel, i,4)
+            gridLayout.addWidget(lineLabel, offset+i,0)
 
             lineEdit=QtGui.QLineEdit()
             lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
-            self.rightEdits.append(lineEdit)
-            gridLayout.addWidget(lineEdit, i,5)
+            self.btmEdits.append(lineEdit)
+            gridLayout.addWidget(lineEdit, offset+i,1)
 
-        #Position the combo boxes and respective labels
+        # ============================================== #
 
-        lineLabel=QtGui.QLabel()
-        lineLabel.setText('Stop Option:')
-        gridLayout.addWidget(lineLabel,3,4)
-
-        gridLayout.addWidget(self.combo_stopOptions,3,5)
-
-        # ==============================================
-
+        ### Set-up overall module GUI ###
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
@@ -223,6 +197,7 @@ class UDPmod(QtGui.QWidget):
         vbox1.addWidget(self.scrlArea)
         vbox1.addStretch()
 
+        #Create... ???
         self.hboxProg=QtGui.QHBoxLayout()
 
         push_single=QtGui.QPushButton('Apply to One')
@@ -270,19 +245,19 @@ class UDPmod(QtGui.QWidget):
         pass
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")
-        g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write(str(float(self.topEdits[0].text()))+"\n")
+        g.ser.write(str(float(self.topEdits[1].text())/1000000)+"\n")
+        g.ser.write(str(float(self.topEdits[2].text()))+"\n")
+        g.ser.write(str(float(self.topEdits[3].text()))+"\n")
 
     def programOne(self):
 
-        stopTime=int(self.rightEdits[0].text())
-        B=int(self.leftEdits[2].text())
-        stopBatchSize=int(self.rightEdits[1].text())
+        stopTime=int(self.btmEdits[0].text())
+        B=int(self.topEdits[2].text())
+        stopBatchSize=int(self.btmEdits[1].text())
 
-        A=float(self.leftEdits[0].text())
-        pw=float(self.leftEdits[1].text())/1000000
+        A=float(self.topEdits[0].text())
+        pw=float(self.topEdits[1].text())/1000000
 
         job="33"
         g.ser.write(job+"\n")   # sends the job
@@ -314,12 +289,12 @@ class UDPmod(QtGui.QWidget):
 
     def programRange(self):
 
-        stopTime=int(self.rightEdits[0].text())
-        B=int(self.leftEdits[2].text())
-        stopBatchSize=int(self.rightEdits[1].text())
+        stopTime=int(self.btmEdits[0].text())
+        B=int(self.topEdits[2].text())
+        stopBatchSize=int(self.btmEdits[1].text())
 
-        A=float(self.leftEdits[0].text())
-        pw=float(self.leftEdits[1].text())/1000000
+        A=float(self.topEdits[0].text())
+        pw=float(self.topEdits[1].text())/1000000
 
         rangeDev=self.makeDeviceList(True)
 
@@ -345,12 +320,12 @@ class UDPmod(QtGui.QWidget):
         
 
     def programAll(self):
-        stopTime=int(self.rightEdits[0].text())
-        B=int(self.leftEdits[2].text())
-        stopBatchSize=int(self.rightEdits[1].text())
+        stopTime=int(self.btmEdits[0].text())
+        B=int(self.topEdits[2].text())
+        stopBatchSize=int(self.btmEdits[1].text())
 
-        A=float(self.leftEdits[0].text())
-        pw=float(self.leftEdits[1].text())/1000000
+        A=float(self.topEdits[0].text())
+        pw=float(self.topEdits[1].text())/1000000
 
         rangeDev=self.makeDeviceList(False)
 
