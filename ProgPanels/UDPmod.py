@@ -2,7 +2,11 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 import time
+import socket       # Import socket module for Internet connections.
+import select       # Import select module to allow 'listening' on ports.
 
+
+# Set up directory environment.
 sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
 sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
 
@@ -16,6 +20,7 @@ g.tagDict.update({tag:"UDPconn"})
 
 class getData(QtCore.QObject):
 
+    #Define signals to be used throughout module.
     finished=QtCore.pyqtSignal()
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
     highlight=QtCore.pyqtSignal(int,int)
@@ -25,61 +30,98 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
     changeArcStatus=QtCore.pyqtSignal(str)
 
-    def __init__(self, deviceList, A, pw, B, stopTime, stopBatchSize):
+    def __init__(self, deviceList, sndip, sndport, rcvip, rcvport):
         super(getData,self).__init__()
-        self.A=A
-        self.pw=pw
-        self.B=B
-        self.stopTime=stopTime
-        self.stopBatchSize=stopBatchSize
         self.deviceList=deviceList
+        self.sndip = sndip
+        self.sndport = sndport
+        self.rcvip = rcvip
+        self.rcvport = rcvport
 
-    def getIt(self):
+    def runUDP(self):
+        ### Define connectivity motif ###
+        #Operational parameters.
+        maxtime = 15 #Maximum time allowed for UDP operation before returning control (s).
 
+        #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create a socket object - for Internet (INET) and UDP (DGRAM).
+        sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #Configure socket.
+        ip = ""
+        port = 5005
+        sock.bind((ip, port)) #Bind socket.
+
+        #Prepare instrument for operation.
         self.disableInterface.emit(True)
         self.changeArcStatus.emit('Busy')
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write(str(int(len(self.deviceList)))+"\n") #Inform mBED how many devices the operation concerns.
 
-        for device in self.deviceList:
-            w=device[0]
-            b=device[1]
-            self.highlight.emit(w,b)
+        ### ESTABLISH CONNECTIONS WITH SENDER AND RECEIVER ###
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+        if self.rcvip: #If we have defined a receiver. -- UPDATE THESE SECTIONS TO HANDLE AN 'UPSTREAM' AND A 'DOWNSTREAM' PARTNER.
+            sock.sendto("RDY", (self.rcvip, int(self.rcvport)))
+            #sock.sendto("32", (self.rcvip, int(self.rcvport)))
 
-            Mnow=float(g.ser.readline().rstrip())   # get first read value
-            self.sendData.emit(w,b,Mnow,self.A,self.pw,tag+'_s')
+            ready = select.select([sock], [], [], 5)
 
-            start=time.time()
-            stop=0
+            tstart = time.clock() #Set starting point for operation. Helps for time-limiting UDP operation.
 
-            while stop==0:
-                for i in range(self.B):
-                    #values=[]
-                    #values.append(float(g.ser.readline().rstrip()))
-                    #values.append(float(g.ser.readline().rstrip()))
-                    dataTime=int(g.ser.readline().rstrip())
-                    Mnow=float(g.ser.readline().rstrip())
+            while (time.clock()-tstart) <= maxtime and ready[0]:
+                data, addr = sock.recvfrom(1024)
+                print "Received ", data, " from ", addr
 
-                    self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_i_ '+ str(dataTime))
-                    #self.displayData.emit()
+                #Interaction example with mBED.
+                g.ser.write("02\n") #Select device operation.
+                g.ser.write(data+"\n") #Send wordline address.
+                g.ser.write(data+"\n") #Send bitline address.
 
-                timeNow=time.time()
-        
-                if (timeNow-start)>=self.stopTime:       # if more than stopTime ahas elapsed, do not request a new batch
-                    stop=1
-                    g.ser.write(str(int(stop))+"\n")
-                else:
-                    stop=0
-                    g.ser.write(str(int(stop))+"\n")
+                g.ser.write("03\n") #Read operation.
+                g.ser.write("k\n") #Calibrated read operation.
+                result = float(g.ser.readline().rstrip()) #Capture response and display it.
 
-            Mnow=float(g.ser.readline().rstrip())   # get first read value
-            self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_e')
+                sock.sendto(str(result), (self.rcvip, int(self.rcvport)))
 
-            self.updateTree.emit(w,b)
+                ready = select.select([sock], [], [], 5)
+
+        # for device in self.deviceList:
+        #     w=device[0]
+        #     b=device[1]
+        #     self.highlight.emit(w,b) #Emit signal to highlight pertinent device. - Disable if running on multiple devices and slows things down.
+        #
+        #     g.ser.write(str(int(w))+"\n")
+        #     g.ser.write(str(int(b))+"\n")
+        #
+        #     Mnow=float(g.ser.readline().rstrip())   # get first read value
+        #     self.sendData.emit(w,b,Mnow,self.A,self.pw,tag+'_s')
+        #
+        #     start=time.time()
+        #     stop=0
+        #
+        #     while stop==0:
+        #         for i in range(self.B):
+        #             #values=[]
+        #             #values.append(float(g.ser.readline().rstrip()))
+        #             #values.append(float(g.ser.readline().rstrip()))
+        #             dataTime=int(g.ser.readline().rstrip())
+        #             Mnow=float(g.ser.readline().rstrip())
+        #
+        #             self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_i_ '+ str(dataTime))
+        #             #self.displayData.emit()
+        #
+        #         timeNow=time.time()
+        #
+        #         if (timeNow-start)>=self.stopTime:       # if more than stopTime ahas elapsed, do not request a new batch
+        #             stop=1
+        #             g.ser.write(str(int(stop))+"\n")
+        #         else:
+        #             stop=0
+        #             g.ser.write(str(int(stop))+"\n")
+        #
+        #     Mnow=float(g.ser.readline().rstrip())   # get first read value
+        #     self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_e')
+        #
+        #     self.updateTree.emit(w,b)
 
         self.disableInterface.emit(False)
         self.changeArcStatus.emit('Ready')
@@ -88,7 +130,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class UDPmod(QtGui.QWidget):
+class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWidget.
     
     def __init__(self):
         super(UDPmod, self).__init__()
@@ -157,7 +199,7 @@ class UDPmod(QtGui.QWidget):
 
             lineEdit=QtGui.QLineEdit()
             lineEdit.setText(leftInit[i])
-            lineEdit.setValidator(isFloat)
+            #lineEdit.setValidator(isFloat)
             self.topEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,1)
 
@@ -171,7 +213,7 @@ class UDPmod(QtGui.QWidget):
 
             lineEdit=QtGui.QLineEdit()
             lineEdit.setText(rightInit[i])
-            lineEdit.setValidator(isFloat)
+            #lineEdit.setValidator(isFloat)
             self.btmEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, offset+i,1)
 
@@ -192,28 +234,27 @@ class UDPmod(QtGui.QWidget):
         self.scrlArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrlArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
-        self.scrlArea.installEventFilter(self)
+        self.scrlArea.installEventFilter(self) #Allow object to 'listen' for events.
 
         vbox1.addWidget(self.scrlArea)
         vbox1.addStretch()
 
-        #Create... ???
+        #Create graphics area that holds buttons to activate module.
         self.hboxProg=QtGui.QHBoxLayout()
 
-        push_single=QtGui.QPushButton('Apply to One')
+        push_launchUDP=QtGui.QPushButton('Launch UDP interface') #Button to launch UDP interface.
         push_range=QtGui.QPushButton('Apply to Range')
         push_all=QtGui.QPushButton('Apply to All')
 
-        push_single.setStyleSheet(s.btnStyle)
+        push_launchUDP.setStyleSheet(s.btnStyle)
         push_range.setStyleSheet(s.btnStyle)
         push_all.setStyleSheet(s.btnStyle)
 
-        push_single.clicked.connect(self.programOne)
+        push_launchUDP.clicked.connect(self.UDPstart)
         push_range.clicked.connect(self.programRange)
-
         push_all.clicked.connect(self.programAll)
 
-        self.hboxProg.addWidget(push_single)
+        self.hboxProg.addWidget(push_launchUDP)
         self.hboxProg.addWidget(push_range)
         self.hboxProg.addWidget(push_all)
 
@@ -236,42 +277,42 @@ class UDPmod(QtGui.QWidget):
     def eventFilter(self, object, event):
         #print object
         if event.type()==QtCore.QEvent.Resize:
-            self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
+            self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width()) #Always set vW width to window width - scrollbar width.
         #if event.type()==QtCore.QEvent.Paint:
         #    self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         #print self.vW.size().width()
         return False
-    def resizeWidget(self,event):
+
+    def resizeWidget(self,event): #Dummy function - unnecessary vestige.
         pass
 
-    def sendParams(self):
-        g.ser.write(str(float(self.topEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.topEdits[1].text())/1000000)+"\n")
-        g.ser.write(str(float(self.topEdits[2].text()))+"\n")
-        g.ser.write(str(float(self.topEdits[3].text()))+"\n")
+    def sendParams(self): #UPDATE WITH RELEVANT STUFF ONCE CONNECTION TO MBED READY TO BE MADE.
+        g.ser.write(str(float(self.topEdits[0].text()))+"\n") #Recipient partner IP.
+        g.ser.write(str(float(self.topEdits[1].text()))+"\n") #Recipient partner port.
+        g.ser.write(str(float(self.btmEdits[0].text()))+"\n") #Sending partner IP.
+        g.ser.write(str(float(self.btmEdits[1].text()))+"\n") #Sending partner port.
 
-    def programOne(self):
+    def UDPstart(self):
 
-        stopTime=int(self.btmEdits[0].text())
-        B=int(self.topEdits[2].text())
-        stopBatchSize=int(self.btmEdits[1].text())
+        # Capture pertinent parameters.
+        sndip = self.topEdits[0].text()
+        sndport = self.topEdits[1].text()
+        rcvip = self.btmEdits[0].text()
+        rcvport = self.btmEdits[1].text()
 
-        A=float(self.topEdits[0].text())
-        pw=float(self.topEdits[1].text())/1000000
-
-        job="33"
-        g.ser.write(job+"\n")   # sends the job
+        #job="40"
+        #g.ser.write(job+"\n")   # sends the job
         
-        self.sendParams()
+        #self.sendParams()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData([[g.w,g.b]], A, pw, B, stopTime, stopBatchSize)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
+        self.thread=QtCore.QThread()    #Instantiate thread object.
+        self.getData=getData([[g.w,g.b]], sndip, sndport, rcvip, rcvport)    #Instantiate a getData object.
+        self.getData.moveToThread(self.thread)      #Cause getData object to be ran in the thread object.
+        self.thread.started.connect(self.getData.runUDP)     #Start thread and assign it ('connect to') task of running runUDP.
+        self.getData.finished.connect(self.thread.quit)     #Once task finishes connect it to ending the thread.
+        self.getData.finished.connect(self.getData.deleteLater)     #Clear some memory, again, in response to 'finished' signal (getData).
+        self.thread.finished.connect(self.getData.deleteLater)      #Clear some memory, again, in response to 'finished' signal (thread).
+        self.getData.sendData.connect(f.updateHistory)      #Typical example of 'signal and slot'. FUnction from within thread calls function outside it.
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
@@ -306,7 +347,7 @@ class UDPmod(QtGui.QWidget):
         self.thread=QtCore.QThread()
         self.getData=getData(rangeDev, A, pw, B, stopTime, stopBatchSize)
         self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
+        self.thread.started.connect(self.getData.runUDP)
         self.getData.finished.connect(self.thread.quit)
         self.getData.finished.connect(self.getData.deleteLater)
         self.thread.finished.connect(self.getData.deleteLater)
@@ -337,7 +378,7 @@ class UDPmod(QtGui.QWidget):
         self.thread=QtCore.QThread()
         self.getData=getData(rangeDev, A, pw, B, stopTime, stopBatchSize)
         self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
+        self.thread.started.connect(self.getData.runUDP)
         self.getData.finished.connect(self.thread.quit)
         self.getData.finished.connect(self.getData.deleteLater)
         self.thread.finished.connect(self.getData.deleteLater)
