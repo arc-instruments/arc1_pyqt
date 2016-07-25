@@ -41,7 +41,7 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write(str(int(len(self.deviceList)))+"\n") #Tell mBED how many devices to be operated on.
 
         for device in self.deviceList:
             w=device[0]
@@ -111,11 +111,13 @@ class Endurance(QtGui.QWidget):
         leftLabels=['Positive pulse amplitude (V)', \
                     'Negative pulse amplitude (V)', \
                     'Pulse width (us)', \
+                    'No. of pulses in train', \
                     'Cycles', \
                     'Interpulse (ms)']
         leftInit=  ['1',\
                     '1', \
                     '100',\
+                    '1',\
                     '10',\
                     '1']
 
@@ -144,7 +146,7 @@ class Endurance(QtGui.QWidget):
         #lineRight.setFrameShadow(QtGui.QFrame.Raised);
         #lineRight.setLineWidth(1)
 
-        gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
+        gridLayout.addWidget(lineLeft, 0, 2, 6, 1)
         #gridLayout.addWidget(lineRight, 0, 6, 5, 1)
 
         #label1=QtGui.QLabel('Pulse Amplitude (V)')
@@ -228,10 +230,11 @@ class Endurance(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[1].text())*-1)+"\n")
         g.ser.write(str(float(self.leftEdits[2].text())/1000000)+"\n")
-        g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[3].text()))+"\n")
+        g.ser.write(str(float(self.leftEdits[5].text()))+"\n")
+        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write(str(int(self.leftEdits[4].text()))+"\n")
 
-        for i in range(5):
+        for i in range(len(self.leftEdits)):
             print self.leftEdits[i].text()
 
 
