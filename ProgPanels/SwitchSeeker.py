@@ -183,7 +183,16 @@ class SwitchSeeker(QtGui.QWidget):
 
         self.checkRead=QtGui.QCheckBox(self)
         self.checkRead.setText("Read after pulse?")
-        gridLayout.addWidget(self.checkRead,0,4)
+        gridLayout.addWidget(self.checkRead,3,4)
+
+        gridLayout.addWidget(QtGui.QLabel("Seeker algorithm"),0,4)
+        self.modeSelectionCombo=QtGui.QComboBox()
+        # SwitchSeeker_1 has id 15
+        self.modeSelectionCombo.addItem("Fast",15)
+        # SwitchSeeker_2 has id 152
+        self.modeSelectionCombo.addItem("Slow",152)
+        gridLayout.addWidget(self.modeSelectionCombo,0,5)
+
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -249,7 +258,7 @@ class SwitchSeeker(QtGui.QWidget):
 
 
     def programOne(self):
-        job="152"
+        job="%d"%self.getJobCode()
         g.ser.write(job+"\n")   # sends the job
 
         self.sendParams()
@@ -279,7 +288,7 @@ class SwitchSeeker(QtGui.QWidget):
 
         rangeDev=self.makeDeviceList(True)
 
-        job="152"
+        job="%d"%self.getJobCode()
         g.ser.write(job+"\n")   # sends the job
 
         self.sendParams()
@@ -303,7 +312,7 @@ class SwitchSeeker(QtGui.QWidget):
     def programAll(self):
         rangeDev=self.makeDeviceList(False)
 
-        job="152"
+        job="%d"%self.getJobCode()
         g.ser.write(job+"\n")   # sends the job
 
         self.sendParams()
@@ -354,6 +363,11 @@ class SwitchSeeker(QtGui.QWidget):
 
         return rangeDev
         
+    def getJobCode(self):
+        job=self.modeSelectionCombo.itemData(self.modeSelectionCombo.currentIndex())
+        return job.toInt()[0]
+
+
 def main():
     
     app = QtGui.QApplication(sys.argv)
