@@ -193,6 +193,22 @@ class SwitchSeeker(QtGui.QWidget):
         self.modeSelectionCombo.addItem("Slow",152)
         gridLayout.addWidget(self.modeSelectionCombo,0,5)
 
+        gridLayout.addWidget(QtGui.QLabel("Stage II polarity"),1,4)
+        self.polarityCombo=QtGui.QComboBox()
+        self.polarityCombo.addItem("(+) Positive",1)
+        self.polarityCombo.addItem("(-) Negative",-1)
+        self.polarityCombo.setEnabled(False)
+        gridLayout.addWidget(self.polarityCombo,1,5)
+
+        self.skipICheckBox=QtGui.QCheckBox(self)
+        self.skipICheckBox.setText("Skip Stage I")
+        def skipIChecked(state):
+            if state == QtCore.Qt.Checked:
+                self.polarityCombo.setEnabled(True)
+            else:
+                self.polarityCombo.setEnabled(False)
+        self.skipICheckBox.stateChanged.connect(skipIChecked)
+        gridLayout.addWidget(self.skipICheckBox,2,4)
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
