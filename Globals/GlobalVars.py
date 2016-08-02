@@ -92,3 +92,6 @@ sessionMode=0
 sessionName='Package 1'
 sneakPathOption=0
 
+####################################
+# UDP module globals.
+ConnMat = np.zeros((1,1))

@@ -4,6 +4,9 @@ import os
 import time
 import socket       # Import socket module for Internet connections.
 import select       # Import select module to allow 'listening' on ports.
+import struct
+import numpy as np
+import csv
 
 
 # Set up directory environment.
@@ -55,34 +58,79 @@ class getData(QtCore.QObject):
         self.changeArcStatus.emit('Busy')
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n") #Inform mBED how many devices the operation concerns.
-
         ### ESTABLISH CONNECTIONS WITH SENDER AND RECEIVER ###
 
         if self.rcvip: #If we have defined a receiver. -- UPDATE THESE SECTIONS TO HANDLE AN 'UPSTREAM' AND A 'DOWNSTREAM' PARTNER.
             sock.sendto("RDY", (self.rcvip, int(self.rcvport)))
-            #sock.sendto("32", (self.rcvip, int(self.rcvport)))
-
             ready = select.select([sock], [], [], 5)
-
             tstart = time.clock() #Set starting point for operation. Helps for time-limiting UDP operation.
+
+            #Create packer through use of 'struct' library.
+            packer = struct.Struct('!I I') #'!' character tells the packer this data has to be sent to a network, so the byte order has to be correctly rendered.
+
+            #print(g.ConnMat) ### TEST OUTPUT ###
 
             while (time.clock()-tstart) <= maxtime and ready[0]:
                 data, addr = sock.recvfrom(1024)
-                print "Received ", data, " from ", addr
+                unpacked_data = packer.unpack(data)
 
-                #Interaction example with mBED.
-                g.ser.write("02\n") #Select device operation.
-                g.ser.write(data+"\n") #Send wordline address.
-                g.ser.write(data+"\n") #Send bitline address.
+                id_res_in = (unpacked_data[0]>>24)&0xff
+                id_in = unpacked_data[0]&0xffffff
+                tst_res_in = (unpacked_data[1]>>24)&0xff
+                tst_in = unpacked_data[1]&0xffffff
 
-                g.ser.write("03\n") #Read operation.
-                g.ser.write("k\n") #Calibrated read operation.
-                result = float(g.ser.readline().rstrip()) #Capture response and display it.
+                print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
-                sock.sendto(str(result), (self.rcvip, int(self.rcvport)))
+                #Decide which devices to bias depending on input.
+                id_out = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
 
-                ready = select.select([sock], [], [], 5)
+                for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
+                    if id_in <= len(g.ConnMat[:,0,0]-1):
+                        #Determine physical device that corresponds to affected synapse.
+                        w_tar = g.ConnMat[id_in, id_out[elem], 1] #Capture w-line & b-line.
+                        b_tar = g.ConnMat[id_in, id_out[elem], 2]
+
+                        #Display updates.
+                        f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
+                        f.displayUpdate.updateSignal_short.emit()
+
+                        #Interaction example with mBED.
+                        g.ser.write("02\n") #Select device operation.
+                        g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
+                        g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+                        #print(str(int(w_tar)), " ", str(int(b_tar)))
+
+                        g.ser.write("03\n") #Read operation.
+                        g.ser.write("k\n") #Calibrated read operation.
+
+                        try:
+                            result='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+                        except ValueError:
+                            result='%.10f' % 0.0
+
+                        result = float(result)
+
+                        #result = float(g.ser.readline().rstrip()) #Capture response and display it.
+                        print(result)
+                        #Prepare to send response via UDP.
+                        id_res = 83 #Identify sender of this packet as SOTON (d83, ASCII 'S')
+                        id = id_out[elem]
+                        tst_res = int(np.round(np.clip((255.0/19000.0)*(result-1000.0), 0, 255))) #Clip & round - pretty self-explanatory.
+                        tst = tst_in
+                        print(tst_res)
+                        #Preparation for packing.
+                        id_int = (((id_res&0xff)<<24)|(id&(0x00fffff)))
+                        tst_int =(((tst_res&0xff)<<24)|(tst&(0x00fffff)))
+
+                        pack = (id_int, tst_int)
+                        pack_data = packer.pack(*pack)
+
+                        sock.sendto(pack_data, (self.rcvip, int(self.rcvport)))
+
+                        ready = select.select([sock], [], [], 5)
+                    else:
+                        print("Index error. Trying to access input neuron that isn't regitered with connectivity matrix.")
+                        ready = select.select([sock], [], [], 5)
 
         # for device in self.deviceList:
         #     w=device[0]
@@ -125,7 +173,7 @@ class getData(QtCore.QObject):
 
         self.disableInterface.emit(False)
         self.changeArcStatus.emit('Ready')
-        self.displayData.emit()
+        #self.displayData.emit()
         
         self.finished.emit()
 
@@ -218,6 +266,24 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
             gridLayout.addWidget(lineEdit, offset+i,1)
 
         # ============================================== #
+
+        #Label explaining connectivity matrix boot from file.
+        CMLabel=QtGui.QLabel()
+        #lineLabel.setFixedHeight(50)
+        CMLabel.setText("Connectivity matrix file: ")
+
+        #Text field to show selected file containing SA locations for particular application.
+        self.UDPmapFName=QtGui.QLabel()
+        self.UDPmapFName.setStyleSheet(s.style1)
+
+        #File browser. Push-button connecting to function opening file browser.
+        push_browse = QtGui.QPushButton('...')
+        push_browse.clicked.connect(self.findUDPMAPfile)    # open custom array defive position file
+        push_browse.setFixedWidth(20)
+
+        gridLayout.addWidget(CMLabel, 6,0)
+        gridLayout.addWidget(self.UDPmapFName, 6, 1)
+        gridLayout.addWidget(push_browse, 6, 2)
 
         ### Set-up overall module GUI ###
         vbox1.addWidget(titleLabel)
@@ -420,6 +486,55 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
                             rangeDev.append(cell)
 
         return rangeDev
+
+    # FUNCTION FOR OPENING FILE BROWSER - UNDER CONSTRUCTION.
+    def findUDPMAPfile(self):
+        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open file', "*.txt"))
+        #path=fname.getOpenFileName()
+
+        customArray = []
+        name=path.fileName()
+
+        file=QtCore.QFile(path.filePath())
+        file.open(QtCore.QIODevice.ReadOnly)
+
+        textStream=QtCore.QTextStream(file)
+        error=0
+        while not textStream.atEnd():
+            line = textStream.readLine()
+            try:
+                if (line): #Empty line check.
+                    if (line[0] != '#'): #1st chacters is # -> comment; ignore.
+                        preid, postid, w, b = line.split(", ")
+                        customArray.append([int(preid), int(postid), int(w),int(b)])
+                        if (int(w)<1 or int(w)>g.wline_nr or int(b)<1 or int(b)>g.bline_nr or preid<0 or postid<0):
+                            error=1
+            except ValueError:
+                error=1
+        file.close()
+
+        # check if positions read are correct
+        if (error==1):
+            #self.errorMessage=QtGui.QErrorMessage()
+            #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")
+            errMessage = QtGui.QMessageBox()
+            errMessage.setText("Device to synapse mapping file formatted incorrectly, or selected devices outside of array range!")
+            errMessage.setIcon(QtGui.QMessageBox.Critical)
+            errMessage.setWindowTitle("Error")
+            errMessage.exec_()
+            return False
+        else:
+            self.UDPmapFName.setText(name)
+
+            #Create connectivity matrix from list.
+            customArray = np.array(customArray)
+            g.ConnMat = np.zeros((np.max(customArray[:,0])+1, np.max(customArray[:,1])+1, 3)) #ConnMat(x,y,z): x-> connection exists (1/0), y-> w address, z-> b address.
+
+            for element in range(len(customArray[:,0])):
+                g.ConnMat[customArray[element, 0], customArray[element, 1], :] = [1, customArray[element, 2], customArray[element, 3]]
+
+            #print(g.ConnMat)
+            return True
         
 def main():
     
