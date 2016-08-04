@@ -33,18 +33,20 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
     changeArcStatus=QtCore.pyqtSignal(str)
 
-    def __init__(self, deviceList, sndip, sndport, rcvip, rcvport):
+    def __init__(self, deviceList, preip, preport, postip, postport):
         super(getData,self).__init__()
         self.deviceList=deviceList
-        self.sndip = sndip
-        self.sndport = sndport
-        self.rcvip = rcvip
-        self.rcvport = rcvport
+        self.preip = preip
+        self.preport = preport
+        self.postip = postip
+        self.postport = postport
 
     def runUDP(self):
         ### Define connectivity motif ###
         #Operational parameters.
         maxtime = 15 #Maximum time allowed for UDP operation before returning control (s).
+        Rmin = 1000.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
+        Rmax = 20000.0
 
         #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create a socket object - for Internet (INET) and UDP (DGRAM).
@@ -53,6 +55,9 @@ class getData(QtCore.QObject):
         port = 5005
         sock.bind((ip, port)) #Bind socket.
 
+        ### INITIAL SEGMENT - WAIT FOR INPUT FROM OTHER PARTNERS UP TO A CERTAIN AMOUNT OF TIME; THREAD AND KEEP AN ESCAPE BUTTON.
+        ### OR JUST HAVE SEPARATE LISTENING-ONLY FUNCTION.
+
         #Prepare instrument for operation.
         self.disableInterface.emit(True)
         self.changeArcStatus.emit('Busy')
@@ -60,9 +65,10 @@ class getData(QtCore.QObject):
 
         ### ESTABLISH CONNECTIONS WITH SENDER AND RECEIVER ###
 
-        if self.rcvip: #If we have defined a receiver. -- UPDATE THESE SECTIONS TO HANDLE AN 'UPSTREAM' AND A 'DOWNSTREAM' PARTNER.
-            sock.sendto("RDY", (self.rcvip, int(self.rcvport)))
-            ready = select.select([sock], [], [], 5)
+        if self.postip: #If we have defined a receiver. -- UPDATE THESE SECTIONS TO HANDLE AN 'UPSTREAM' AND A 'DOWNSTREAM' PARTNER.
+            sock.sendto("RDY", (self.postip, int(self.postport)))
+            ready = select.select([sock], [], [], 5) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
+            #...3) list of sockets to check for errors, 4) time allocated to these tasks. Returns 3 lists in this order: 1) Readable socket. 2) Writable. 3) In error.
             tstart = time.clock() #Set starting point for operation. Helps for time-limiting UDP operation.
 
             #Create packer through use of 'struct' library.
@@ -83,7 +89,7 @@ class getData(QtCore.QObject):
 
                 print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
-                if id_res_in == 90: #Recognise input as arriving from Zurich. - WARNING: CURRENTLY HARD-CODED AS 'PRE' SIDE.
+                if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as arriving from Zurich. - WARNING: CURRENTLY HARD-CODED AS 'PRE' SIDE.
 
                     #Decide which devices to bias depending on input.
                     id_out = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
@@ -127,9 +133,9 @@ class getData(QtCore.QObject):
                             #result = float(g.ser.readline().rstrip()) #Capture response and display it.
                             print(result)
                             #Prepare to send response via UDP.
-                            id_res = 83 #Identify sender of this packet as SOTON (d83, ASCII 'S')
+                            id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
                             id = id_out[elem]
-                            tst_res = int(np.round(np.clip((255.0/19000.0)*(result-1000.0), 0, 255))) #Clip & round - pretty self-explanatory.
+                            tst_res = int(np.round(np.clip((255.0/(Rmax-Rmin))*(result-Rmin), 0, 255))) #Clip & round - pretty self-explanatory.
                             tst = tst_in
 
                             #Preparation for packing.
@@ -139,15 +145,15 @@ class getData(QtCore.QObject):
                             pack = (id_int, tst_int)
                             pack_data = packer.pack(*pack)
 
-                            sock.sendto(pack_data, (self.rcvip, int(self.rcvport)))
-                            sock.sendto(pack_data, (self.sndip, int(self.sndport)))
+                            sock.sendto(pack_data, (self.postip, int(self.postport)))
+                            sock.sendto(pack_data, (self.preip, int(self.preport)))
 
                             ready = select.select([sock], [], [], 5)
                         else:
                             print("Index error. Trying to access input neuron that isn't regitered with connectivity matrix.")
                             ready = select.select([sock], [], [], 5)
 
-                if id_res_in == 80: #Recognise input as arriving from Padova. - WARNING: CURRENTLY HARD-CODED AS 'POST' SIDE.
+                elif id_res_in == g.partcode[1] and (id_in < len(g.ConnMat[0,:,0])): #Recognise input as arriving from Padova. - WARNING: CURRENTLY HARD-CODED AS 'POST' SIDE.
                      #Decide which devices affected by POST-spike.
                     id_out = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
 
@@ -193,6 +199,7 @@ class getData(QtCore.QObject):
                             ready = select.select([sock], [], [], 5)
                 else:
                     ready = select.select([sock], [], [], 5)
+                    print("Unrecognised partner or neuron ID out of range.")
 
         self.disableInterface.emit(False)
         self.changeArcStatus.emit('Ready')
@@ -201,15 +208,24 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
     def plastfun(self, dtpre, dtpost, plastdir): #Plasticity function depends on pre-dt, post-dt and the direction of the plasticity (plastdir = 1 (LTP), = 0, (LTD)).
+        #Plasticity parameters.
         LTPwin = 1000
         LTDwin = 1000
 
         if plastdir:
-            if dtpost < LTPwin:
-                print("LTP emitted.")
+            if dtpost < LTPwin:#Interaction example with mBED.
+                g.ser.write("04\n") #Select device operation.
+                g.ser.write(str(g.opEdits[0].text())+"\n") #Send amplitude (V).
+                g.ser.write(str(g.opEdits[1].text())+"\n") #Send duration (s).
+                g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
+                float(g.ser.readline().rstrip())
         else:
             if (dtpre - dtpost) < LTDwin:
-                print("LTD emitted.")
+                g.ser.write("04\n") #Select device operation.
+                g.ser.write(str(g.opEdits[2].text())+"\n") #Send amplitude (V).
+                g.ser.write(str(g.opEdits[3].text())+"\n") #Send duration (s).
+                g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
+                float(g.ser.readline().rstrip())
 
 
 class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWidget.
@@ -235,21 +251,18 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
 
-        topLabels=['Recipient partner IP', \
-                    'Recipient partner port']
-
+        topLabels=['Postsynaptic partner IP', 'Postsynaptic partner port']
         self.topEdits=[]
 
-        btmLabels=['Sender partner IP', \
-                    'Sender partner port']
-
+        btmLabels=['Presynaptic partner IP', 'Presynaptic partner port']
         self.btmEdits=[]
 
-        leftInit=  ['10.9.166.168', \
-                    '5005']
-        rightInit= ['10.9.166.168', \
-                    '5005']
+        opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)']
+        g.opEdits=[]
 
+        leftInit=  ['10.9.165.59', '5005']
+        rightInit= ['10.9.142.183', '5005']
+        opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
         # Setup the column 'length' ratios.
         gridLayout=QtGui.QGridLayout()
@@ -266,11 +279,16 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         lineRight.setFrameShape(QtGui.QFrame.HLine);
         lineRight.setFrameShadow(QtGui.QFrame.Raised);
         lineRight.setLineWidth(1)
+        lineOps=QtGui.QFrame()
+        lineOps.setFrameShape(QtGui.QFrame.HLine);
+        lineOps.setFrameShadow(QtGui.QFrame.Raised);
+        lineOps.setLineWidth(1)
 
 
         ### Build GUI insides ###
         gridLayout.addWidget(lineLeft, 2, 0, 1, 2)
         gridLayout.addWidget(lineRight, 5, 0, 1, 2)
+        gridLayout.addWidget(lineOps, 7, 0, 1, 2)
 
 
         for i in range(len(topLabels)):
@@ -298,6 +316,19 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
             #lineEdit.setValidator(isFloat)
             self.btmEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, offset+i,1)
+
+
+        for i in range(len(opLabels)):
+            opLabel=QtGui.QLabel()
+            opLabel.setText(opLabels[i])
+            #lineLabel.setFixedHeight(50)
+            gridLayout.addWidget(opLabel, 8+i,0)
+
+            opEdit=QtGui.QLineEdit()
+            opEdit.setText(opInit[i])
+            opEdit.setValidator(isFloat)
+            g.opEdits.append(opEdit)
+            gridLayout.addWidget(opEdit, 8+i,1)
 
         # ============================================== #
 
@@ -395,10 +426,10 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
     def UDPstart(self):
 
         # Capture pertinent parameters.
-        sndip = self.topEdits[0].text()
-        sndport = self.topEdits[1].text()
-        rcvip = self.btmEdits[0].text()
-        rcvport = self.btmEdits[1].text()
+        preip = self.topEdits[0].text()
+        preport = self.topEdits[1].text()
+        postip = self.btmEdits[0].text()
+        postport = self.btmEdits[1].text()
 
         #job="40"
         #g.ser.write(job+"\n")   # sends the job
@@ -406,7 +437,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         #self.sendParams()
 
         self.thread=QtCore.QThread()    #Instantiate thread object.
-        self.getData=getData([[g.w,g.b]], sndip, sndport, rcvip, rcvport)    #Instantiate a getData object.
+        self.getData=getData([[g.w,g.b]], preip, preport, postip, postport)    #Instantiate a getData object.
         self.getData.moveToThread(self.thread)      #Cause getData object to be ran in the thread object.
         self.thread.started.connect(self.getData.runUDP)     #Start thread and assign it ('connect to') task of running runUDP.
         self.getData.finished.connect(self.thread.quit)     #Once task finishes connect it to ending the thread.
