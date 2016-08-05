@@ -7,6 +7,7 @@ import select       # Import select module to allow 'listening' on ports.
 import struct
 import numpy as np
 import csv
+import threading
 
 
 # Set up directory environment.
@@ -42,9 +43,12 @@ class getData(QtCore.QObject):
         self.postport = postport
 
     def runUDP(self):
-        ### Define connectivity motif ###
+
+        #First, set the green light for the UDP protocol.
+        g.UDPampel = 1
+
         #Operational parameters.
-        maxtime = 15 #Maximum time allowed for UDP operation before returning control (s).
+        maxtime = 30 #Maximum time allowed for UDP operation before returning control (s).
         Rmin = 1000.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
         Rmax = 20000.0
 
@@ -55,11 +59,11 @@ class getData(QtCore.QObject):
         port = 5005
         sock.bind((ip, port)) #Bind socket.
 
-        ### INITIAL SEGMENT - WAIT FOR INPUT FROM OTHER PARTNERS UP TO A CERTAIN AMOUNT OF TIME; THREAD AND KEEP AN ESCAPE BUTTON.
-        ### OR JUST HAVE SEPARATE LISTENING-ONLY FUNCTION.
+        #Auxiliary variables.
+        tabs = 0 #Absolute time tracker.
 
         #Prepare instrument for operation.
-        self.disableInterface.emit(True)
+        #self.disableInterface.emit(True)
         self.changeArcStatus.emit('Busy')
         global tag
 
@@ -78,7 +82,7 @@ class getData(QtCore.QObject):
             posttrack = 0
             pretrack = 0
 
-            while (time.clock()-tstart) <= maxtime and ready[0]:
+            while (time.clock()-tstart) <= maxtime and ready[0] and g.UDPampel:
                 data, addr = sock.recvfrom(1024)
                 unpacked_data = packer.unpack(data)
 
@@ -86,8 +90,9 @@ class getData(QtCore.QObject):
                 id_in = unpacked_data[0]&0xffffff
                 tst_res_in = (unpacked_data[1]>>24)&0xff
                 tst_in = unpacked_data[1]&0xffffff
+                tabs += tst_in #Keep track of absolute time.
 
-                print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
+                #print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
                 if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as arriving from Zurich. - WARNING: CURRENTLY HARD-CODED AS 'PRE' SIDE.
 
@@ -118,8 +123,6 @@ class getData(QtCore.QObject):
                             g.ser.write("02\n") #Select device operation.
                             g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
                             g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
-                            #print(str(int(w_tar)), " ", str(int(b_tar)))
-
                             g.ser.write("03\n") #Read operation.
                             g.ser.write("k\n") #Calibrated read operation.
 
@@ -130,8 +133,8 @@ class getData(QtCore.QObject):
 
                             result = float(result)
 
-                            #result = float(g.ser.readline().rstrip()) #Capture response and display it.
-                            print(result)
+                            print(str(result)+', '+str(tabs))
+
                             #Prepare to send response via UDP.
                             id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
                             id = id_out[elem]
@@ -191,7 +194,7 @@ class getData(QtCore.QObject):
                                 result='%.10f' % 0.0
 
                             result = float(result)
-                            print(result)
+                            #print(result)
 
                             ready = select.select([sock], [], [], 5)
                         else:
@@ -199,13 +202,15 @@ class getData(QtCore.QObject):
                             ready = select.select([sock], [], [], 5)
                 else:
                     ready = select.select([sock], [], [], 5)
-                    print("Unrecognised partner or neuron ID out of range.")
+                    #print("Unrecognised partner or neuron ID out of range.")
 
-        self.disableInterface.emit(False)
+        #self.disableInterface.emit(False)
         self.changeArcStatus.emit('Ready')
         #self.displayData.emit()
         
         self.finished.emit()
+
+        return 0
 
     def plastfun(self, dtpre, dtpost, plastdir): #Plasticity function depends on pre-dt, post-dt and the direction of the plasticity (plastdir = 1 (LTP), = 0, (LTD)).
         #Plasticity parameters.
@@ -227,6 +232,14 @@ class getData(QtCore.QObject):
                 g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
                 float(g.ser.readline().rstrip())
 
+
+class UDPstopper(QtCore.QObject):
+    #Define signals to be used throughout module.
+    finished=QtCore.pyqtSignal()
+
+    def runSTOP(self):
+        g.UDPampel = 0 #Set the UDP traffic light to 0.
+        self.finished.emit()
 
 class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWidget.
     
@@ -261,7 +274,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         g.opEdits=[]
 
         leftInit=  ['10.9.165.59', '5005']
-        rightInit= ['10.9.142.183', '5005']
+        rightInit= ['10.9.145.255', '5005']
         opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
         # Setup the column 'length' ratios.
@@ -375,19 +388,19 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
         push_launchUDP=QtGui.QPushButton('Launch UDP interface') #Button to launch UDP interface.
         push_range=QtGui.QPushButton('Apply to Range')
-        push_all=QtGui.QPushButton('Apply to All')
+        stop_udp=QtGui.QPushButton('STOP UDP')
 
         push_launchUDP.setStyleSheet(s.btnStyle)
         push_range.setStyleSheet(s.btnStyle)
-        push_all.setStyleSheet(s.btnStyle)
+        stop_udp.setStyleSheet(s.btnStyle)
 
         push_launchUDP.clicked.connect(self.UDPstart)
         push_range.clicked.connect(self.programRange)
-        push_all.clicked.connect(self.programAll)
+        stop_udp.clicked.connect(self.UDPstop)
 
         self.hboxProg.addWidget(push_launchUDP)
         self.hboxProg.addWidget(push_range)
-        self.hboxProg.addWidget(push_all)
+        self.hboxProg.addWidget(stop_udp)
 
         vbox1.addLayout(self.hboxProg)
 
@@ -476,7 +489,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev, A, pw, B, stopTime, stopBatchSize)
+        self.getData=getData([[g.w,g.b]], preip, preport, postip, postport)
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.runUDP)
         self.getData.finished.connect(self.thread.quit)
@@ -491,35 +504,16 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         self.thread.start()
         
 
-    def programAll(self):
-        stopTime=int(self.btmEdits[0].text())
-        B=int(self.topEdits[2].text())
-        stopBatchSize=int(self.btmEdits[1].text())
+    def UDPstop(self):
+        self.thread2=QtCore.QThread()
+        self.UDPstopper=UDPstopper()
+        self.UDPstopper.moveToThread(self.thread2)
+        self.thread2.started.connect(self.UDPstopper.runSTOP)
+        self.UDPstopper.finished.connect(self.thread2.quit)
+        self.UDPstopper.finished.connect(self.UDPstopper.deleteLater)
+        self.thread2.finished.connect(self.UDPstopper.deleteLater)
 
-        A=float(self.topEdits[0].text())
-        pw=float(self.topEdits[1].text())/1000000
-
-        rangeDev=self.makeDeviceList(False)
-
-        job="33"
-        g.ser.write(job+"\n")   # sends the job
-
-        self.sendParams()
-
-        self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev, A, pw, B, stopTime, stopBatchSize)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.runUDP)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
-
-        self.thread.start()
+        self.thread2.start()
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
