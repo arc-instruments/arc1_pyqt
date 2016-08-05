@@ -27,7 +27,15 @@ from PyQt4.QtCore import QUrl
 
 import ctypes
 myappid = 'ArC ONE Control' # arbitrary string
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
+# Platform dependent configuration
+if sys.platform == "win32":
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    serialFormat = 'COM%d'
+elif sys.platform in ["linux", "linux2", "darwin"]:
+    serialFromat = '/dev/ttyUSB%d'
+else:
+    serialFormat = '%d'
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
 sys.path.append(os.path.abspath(os.getcwd()+'/Graphics/'))
@@ -854,7 +862,7 @@ class Arcontrol(QtGui.QMainWindow):
         available = []
         for i in range(256):
             try:
-                s = serial.Serial(i)
+                s = serial.Serial(serialFormat % i)
                 available.append(s.name)
                 s.close()
             except serial.SerialException:
