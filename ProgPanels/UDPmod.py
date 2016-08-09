@@ -41,6 +41,12 @@ class getData(QtCore.QObject):
         self.preport = preport
         self.postip = postip
         self.postport = postport
+        self.preNeurdt = np.zeros((256,2)) #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+        self.postNeurdt = np.zeros((4096,2)) #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+
+        #Matrix initalisations.
+        self.preNeurdt[:,1] = range(len(self.preNeurdt[:,0]))
+        self.postNeurdt[:,1] = range(len(self.postNeurdt[:,0]))
 
     def runUDP(self):
 
@@ -69,7 +75,7 @@ class getData(QtCore.QObject):
 
         ### ESTABLISH CONNECTIONS WITH SENDER AND RECEIVER ###
 
-        if self.postip: #If we have defined a receiver. -- UPDATE THESE SECTIONS TO HANDLE AN 'UPSTREAM' AND A 'DOWNSTREAM' PARTNER.
+        if self.postip: #If we have defined a POST partner.
             sock.sendto("RDY", (self.postip, int(self.postport)))
             ready = select.select([sock], [], [], 5) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
             #...3) list of sockets to check for errors, 4) time allocated to these tasks. Returns 3 lists in this order: 1) Readable socket. 2) Writable. 3) In error.
@@ -86,120 +92,120 @@ class getData(QtCore.QObject):
                 data, addr = sock.recvfrom(1024)
                 unpacked_data = packer.unpack(data)
 
-                id_res_in = (unpacked_data[0]>>24)&0xff
-                id_in = unpacked_data[0]&0xffffff
-                tst_res_in = (unpacked_data[1]>>24)&0xff
-                tst_in = unpacked_data[1]&0xffffff
-                tabs += tst_in #Keep track of absolute time.
+                id_res_in = (unpacked_data[0]>>24)&0xff #Sender ID.
+                id_in = unpacked_data[0]&0xffffff #PRE neuron ID.
+                tst_res_in = (unpacked_data[1]>>24)&0xff #Unused.
+                tst_in = unpacked_data[1]&0xffffff #Timestamp in. General relative time (time between events regardless of origin).
 
                 #print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
                 if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as arriving from Zurich. - WARNING: CURRENTLY HARD-CODED AS 'PRE' SIDE.
+                    #Absolute time clock.
+                    tabs += tst_in #Update absolute time clock.
+                    if tabs > 1000000000000: #Reset time counter if it gets too large.
+                        tabs -= 1000000000000
 
-                    #Decide which devices to bias depending on input.
-                    id_out = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
+                    #Register arrival of pre-spike and store new neur. specific abs. time firing time.
+                    self.preNeurdt[id_in,0] = tabs
+
+                    #Decide which post-neurons to look at based on post neuron id.
+                    postNeurIdx = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
+                    postNeurLookup = self.postNeurdt[postNeurIdx,:] #Generate sub-vector holding only pre-neurons to be 'looked up'.
+                    id_out = postNeurLookup[:,1]
+
+                    #Determine whether plasticity should be triggered.
+                    LTDwin = 1000
+                    id_plast = np.where(postNeurLookup[:,0] > (tabs - LTDwin))[0]
 
                     for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
-                        if id_in <= len(g.ConnMat[:,0,0]-1):
 
-                            pretrack = tst_in #Refresh PRE tracker.
+                        #Determine physical device that corresponds to affected synapse.
+                        w_tar = g.ConnMat[id_in, id_out[elem], 1] #Capture w-line & b-line.
+                        b_tar = g.ConnMat[id_in, id_out[elem], 2]
 
-                            #Determine whether plasticity should be triggered.
-                            if g.ConnMat[id_in, id_out[elem], 3] == 1: #If last operation was a POST.
-                                self.plastfun(pretrack, posttrack, 0)
+                        #Display updates.
+                        f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
+                        f.displayUpdate.updateSignal_short.emit()
 
-                            #Update 'last operation' flag.
-                            g.ConnMat[id_in, id_out[elem], 3] = 0 #Last op: PRE.
+                        #Select active device.
+                        g.ser.write("02\n") #Select device operation.
+                        g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
+                        g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+                        #Read it.
+                        g.ser.write("03\n") #Read operation.
+                        g.ser.write("k\n") #Calibrated read operation.
 
-                            #Determine physical device that corresponds to affected synapse.
-                            w_tar = g.ConnMat[id_in, id_out[elem], 1] #Capture w-line & b-line.
-                            b_tar = g.ConnMat[id_in, id_out[elem], 2]
+                        try:
+                            result='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+                        except ValueError:
+                            result='%.10f' % 0.0
 
-                            #Display updates.
-                            f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
-                            f.displayUpdate.updateSignal_short.emit()
+                        #If plasticity should be triggered carry it out.
+                        if id_out[elem] in id_plast:
+                            self.plastfun(0)
+                            print('LTD')
 
-                            #Interaction example with mBED.
-                            g.ser.write("02\n") #Select device operation.
-                            g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
-                            g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
-                            g.ser.write("03\n") #Read operation.
-                            g.ser.write("k\n") #Calibrated read operation.
+                        result = float(result)
 
-                            try:
-                                result='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-                            except ValueError:
-                                result='%.10f' % 0.0
+                        print('PRE: ' + str(result)+', '+str(tabs))
 
-                            result = float(result)
+                        #Prepare to send response via UDP.
+                        id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
+                        id = int(id_out[elem])
+                        tst_res = int(np.round(np.clip((255.0/(Rmax-Rmin))*(result-Rmin), 0, 255))) #Clip & round - pretty self-explanatory.
+                        tst = tabs #Send to post side absolute time when this neuron fires.
+                        #Preparation for packing.
+                        id_int = (((id_res&0xff)<<24)|(id&(0x00fffff)))
+                        tst_int =(((tst_res&0xff)<<24)|(tst&(0x00fffff)))
 
-                            print(str(result)+', '+str(tabs))
+                        pack = (id_int, tst_int)
+                        pack_data = packer.pack(*pack)
 
-                            #Prepare to send response via UDP.
-                            id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
-                            id = id_out[elem]
-                            tst_res = int(np.round(np.clip((255.0/(Rmax-Rmin))*(result-Rmin), 0, 255))) #Clip & round - pretty self-explanatory.
-                            tst = tst_in
+                        sock.sendto(pack_data, (self.postip, int(self.postport)))
+                        sock.sendto(pack_data, (self.preip, int(self.preport)))
 
-                            #Preparation for packing.
-                            id_int = (((id_res&0xff)<<24)|(id&(0x00fffff)))
-                            tst_int =(((tst_res&0xff)<<24)|(tst&(0x00fffff)))
-
-                            pack = (id_int, tst_int)
-                            pack_data = packer.pack(*pack)
-
-                            sock.sendto(pack_data, (self.postip, int(self.postport)))
-                            sock.sendto(pack_data, (self.preip, int(self.preport)))
-
-                            ready = select.select([sock], [], [], 5)
-                        else:
-                            print("Index error. Trying to access input neuron that isn't regitered with connectivity matrix.")
-                            ready = select.select([sock], [], [], 5)
+                        ready = select.select([sock], [], [], 5)
 
                 elif id_res_in == g.partcode[1] and (id_in < len(g.ConnMat[0,:,0])): #Recognise input as arriving from Padova. - WARNING: CURRENTLY HARD-CODED AS 'POST' SIDE.
-                     #Decide which devices affected by POST-spike.
-                    id_out = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
+                    #Register arrival of post-spike and store new neur. specific abs. time firing time.
+                    self.postNeurdt[id_in,0] = tst_in
 
-                    for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
-                        if id_in <= len(g.ConnMat[0,:,0]-1):
-                            #Determine whether plasticity should be triggered.
-                            if g.ConnMat[id_out[elem], id_in, 3] == 0: #If last operation was a PRE.
-                                posttrack = tst_in #Refresh POST tracker.
-                                self.plastfun(pretrack, posttrack, 1)
-                            else:
-                                posttrack += tst_in #Refresh POST tracker.
+                    #Decide which pre-neurons to look at based on post neuron id.
+                    preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
+                    preNeurLookup = self.preNeurdt[preNeurIdx,:] #Generate sub-vector holding only pre-neurons to be 'looked up'.
 
-                            #Update 'last operation' flag.
-                            g.ConnMat[id_out[elem], id_in, 3] = 1 #Last op: POST.
+                    #Determine whether plasticity should be triggered.
+                    LTPwin = 1000
+                    id_out = preNeurLookup[np.where(preNeurLookup[:,0] > (tst_in - LTPwin))[0], 1]
 
-                            #Determine physical device that corresponds to affected synapse.
-                            w_tar = g.ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
-                            b_tar = g.ConnMat[id_out[elem], id_in, 2]
+                    for elem in range(len(id_out)):
+                        #Determine physical device that corresponds to affected synapse.
+                        w_tar = g.ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
+                        b_tar = g.ConnMat[id_out[elem], id_in, 2]
 
-                            #Display updates.
-                            f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
-                            f.displayUpdate.updateSignal_short.emit()
+                        #Display updates.
+                        f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
+                        f.displayUpdate.updateSignal_short.emit()
 
-                            #Interaction example with mBED.
-                            g.ser.write("02\n") #Select device operation.
-                            g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
-                            g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+                        #Select device to be 'plasticised'.
+                        g.ser.write("02\n") #Select device operation.
+                        g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
+                        g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+                        self.plastfun(1) #Carry out plasticity.
+                        print("LTP")
+                        #Read results.
+                        g.ser.write("03\n") #Read operation.
+                        g.ser.write("k\n") #Calibrated read operation.
 
-                            g.ser.write("03\n") #Read operation.
-                            g.ser.write("k\n") #Calibrated read operation.
+                        try:
+                            result='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+                        except ValueError:
+                            result='%.10f' % 0.001
 
-                            try:
-                                result='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-                            except ValueError:
-                                result='%.10f' % 0.0
+                        result = float(result)
+                        print('POST: ' + str(result)+', '+str(tst_in))
 
-                            result = float(result)
-                            #print(result)
-
-                            ready = select.select([sock], [], [], 5)
-                        else:
-                            print("Index error. Trying to access input neuron that isn't regitered with connectivity matrix.")
-                            ready = select.select([sock], [], [], 5)
+                        ready = select.select([sock], [], [], 5)
                 else:
                     ready = select.select([sock], [], [], 5)
                     #print("Unrecognised partner or neuron ID out of range.")
@@ -212,25 +218,27 @@ class getData(QtCore.QObject):
 
         return 0
 
-    def plastfun(self, dtpre, dtpost, plastdir): #Plasticity function depends on pre-dt, post-dt and the direction of the plasticity (plastdir = 1 (LTP), = 0, (LTD)).
+    def plastfun(self, plastdir): #Plasticity function depends on pre-dt, post-dt and the direction of the plasticity (plastdir = 1 (LTP), = 0, (LTD)).
         #Plasticity parameters.
-        LTPwin = 1000
-        LTDwin = 1000
 
         if plastdir:
-            if dtpost < LTPwin:#Interaction example with mBED.
-                g.ser.write("04\n") #Select device operation.
-                g.ser.write(str(g.opEdits[0].text())+"\n") #Send amplitude (V).
-                g.ser.write(str(g.opEdits[1].text())+"\n") #Send duration (s).
-                g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
-                float(g.ser.readline().rstrip())
+            g.ser.write("04\n") #Select device operation.
+            g.ser.write(str(float(g.opEdits[0].text()))+"\n") #Send amplitude (V).
+            time.sleep(0.005)
+            g.ser.write(str(float(g.opEdits[1].text()))+"\n") #Send duration (s).
+            time.sleep(0.005)
+            g.ser.write(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
+            #print(result)
         else:
-            if (dtpre - dtpost) < LTDwin:
-                g.ser.write("04\n") #Select device operation.
-                g.ser.write(str(g.opEdits[2].text())+"\n") #Send amplitude (V).
-                g.ser.write(str(g.opEdits[3].text())+"\n") #Send duration (s).
-                g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
-                float(g.ser.readline().rstrip())
+            g.ser.write("04\n") #Select device operation.
+            g.ser.write(str(float(g.opEdits[2].text()))+"\n") #Send amplitude (V).
+            time.sleep(0.005)
+            g.ser.write(str(float(g.opEdits[3].text()))+"\n") #Send duration (s).
+            time.sleep(0.005)
+            g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
+            #print(result)
 
 
 class UDPstopper(QtCore.QObject):
@@ -274,7 +282,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         g.opEdits=[]
 
         leftInit=  ['10.9.165.59', '5005']
-        rightInit= ['10.9.145.255', '5005']
+        rightInit= ['152.78.66.191', '5005']
         opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
         # Setup the column 'length' ratios.

@@ -7,6 +7,6 @@
 # -Blank lines should be ignored automatically by code.
 
 1, 7, 6, 27
-#2, 4, 7, 7
-#2, 5, 3, 3
-#3, 4, 1, 1
+2, 4, 7, 7
+2, 5, 3, 3
+3, 4, 1, 1
