@@ -272,6 +272,19 @@ class SwitchSeeker(QtGui.QWidget):
         g.ser.write(str(int(self.leftEdits[7].text()))+"\n")
         g.ser.write(str(int(self.checkRead.isChecked()))+"\n")
 
+        # Check if Stage I should be skipped
+        if self.skipICheckBox.isChecked():
+            # -1 or 1 are the QVariants available from the combobox
+            # -1 -> negative polarity for Stage II
+            #  1 -> positive polarity for Stage II
+            polarityIndex = self.polarityCombo.currentIndex()
+            skipStageI = str(self.polarityCombo.itemData(polarityIndex).toInt()[0])
+        else:
+            # if 0 then Stage I will not be skipped
+            skipStageI = str(0)
+
+        g.ser.write(skipStageI+"\n")
+
 
     def programOne(self):
         job="%d"%self.getJobCode()
