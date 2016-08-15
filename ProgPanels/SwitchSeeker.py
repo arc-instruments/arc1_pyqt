@@ -183,7 +183,32 @@ class SwitchSeeker(QtGui.QWidget):
 
         self.checkRead=QtGui.QCheckBox(self)
         self.checkRead.setText("Read after pulse?")
-        gridLayout.addWidget(self.checkRead,0,4)
+        gridLayout.addWidget(self.checkRead,3,4)
+
+        gridLayout.addWidget(QtGui.QLabel("Seeker algorithm"),0,4)
+        self.modeSelectionCombo=QtGui.QComboBox()
+        # SwitchSeeker_1 has id 15
+        self.modeSelectionCombo.addItem("Fast",15)
+        # SwitchSeeker_2 has id 152
+        self.modeSelectionCombo.addItem("Slow",152)
+        gridLayout.addWidget(self.modeSelectionCombo,0,5)
+
+        gridLayout.addWidget(QtGui.QLabel("Stage II polarity"),1,4)
+        self.polarityCombo=QtGui.QComboBox()
+        self.polarityCombo.addItem("(+) Positive",1)
+        self.polarityCombo.addItem("(-) Negative",-1)
+        self.polarityCombo.setEnabled(False)
+        gridLayout.addWidget(self.polarityCombo,1,5)
+
+        self.skipICheckBox=QtGui.QCheckBox(self)
+        self.skipICheckBox.setText("Skip Stage I")
+        def skipIChecked(state):
+            if state == QtCore.Qt.Checked:
+                self.polarityCombo.setEnabled(True)
+            else:
+                self.polarityCombo.setEnabled(False)
+        self.skipICheckBox.stateChanged.connect(skipIChecked)
+        gridLayout.addWidget(self.skipICheckBox,2,4)
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -247,9 +272,22 @@ class SwitchSeeker(QtGui.QWidget):
         g.ser.write(str(int(self.leftEdits[7].text()))+"\n")
         g.ser.write(str(int(self.checkRead.isChecked()))+"\n")
 
+        # Check if Stage I should be skipped
+        if self.skipICheckBox.isChecked():
+            # -1 or 1 are the QVariants available from the combobox
+            # -1 -> negative polarity for Stage II
+            #  1 -> positive polarity for Stage II
+            polarityIndex = self.polarityCombo.currentIndex()
+            skipStageI = str(self.polarityCombo.itemData(polarityIndex).toInt()[0])
+        else:
+            # if 0 then Stage I will not be skipped
+            skipStageI = str(0)
+
+        g.ser.write(skipStageI+"\n")
+
 
     def programOne(self):
-        job="152"
+        job="%d"%self.getJobCode()
         g.ser.write(job+"\n")   # sends the job
 
         self.sendParams()
@@ -279,7 +317,7 @@ class SwitchSeeker(QtGui.QWidget):
 
         rangeDev=self.makeDeviceList(True)
 
-        job="152"
+        job="%d"%self.getJobCode()
         g.ser.write(job+"\n")   # sends the job
 
         self.sendParams()
@@ -303,7 +341,7 @@ class SwitchSeeker(QtGui.QWidget):
     def programAll(self):
         rangeDev=self.makeDeviceList(False)
 
-        job="152"
+        job="%d"%self.getJobCode()
         g.ser.write(job+"\n")   # sends the job
 
         self.sendParams()
@@ -354,6 +392,11 @@ class SwitchSeeker(QtGui.QWidget):
 
         return rangeDev
         
+    def getJobCode(self):
+        job=self.modeSelectionCombo.itemData(self.modeSelectionCombo.currentIndex())
+        return job.toInt()[0]
+
+
 def main():
     
     app = QtGui.QApplication(sys.argv)
