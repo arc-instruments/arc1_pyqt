@@ -49,7 +49,6 @@ class getData(QtCore.QObject):
         self.postNeurdt[:,1] = range(len(self.postNeurdt[:,0]))
 
     def runUDP(self):
-
         #First, set the green light for the UDP protocol.
         g.UDPampel = 1
 
@@ -57,6 +56,7 @@ class getData(QtCore.QObject):
         maxtime = 30 #Maximum time allowed for UDP operation before returning control (s).
         Rmin = 1000.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
         Rmax = 20000.0
+        maxlisten = 5 #Maximum time to listen on socket for events.
 
         #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create a socket object - for Internet (INET) and UDP (DGRAM).
@@ -71,25 +71,25 @@ class getData(QtCore.QObject):
         #Prepare instrument for operation.
         #self.disableInterface.emit(True)
         self.changeArcStatus.emit('Busy')
-        global tag
+        global tag, packnum
 
         ### ESTABLISH CONNECTIONS WITH SENDER AND RECEIVER ###
 
         if self.postip: #If we have defined a POST partner.
             sock.sendto("RDY", (self.postip, int(self.postport)))
-            ready = select.select([sock], [], [], 5) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
+            ready = select.select([sock], [], [], maxlisten) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
             #...3) list of sockets to check for errors, 4) time allocated to these tasks. Returns 3 lists in this order: 1) Readable socket. 2) Writable. 3) In error.
             tstart = time.clock() #Set starting point for operation. Helps for time-limiting UDP operation.
 
             #Create packer through use of 'struct' library.
             packer = struct.Struct('!I I') #'!' character tells the packer this data has to be sent to a network, so the byte order has to be correctly rendered.
 
-            #Initialise PRE and POST event dt trackers.
-            posttrack = 0
-            pretrack = 0
+            #Initialise helper variables.
+            packnum = 0
 
             while (time.clock()-tstart) <= maxtime and ready[0] and g.UDPampel:
                 data, addr = sock.recvfrom(1024)
+                packnum += 1 #Count arriving packets (total regardless of direction).
                 unpacked_data = packer.unpack(data)
 
                 id_res_in = (unpacked_data[0]>>24)&0xff #Sender ID.
@@ -114,8 +114,8 @@ class getData(QtCore.QObject):
                     id_out = postNeurLookup[:,1]
 
                     #Determine whether plasticity should be triggered.
-                    LTDwin = 1000
-                    id_plast = np.where(postNeurLookup[:,0] > (tabs - LTDwin))[0]
+                    LTDwin = 500
+                    id_plast = postNeurLookup[np.where(postNeurLookup[:,0] > (tabs - LTDwin))[0], 1]
 
                     for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
 
@@ -143,7 +143,7 @@ class getData(QtCore.QObject):
                         #If plasticity should be triggered carry it out.
                         if id_out[elem] in id_plast:
                             self.plastfun(0)
-                            print('LTD')
+                            #print('LTD')
 
                         result = float(result)
 
@@ -175,7 +175,7 @@ class getData(QtCore.QObject):
                     preNeurLookup = self.preNeurdt[preNeurIdx,:] #Generate sub-vector holding only pre-neurons to be 'looked up'.
 
                     #Determine whether plasticity should be triggered.
-                    LTPwin = 1000
+                    LTPwin = 500
                     id_out = preNeurLookup[np.where(preNeurLookup[:,0] > (tst_in - LTPwin))[0], 1]
 
                     for elem in range(len(id_out)):
@@ -192,7 +192,7 @@ class getData(QtCore.QObject):
                         g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
                         g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
                         self.plastfun(1) #Carry out plasticity.
-                        print("LTP")
+                        #print("LTP")
                         #Read results.
                         g.ser.write("03\n") #Read operation.
                         g.ser.write("k\n") #Calibrated read operation.
@@ -215,6 +215,9 @@ class getData(QtCore.QObject):
         #self.displayData.emit()
         
         self.finished.emit()
+        print('No. of packets throughout session: ' + str(packnum)) #Display number of packets received throughout session.
+        print('Total runtime: ' + str(time.clock() - tstart)) #Display time elapsed during UDP run.
+        print('Average packet rate: ' + str(packnum/(time.clock() - tstart))) #Display packets/second.
 
         return 0
 
@@ -226,8 +229,8 @@ class getData(QtCore.QObject):
             g.ser.write(str(float(g.opEdits[0].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
             g.ser.write(str(float(g.opEdits[1].text()))+"\n") #Send duration (s).
-            time.sleep(0.005)
-            g.ser.write(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #time.sleep(0.005)
+            #g.ser.write(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
         else:
@@ -235,8 +238,8 @@ class getData(QtCore.QObject):
             g.ser.write(str(float(g.opEdits[2].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
             g.ser.write(str(float(g.opEdits[3].text()))+"\n") #Send duration (s).
-            time.sleep(0.005)
-            g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #time.sleep(0.005)
+            #g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
 
@@ -281,7 +284,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)']
         g.opEdits=[]
 
-        leftInit=  ['10.9.165.59', '5005']
+        leftInit=  ['10.9.165.60', '5005']
         rightInit= ['152.78.66.191', '5005']
         opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
