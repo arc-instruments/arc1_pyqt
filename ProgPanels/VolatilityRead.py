@@ -25,7 +25,7 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
     changeArcStatus=QtCore.pyqtSignal(str)
 
-    def __init__(self, deviceList, A, pw, B, stopTime, stopBatchSize):
+    def __init__(self, deviceList, A, pw, B, stopTime, stopBatchSize, stopOpt):
         super(getData,self).__init__()
         self.A=A
         self.pw=pw
@@ -33,6 +33,7 @@ class getData(QtCore.QObject):
         self.stopTime=stopTime
         self.stopBatchSize=stopBatchSize
         self.deviceList=deviceList
+        self.stopOpt = stopOpt
 
     def getIt(self):
 
@@ -68,12 +69,17 @@ class getData(QtCore.QObject):
                     #self.displayData.emit()
 
                 timeNow=time.time()
-        
-                if (timeNow-start)>=self.stopTime:       # if more than stopTime ahas elapsed, do not request a new batch
-                    stop=1
-                    g.ser.write(str(int(stop))+"\n")
+
+                if self.stopOpt == 'FixTime':
+                    if (timeNow-start)>=self.stopTime:       # if more than stopTime has elapsed, do not request a new batch
+                        stop=1
+                        g.ser.write(str(int(stop))+"\n")
+                    else:
+                        stop=0
+                        g.ser.write(str(int(stop))+"\n")
+
                 else:
-                    stop=0
+                    stop=1
                     g.ser.write(str(int(stop))+"\n")
 
             Mnow=float(g.ser.readline().rstrip())   # get first read value
@@ -130,8 +136,8 @@ class VolatilityRead(QtGui.QWidget):
                     '10']
 
         # Setup the two combo boxes
-        stopOptions=['LinearFit', 'T-Test']
-                    #     0     ,     1
+        stopOptions=['LinearFit', 'T-Test', 'FixTime']
+                    #     0     ,     1   ,     2
 
         self.combo_stopOptions=QtGui.QComboBox()
 
@@ -290,7 +296,7 @@ class VolatilityRead(QtGui.QWidget):
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData([[g.w,g.b]], A, pw, B, stopTime, stopBatchSize)
+        self.getData=getData([[g.w,g.b]], A, pw, B, stopTime, stopBatchSize, self.combo_stopOptions.currentText())
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
