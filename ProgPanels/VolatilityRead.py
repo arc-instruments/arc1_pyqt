@@ -3,6 +3,7 @@ import sys
 import os
 import time
 import scipy.optimize as opt
+import scipy.stats as stat
 import numpy as np
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
@@ -27,16 +28,17 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
     changeArcStatus=QtCore.pyqtSignal(str)
 
-    def __init__(self, deviceList, A, pw, B, stopTime, stopBatchSize, stopTol, stopOpt):
+    def __init__(self, deviceList, A, pw, B, stopTime, stopConf, stopTol, stopOpt):
         super(getData,self).__init__()
         self.A=A
         self.pw=pw
         self.B=B
         self.stopTime=stopTime
-        self.stopBatchSize=stopBatchSize
+        self.stopConf=stopConf
         self.deviceList=deviceList
         self.stopOpt = stopOpt
         self.stopTol = stopTol
+        self.ttestsamp = 25 #No. of samples at the beginning and at the end of the batch to be taken for t-test.
 
     def getIt(self):
 
@@ -93,14 +95,37 @@ class getData(QtCore.QObject):
                         g.ser.write(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'LinearFit':
-                    linslope = opt.curve_fit(linfit, xline, values, initguess)[0][0] #Obtain slope of linear fit on volatile data.
-                    relslope = linslope/np.mean(values) #Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
+                    if self.B > 1: #Check that there are at least 2 points in batch, or no linear fit possible.
+                        linslope = opt.curve_fit(linfit, xline, values, initguess)[0][0] #Obtain slope of linear fit on volatile data.
+                        relslope = linslope/np.mean(values) #Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
 
-                    if abs(relslope)<=self.stopTol:       # If the linear slope along the batch drops below certain magnitude stop procedure.
+                        if abs(relslope)<=self.stopTol:       # If the linear slope along the batch drops below certain magnitude stop procedure.
+                            stop=1
+                            g.ser.write(str(int(stop))+"\n")
+                        else:
+                            stop=0
+                            g.ser.write(str(int(stop))+"\n")
+
+                    else: #If the batch is not large enough just end it there.
                         stop=1
                         g.ser.write(str(int(stop))+"\n")
-                    else:
-                        stop=0
+
+
+                elif self.stopOpt == 'T-Test':
+                    if self.B >= self.ttestsamp*2: #Check that the batch is actually large enough to carry out a stat-test.
+                        tmet = abs(stat.ttest_ind(values[:self.ttestsamp], values[-self.ttestsamp:], equal_var = False)[0]) #Perform t-test on first & last N samples in batch, then get t-metric.
+                        print(tmet)
+
+                        if tmet < self.stopConf or (timeNow-start)>=self.stopTime: #If probability (loosely speaking) of null hypothesis being true is below our confidence tolerance...
+                            #... stop requestiong batches. Also have a max time-check.
+                            stop=1
+                            g.ser.write(str(int(stop))+"\n")
+                        else:
+                            stop=0
+                            g.ser.write(str(int(stop))+"\n")
+
+                    else: #If the batch is not large enough just end it there.
+                        stop=1
                         g.ser.write(str(int(stop))+"\n")
 
                 #DEFAULT case - something went wrong so just stop the text after 1 batch.
@@ -148,7 +173,7 @@ class VolatilityRead(QtGui.QWidget):
         self.leftEdits=[]
 
         rightLabels=['Stop time (s)', \
-                    'Stop Batch Size', \
+                    'Stop t-metric', \
                     'Stop Tol. (%/batch)']
 
         self.rightEdits=[]
@@ -158,7 +183,7 @@ class VolatilityRead(QtGui.QWidget):
                     '1000', \
                     '100']
         rightInit= ['10', \
-                    '100', \
+                    '10', \
                     '10']
 
         # Setup the two combo boxes
@@ -311,8 +336,8 @@ class VolatilityRead(QtGui.QWidget):
 
         B=int(self.leftEdits[2].text())
         stopTime=int(self.rightEdits[0].text())
-        stopBatchSize=int(self.rightEdits[1].text())
-        stopTol = float(self.rightEdits[2].text()/100) #Convert % into normal.
+        stopConf=float(self.rightEdits[1].text())
+        stopTol = float(self.rightEdits[2].text())/100 #Convert % into normal.
 
         A=float(self.leftEdits[0].text())
         pw=float(self.leftEdits[1].text())/1000000
@@ -323,7 +348,7 @@ class VolatilityRead(QtGui.QWidget):
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData([[g.w,g.b]], A, pw, B, stopTime, stopBatchSize, stopTol, self.combo_stopOptions.currentText())
+        self.getData=getData([[g.w,g.b]], A, pw, B, stopTime, stopConf, stopTol, self.combo_stopOptions.currentText())
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
@@ -349,7 +374,7 @@ class VolatilityRead(QtGui.QWidget):
 
         stopTime=int(self.rightEdits[0].text())
         B=int(self.leftEdits[2].text())
-        stopBatchSize=int(self.rightEdits[1].text())
+        stopConf=int(self.rightEdits[1].text())
 
         A=float(self.leftEdits[0].text())
         pw=float(self.leftEdits[1].text())/1000000
@@ -362,7 +387,7 @@ class VolatilityRead(QtGui.QWidget):
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev, A, pw, B, stopTime, stopBatchSize)
+        self.getData=getData(rangeDev, A, pw, B, stopTime, stopConf)
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
@@ -380,7 +405,7 @@ class VolatilityRead(QtGui.QWidget):
     def programAll(self):
         stopTime=int(self.rightEdits[0].text())
         B=int(self.leftEdits[2].text())
-        stopBatchSize=int(self.rightEdits[1].text())
+        stopConf=int(self.rightEdits[1].text())
 
         A=float(self.leftEdits[0].text())
         pw=float(self.leftEdits[1].text())/1000000
@@ -393,7 +418,7 @@ class VolatilityRead(QtGui.QWidget):
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev, A, pw, B, stopTime, stopBatchSize)
+        self.getData=getData(rangeDev, A, pw, B, stopTime, stopConf)
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
