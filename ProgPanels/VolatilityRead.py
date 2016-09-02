@@ -2,6 +2,8 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 import time
+import scipy.optimize as opt
+import numpy as np
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
 sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
@@ -25,7 +27,7 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
     changeArcStatus=QtCore.pyqtSignal(str)
 
-    def __init__(self, deviceList, A, pw, B, stopTime, stopBatchSize, stopOpt):
+    def __init__(self, deviceList, A, pw, B, stopTime, stopBatchSize, stopTol, stopOpt):
         super(getData,self).__init__()
         self.A=A
         self.pw=pw
@@ -34,6 +36,7 @@ class getData(QtCore.QObject):
         self.stopBatchSize=stopBatchSize
         self.deviceList=deviceList
         self.stopOpt = stopOpt
+        self.stopTol = stopTol
 
     def getIt(self):
 
@@ -42,6 +45,11 @@ class getData(QtCore.QObject):
         global tag
 
         g.ser.write(str(int(len(self.deviceList)))+"\n")
+
+        #Stop condition preparation area.
+        linfit = lambda x, a, b: a * x + b #Define linear fitter.
+        xline = range(self.B) #Define x-axis values.
+        initguess = [0.0, 0.0]
 
         for device in self.deviceList:
             w=device[0]
@@ -58,18 +66,24 @@ class getData(QtCore.QObject):
             stop=0
 
             while stop==0:
-                for i in range(self.B):
-                    #values=[]
-                    #values.append(float(g.ser.readline().rstrip()))
-                    #values.append(float(g.ser.readline().rstrip()))
+                #Prepare for batch processing.
+                values = [] #Reset batch result array contents.
+
+                for i in range(self.B): #Obtain data for entire batch.
+                    #Send data to log-file.
                     dataTime=int(g.ser.readline().rstrip())
                     Mnow=float(g.ser.readline().rstrip())
-
                     self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_i_ '+ str(dataTime))
+
+                    #Hold all or portion of incoming data in temporary array.
+                    values.append(Mnow)
+
+                    #Update display.
                     #self.displayData.emit()
 
                 timeNow=time.time()
 
+                # FIX TIME option - end volatility test after fixed time.
                 if self.stopOpt == 'FixTime':
                     if (timeNow-start)>=self.stopTime:       # if more than stopTime has elapsed, do not request a new batch
                         stop=1
@@ -78,6 +92,18 @@ class getData(QtCore.QObject):
                         stop=0
                         g.ser.write(str(int(stop))+"\n")
 
+                elif self.stopOpt == 'LinearFit':
+                    linslope = opt.curve_fit(linfit, xline, values, initguess)[0][0] #Obtain slope of linear fit on volatile data.
+                    relslope = linslope/np.mean(values) #Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
+
+                    if abs(relslope)<=self.stopTol:       # If the linear slope along the batch drops below certain magnitude stop procedure.
+                        stop=1
+                        g.ser.write(str(int(stop))+"\n")
+                    else:
+                        stop=0
+                        g.ser.write(str(int(stop))+"\n")
+
+                #DEFAULT case - something went wrong so just stop the text after 1 batch.
                 else:
                     stop=1
                     g.ser.write(str(int(stop))+"\n")
@@ -123,7 +149,7 @@ class VolatilityRead(QtGui.QWidget):
 
         rightLabels=['Stop time (s)', \
                     'Stop Batch Size', \
-                    'Stop Tolerance (%)']
+                    'Stop Tol. (%/batch)']
 
         self.rightEdits=[]
 
@@ -283,9 +309,10 @@ class VolatilityRead(QtGui.QWidget):
 
     def programOne(self):
 
-        stopTime=int(self.rightEdits[0].text())
         B=int(self.leftEdits[2].text())
+        stopTime=int(self.rightEdits[0].text())
         stopBatchSize=int(self.rightEdits[1].text())
+        stopTol = float(self.rightEdits[2].text()/100) #Convert % into normal.
 
         A=float(self.leftEdits[0].text())
         pw=float(self.leftEdits[1].text())/1000000
@@ -296,7 +323,7 @@ class VolatilityRead(QtGui.QWidget):
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData([[g.w,g.b]], A, pw, B, stopTime, stopBatchSize, self.combo_stopOptions.currentText())
+        self.getData=getData([[g.w,g.b]], A, pw, B, stopTime, stopBatchSize, stopTol, self.combo_stopOptions.currentText())
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
