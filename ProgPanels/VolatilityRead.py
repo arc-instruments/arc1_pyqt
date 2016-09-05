@@ -102,8 +102,7 @@ class getData(QtCore.QObject):
                             fitres = [[0]] #...assign dummy value.
                             print('Error: Could not fit data to linear function within no. of iteration limits.')
 
-                        linslope = fitres[0][0]*self.B #Obtain slope of linear fit on volatile data.
-                        print(fitres)
+                        linslope = fitres[0][0]*self.B #Obtain slope of linear fit on volatile data in units of %/batch.
                         relslope = linslope/np.mean(values) #Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
                         print('Fitted resistive state slope: ' + str(relslope*100) + ' %/batch.')
 
@@ -354,7 +353,6 @@ class VolatilityRead(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
 
     def programOne(self):
-
         B=int(self.leftEdits[2].text())
         stopTime=int(self.rightEdits[0].text())
         stopConf=float(self.rightEdits[1].text())
@@ -392,10 +390,10 @@ class VolatilityRead(QtGui.QWidget):
 
 
     def programRange(self):
-
-        stopTime=int(self.rightEdits[0].text())
         B=int(self.leftEdits[2].text())
-        stopConf=int(self.rightEdits[1].text())
+        stopTime=int(self.rightEdits[0].text())
+        stopConf=float(self.rightEdits[1].text())
+        stopTol = float(self.rightEdits[2].text())/100 #Convert % into normal.
 
         A=float(self.leftEdits[0].text())
         pw=float(self.leftEdits[1].text())/1000000
@@ -408,25 +406,27 @@ class VolatilityRead(QtGui.QWidget):
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev, A, pw, B, stopTime, stopConf)
+        self.getData=getData(rangeDev, A, pw, B, stopTime, stopConf, stopTol, self.combo_stopOptions.currentText())
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
         self.getData.finished.connect(self.getData.deleteLater)
         self.thread.finished.connect(self.getData.deleteLater)
         self.getData.sendData.connect(f.updateHistory)
-        self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.highlight.connect(f.cbAntenna.cast)
+        self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
+        self.getData.changeArcStatus.connect(f.interfaceAntenna.changeArcStatus.emit)
 
         self.thread.start()
         
 
     def programAll(self):
-        stopTime=int(self.rightEdits[0].text())
         B=int(self.leftEdits[2].text())
-        stopConf=int(self.rightEdits[1].text())
+        stopTime=int(self.rightEdits[0].text())
+        stopConf=float(self.rightEdits[1].text())
+        stopTol = float(self.rightEdits[2].text())/100 #Convert % into normal.
 
         A=float(self.leftEdits[0].text())
         pw=float(self.leftEdits[1].text())/1000000
@@ -439,7 +439,7 @@ class VolatilityRead(QtGui.QWidget):
         self.sendParams()
 
         self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev, A, pw, B, stopTime, stopConf)
+        self.getData=getData(rangeDev, A, pw, B, stopTime, stopConf, stopTol, self.combo_stopOptions.currentText())
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
