@@ -96,10 +96,18 @@ class getData(QtCore.QObject):
 
                 elif self.stopOpt == 'LinearFit':
                     if self.B > 1: #Check that there are at least 2 points in batch, or no linear fit possible.
-                        linslope = opt.curve_fit(linfit, xline, values, initguess)[0][0] #Obtain slope of linear fit on volatile data.
-                        relslope = linslope/np.mean(values) #Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
+                        try: #Try computing linear fit.
+                            fitres = opt.curve_fit(linfit, xline, values, initguess) #Compute linear fit.
+                        except RuntimeError: #If that proves impossible...
+                            fitres = [[0]] #...assign dummy value.
+                            print('Error: Could not fit data to linear function within no. of iteration limits.')
 
-                        if abs(relslope)<=self.stopTol:       # If the linear slope along the batch drops below certain magnitude stop procedure.
+                        linslope = fitres[0][0]*self.B #Obtain slope of linear fit on volatile data.
+                        print(fitres)
+                        relslope = linslope/np.mean(values) #Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
+                        print('Fitted resistive state slope: ' + str(relslope*100) + ' %/batch.')
+
+                        if abs(relslope)<=self.stopTol or (timeNow-start)>=self.stopTime: # If the linear slope along the batch drops below certain magnitude, or time limit exceeded stop procedure.
                             stop=1
                             g.ser.write(str(int(stop))+"\n")
                         else:
@@ -114,7 +122,7 @@ class getData(QtCore.QObject):
                 elif self.stopOpt == 'T-Test':
                     if self.B >= self.ttestsamp*2: #Check that the batch is actually large enough to carry out a stat-test.
                         tmet = abs(stat.ttest_ind(values[:self.ttestsamp], values[-self.ttestsamp:], equal_var = False)[0]) #Perform t-test on first & last N samples in batch, then get t-metric.
-                        print(tmet)
+                        print('T-metric: ' + str(tmet))
 
                         if tmet < self.stopConf or (timeNow-start)>=self.stopTime: #If probability (loosely speaking) of null hypothesis being true is below our confidence tolerance...
                             #... stop requestiong batches. Also have a max time-check.
@@ -127,6 +135,7 @@ class getData(QtCore.QObject):
                     else: #If the batch is not large enough just end it there.
                         stop=1
                         g.ser.write(str(int(stop))+"\n")
+                        print('WARNING: Batch not long enough to support this oepration. Minimum batch length required is '+str(2*self.ttestsamp)+'.')
 
                 #DEFAULT case - something went wrong so just stop the text after 1 batch.
                 else:
@@ -191,9 +200,7 @@ class VolatilityRead(QtGui.QWidget):
                     #     0     ,     1   ,     2
 
         self.combo_stopOptions=QtGui.QComboBox()
-
         self.combo_stopOptions.insertItems(1,stopOptions)
-
         self.combo_stopOptions.currentIndexChanged.connect(self.updateStopOptions)
 
 
@@ -313,6 +320,19 @@ class VolatilityRead(QtGui.QWidget):
         #self.vW.setFixedWidth(self.sizeHint().width())
 
     def updateStopOptions(self, event):
+        if self.combo_stopOptions.currentText() == 'FixTime':
+            self.rightEdits[0].setStyleSheet("border: 1px solid red;")
+            self.rightEdits[1].setStyleSheet("border: 1px solid grey;")
+            self.rightEdits[2].setStyleSheet("border: 1px solid grey;")
+        elif self.combo_stopOptions.currentText() == 'LinearFit':
+            self.rightEdits[0].setStyleSheet("border: 1px solid red;")
+            self.rightEdits[1].setStyleSheet("border: 1px solid grey;")
+            self.rightEdits[2].setStyleSheet("border: 1px solid red;")
+        elif self.combo_stopOptions.currentText() == 'T-Test':
+            self.rightEdits[0].setStyleSheet("border: 1px solid red;")
+            self.rightEdits[1].setStyleSheet("border: 1px solid red;")
+            self.rightEdits[2].setStyleSheet("border: 1px solid grey;")
+
         print event   
 
     def eventFilter(self, object, event):
@@ -323,6 +343,7 @@ class VolatilityRead(QtGui.QWidget):
         #    self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         #print self.vW.size().width()
         return False
+
     def resizeWidget(self,event):
         pass
 
