@@ -33,7 +33,7 @@ if sys.platform == "win32":
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     serialFormat = 'COM%d'
 elif sys.platform in ["linux", "linux2", "darwin"]:
-    serialFromat = '/dev/ttyUSB%d'
+    serialFormat = '/dev/ttyUSB%d'
 else:
     serialFormat = '%d'
 
