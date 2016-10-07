@@ -293,10 +293,10 @@ class Arcontrol(QtGui.QMainWindow):
         layoutRight.setStretchFactor(layoutTop, 5)	# define how scaling the window scales the two sections
         layoutRight.setStretchFactor(self.layoutBot, 6)
 
-        self.layoutBot.setStretchFactor(self.pp, 5)			# define how scaling the window scales the two sections
+        self.layoutBot.setStretchFactor(self.pp, 6)			# define how scaling the window scales the two sections
         self.layoutBot.setStretchFactor(self.cp, 6)
 
-        self.pp.setMinimumWidth(500)
+        self.pp.setMinimumWidth(700)
         self.cp.setMinimumWidth(600)
 
         layoutTop.setSpacing(0)
