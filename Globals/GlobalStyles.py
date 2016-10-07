@@ -265,3 +265,96 @@ QLabel{\
 #QDoubleSpinBox:down-button { \
 #	background-color: rgb(0, 255, 255); \
 #	} \
+
+selectedStyle="""
+	font: bold; \
+	"""
+
+unselectedStyle="""
+	font: normal; \
+	"""
+
+loop_style_top_selected="""\
+QPushButton {\
+    text-align: left; \
+    border-left:0px solid rgb(0,32,87); \
+    border-right:0px solid rgb(0,32,87); \
+    border-top: 4px solid rgb(0,32,87); \
+    border-bottom: 0px solid rgb(0,32,87); \
+    color: rgb(0,32,87); \
+	font: bold;\
+    } """
+
+loop_style_bot_selected="""\
+QPushButton {\
+    text-align: left; \
+    border-left:0px solid rgb(0,32,87); \
+    border-right:0px solid rgb(0,32,87); \
+    border-top: 0px solid rgb(0,32,87); \
+    border-bottom: 4px solid rgb(0,32,87); \
+    color: rgb(0,32,87); \
+    font: bold; \
+    } """
+
+EdgeBtn_style="""\
+QPushButton {\
+    border: 1px solid rgb(0,32,87); \
+    border-radius: 5px; \
+    background-color: rgb(0,32,87); \
+    color: rgb(255,255,255); \
+    padding: 0px; \
+    padding-left:10px;\
+    padding-right:10px;\
+    font-size: 15px;\
+    } """
+
+btnLowPadding="""\
+QPushButton {\
+    color: rgb(0,32,87); \
+    } """
+
+dummy_style="""\
+QPushButton {\
+    border-left:2px solid rgb(0,32,87); \
+    border-right:2px solid rgb(0,32,87); \
+    border-top: 0px solid rgb(0,32,87); \
+    border-bottom: 0px solid rgb(0,32,87); \
+    color: rgb(0,32,87); \
+    } """
+
+loop_style_top="""\
+QPushButton {\
+    text-align: left; \
+    border-left:0px solid rgb(0,32,87); \
+    border-right:0px solid rgb(0,32,87); \
+    border-top: 4px solid rgb(0,32,87); \
+    border-bottom: 0px solid rgb(0,32,87); \
+    color: rgb(0,32,87); \
+    } """
+
+loop_style_bot="""\
+QPushButton {\
+    text-align: left; \
+    border-left:0px solid rgb(0,32,87); \
+    border-right:0px solid rgb(0,32,87); \
+    border-top: 0px solid rgb(0,32,87); \
+    border-bottom: 4px solid rgb(0,32,87); \
+    color: rgb(0,32,87); \
+    } """
+
+btnStyle_clearChain="""\
+QPushButton {\
+	background-color: rgb(255,255,255); \
+	border:1px solid rgb(0, 32, 87); \
+	color: rgb(0, 32, 87); \
+	height: 18px; \
+	margin: 0px; \
+	font: bold; \
+	} \
+QPushButton:hover{\
+	background-color: rgb(0, 32, 87); \
+	color: rgb(255, 255, 255);\
+	} \
+QPushButton:pressed{\
+	margin: 3px; \
+	}"""

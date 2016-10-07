@@ -92,3 +92,6 @@ sessionMode=0
 sessionName='Package 1'
 sneakPathOption=0
 
+waitCondition = QtCore.QWaitCondition()
+mutex = QtCore.QMutex()
+globalDisable=False
