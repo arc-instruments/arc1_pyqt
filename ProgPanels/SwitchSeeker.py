@@ -90,9 +90,9 @@ class getData(QtCore.QObject):
 
 class SwitchSeeker(QtGui.QWidget):
     
-    def __init__(self):
+    def __init__(self, short=False):
         super(SwitchSeeker, self).__init__()
-        
+        self.short=short
         self.initUI()
         
     def initUI(self):      
@@ -139,9 +139,12 @@ class SwitchSeeker(QtGui.QWidget):
         gridLayout.setColumnStretch(2,1)
         gridLayout.setColumnStretch(3,1)
         gridLayout.setColumnStretch(4,3)
-        gridLayout.setColumnStretch(5,1)
-        gridLayout.setColumnStretch(6,1)
-        gridLayout.setColumnStretch(7,2)
+        
+        
+        if self.short==False:
+            gridLayout.setColumnStretch(5,1)
+            gridLayout.setColumnStretch(6,1)
+            gridLayout.setColumnStretch(7,2)
         #gridLayout.setSpacing(2)
 
         #setup a line separator
@@ -155,7 +158,8 @@ class SwitchSeeker(QtGui.QWidget):
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 10, 1)
-        gridLayout.addWidget(lineRight, 0, 6, 10, 1)
+        if self.short==False:
+            gridLayout.addWidget(lineRight, 0, 6, 10, 1)
 
 
         for i in range(len(leftLabels)):
@@ -228,35 +232,67 @@ class SwitchSeeker(QtGui.QWidget):
         vbox1.addWidget(scrlArea)
         vbox1.addStretch()
 
-        self.hboxProg=QtGui.QHBoxLayout()
+        if self.short==False:
+            self.hboxProg=QtGui.QHBoxLayout()
 
-        push_single=QtGui.QPushButton('Apply to One')
-        push_range=QtGui.QPushButton('Apply to Range')
-        push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtGui.QPushButton('Apply to One')
+            push_range=QtGui.QPushButton('Apply to Range')
+            push_all=QtGui.QPushButton('Apply to All')
 
-        push_single.setStyleSheet(s.btnStyle)
-        push_range.setStyleSheet(s.btnStyle)
-        push_all.setStyleSheet(s.btnStyle)
+            push_single.setStyleSheet(s.btnStyle)
+            push_range.setStyleSheet(s.btnStyle)
+            push_all.setStyleSheet(s.btnStyle)
 
-        push_single.clicked.connect(self.programOne)
-        push_range.clicked.connect(self.programRange)
-        push_all.clicked.connect(self.programAll)
+            push_single.clicked.connect(self.programOne)
+            push_range.clicked.connect(self.programRange)
+            push_all.clicked.connect(self.programAll)
 
-        self.hboxProg.addWidget(push_single)
-        self.hboxProg.addWidget(push_range)
-        self.hboxProg.addWidget(push_all)
+            self.hboxProg.addWidget(push_single)
+            self.hboxProg.addWidget(push_range)
+            self.hboxProg.addWidget(push_all)
 
-        vbox1.addLayout(self.hboxProg)
+            vbox1.addLayout(self.hboxProg)
 
+        self.gridLayout=gridLayout
+        self.extractPanelParameters()
         self.setLayout(vbox1)
+
+    def extractPanelParameters(self):
+        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
+        
+        layoutWidgets=[]
+
+        for i,item in layoutItems:
+            if isinstance(item, QtGui.QLineEdit):
+                layoutWidgets.append([i,'QLineEdit', item.text()])
+            if isinstance(item, QtGui.QComboBox):
+                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
+            if isinstance(item, QtGui.QCheckBox):
+                layoutWidgets.append([i,'QCheckBox', item.checkState()])
+
+        
+        #self.setPanelParameters(layoutWidgets)
+        return layoutWidgets
+
+    def setPanelParameters(self, layoutWidgets):
+        for i,type,value in layoutWidgets:
+            if type=='QLineEdit':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setText(value)
+            if type=='QComboBox':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
+            if type=='QCheckBox':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setChecked(value)
+
+
+
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         return False
-
-    def resizeWidget(self,event):
-        pass
 
     def sendParams(self):
         g.ser.write(str(float(self.leftEdits[2].text())/1000)+"\n")
@@ -285,27 +321,18 @@ class SwitchSeeker(QtGui.QWidget):
 
         g.ser.write(skipStageI+"\n")
 
-
     def programOne(self):
-        job="%d"%self.getJobCode()
-        g.ser.write(job+"\n")   # sends the job
+        if g.ser.port != None:
+            job="%d"%self.getJobCode()
+            g.ser.write(job+"\n")   # sends the job
 
-        self.sendParams()
+            self.sendParams()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData([[g.w,g.b]])
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
+            self.thread=QtCore.QThread()
+            self.getData=getData([[g.w,g.b]])
+            self.finalise_thread_initialisation()
 
-        self.thread.start()
+            self.thread.start()
 
     def disableProgPanel(self,state):
         if state==True:
@@ -314,40 +341,37 @@ class SwitchSeeker(QtGui.QWidget):
             self.hboxProg.setEnabled(True)
 
     def programRange(self):
+        if g.ser.port != None:
 
-        rangeDev=self.makeDeviceList(True)
+            rangeDev=self.makeDeviceList(True)
 
-        job="%d"%self.getJobCode()
-        g.ser.write(job+"\n")   # sends the job
+            job="%d"%self.getJobCode()
+            g.ser.write(job+"\n")   # sends the job
 
-        self.sendParams()
+            self.sendParams()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
+            self.thread=QtCore.QThread()
+            self.getData=getData(rangeDev)
+            self.finalise_thread_initialisation()
 
-        self.thread.start()
-        
+            self.thread.start()  
 
     def programAll(self):
-        rangeDev=self.makeDeviceList(False)
+        if g.ser.port != None:
+            rangeDev=self.makeDeviceList(False)
 
-        job="%d"%self.getJobCode()
-        g.ser.write(job+"\n")   # sends the job
+            job="%d"%self.getJobCode()
+            g.ser.write(job+"\n")   # sends the job
 
-        self.sendParams()
+            self.sendParams()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev)
+            self.thread=QtCore.QThread()
+            self.getData=getData(rangeDev)
+            self.finalise_thread_initialisation()
+
+            self.thread.start()
+
+    def finalise_thread_initialisation(self):
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
@@ -357,9 +381,8 @@ class SwitchSeeker(QtGui.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
 
-        self.thread.start()
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
