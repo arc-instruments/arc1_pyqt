@@ -769,6 +769,7 @@ class SuperMode(QtGui.QWidget):
 
             self.dropWidget.count=0    
             self.dropWidget.resizeHeight()
+            self.loaded_label.setText("")
 
     def throw_wrong_loops_dialogue(self):
         reply = QtGui.QMessageBox.question(self, "Wrong chain loops",
