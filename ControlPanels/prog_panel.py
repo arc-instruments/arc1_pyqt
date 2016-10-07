@@ -40,6 +40,10 @@ class prog_panel(QtGui.QWidget):
         for f in files:
             self.prog_panelList.addItem(f[:-3])
 
+        boldFont=QtGui.QFont("FontFamily")
+        boldFont.setBold(True)
+        self.prog_panelList.setItemData(self.prog_panelList.findText("SuperMode"), boldFont, QtCore.Qt.FontRole)
+
         self.push_add=QtGui.QPushButton('Add')
         self.push_add.setStyleSheet(s.btnStyle2)
         self.push_add.clicked.connect(self.addPanel)
