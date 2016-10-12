@@ -21,3 +21,5 @@ MANIFEST
 tags
 *.egg-info
 deps/*
+generated_/*.py
+!generated_/__init__.py
