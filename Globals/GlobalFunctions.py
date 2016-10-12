@@ -65,8 +65,23 @@ class interfaceAntenna(QObject):
 	changeSessionMode=pyqtSignal(str)
 	updateHW=pyqtSignal()
 
+	globalDisable=False
+
 	def __init__(self):
 		super(interfaceAntenna,self).__init__()
+	def cast(self, value):
+		if value==False:
+			g.waitCondition.wakeAll()
+			print " --> waitCondition wakedAll"
+		if self.globalDisable==False:
+			self.disable.emit(value)
+
+	def castArcStatus(self, value):
+		if self.globalDisable==False:
+			self.changeArcStatus.emit(value)		
+
+	def toggleGlobalDisable(self, value):
+		self.globalDisable=value
 interfaceAntenna=interfaceAntenna()
 
 # updates the range of devices for each pulsing script thread
@@ -140,6 +155,15 @@ class hoverAntenna(QObject):
 		super(hoverAntenna,self).__init__()
 
 hoverAntenna=hoverAntenna()
+
+class addressAntenna(QObject):
+	def __init__(self):
+		super(addressAntenna,self).__init__()
+
+	def update(self, w,b):
+		g.w,g.b=w,b
+		cbAntenna.selectDeviceSignal.emit(w, b)
+addressAntenna=addressAntenna()
 
 
 
