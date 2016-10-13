@@ -87,7 +87,8 @@ class ThreadWrapper(QtCore.QObject):
 
             if not values:
                 values = newValues
-                continue
+                if not values[2] < 0:
+                    continue
 
             if(newValues[2] < 0):
                 status = int(g.ser.readline().rstrip())
@@ -197,6 +198,82 @@ class ThreadWrapper(QtCore.QObject):
 
         return result
 
+    def initialisePhase3(self, w, b, sign = 1):
+        numDevices = int(len(self.deviceList))
+
+        data = self.params
+        print(data)
+
+        g.ser.write(str(163) + "\n")
+
+        g.ser.write(str(data["state_reads"]) + "\n")
+        g.ser.write(str(data["state_prog_pulses"]) + "\n")
+        g.ser.write(str(data["state_stdev"]) + "\n")
+
+        # WARNING!!! Need to account for sign and state direction
+        g.ser.write(str(data["state_pulse_duration"]) + "\n")
+        g.ser.write(str(-sign * data["state_vmin"]) + "\n")
+        g.ser.write(str(-sign * data["state_vstep"]) + "\n")
+        g.ser.write(str(-sign * data["state_vmax"]) + "\n")
+        g.ser.write(str(data["state_interpulse"]) + "\n")
+        g.ser.write(str(data["state_retention"]) + "\n")
+
+        g.ser.write(str(numDevices)+"\n")
+
+        g.ser.write(str(w)+"\n")
+        g.ser.write(str(b)+"\n")
+
+    def phase3(self, w, b, sign = 1):
+        self.initialisePhase2(w, b, sign)
+
+        global tag
+        tag_ = "%s3"%(tag)
+
+        values = []
+        firstPoint = True
+        states = []
+
+        while True:
+            newValues = []
+            newValues.append(float(g.ser.readline().rstrip()))
+            newValues.append(float(g.ser.readline().rstrip()))
+            newValues.append(float(g.ser.readline().rstrip()))
+
+            if not values:
+                values = newValues
+                if not values[2] < 0:
+                    continue
+
+            if(newValues[2] < 0):
+                status = int(g.ser.readline().rstrip())
+                self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_e")
+                self.displayData.emit()
+                if status == 0: # all OK, read the results, if any
+                    g.ser.readline().rstrip() # expecting 0 int (discard them)
+                    g.ser.readline().rstrip() # expecting 0 floats (discard them)
+                    # nothing is returned
+                else:
+                    print("Phase 3 failed with exit code: %d", status)
+                return
+            elif(newValues[0] < 0): # we have a state
+                state = float(g.ser.readline().rstrip())
+                lbound = float(g.ser.readline().rstrip())
+                ubound = float(g.ser.readline().rstrip())
+                self.sendData.emit(w, b, state, lbound, ubound, tag_+"_STATE")
+                self.displayData.emit()
+                states.append([state, lbound, ubound])
+            else:
+                if firstPoint:
+                    self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_s")
+                    firstPoint = False
+                else:
+                    self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_i")
+                self.displayData.emit()
+
+            values = newValues
+
+        return states
+
     def run(self):
 
         self.disableInterface.emit(True)
@@ -218,7 +295,10 @@ class ThreadWrapper(QtCore.QObject):
 
             if not stable:
                 continue
-            # self.phase3(w, b, sign)
+
+            resStates = self.phase3(w, b, sign)
+
+            print(resStates)
 
         self.disableInterface.emit(False)
         
@@ -263,7 +343,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         self.readsEdit.setValidator(intValidator)
         self.pulsesEdit.setValidator(intValidator)
-        self.pulseDurationEdit.setValidator(floatValidator)
+        self.pulseWidthEdit.setValidator(floatValidator)
         self.vminEdit.setValidator(floatValidator)
         self.vstepEdit.setValidator(floatValidator)
         self.vmaxEdit.setValidator(floatValidator)
@@ -277,11 +357,13 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.maxStabilityTimeEdit.setValidator(floatValidator)
 
         self.stateReadsEdit.setValidator(intValidator)
+        self.stateVminEdit.setValidator(floatValidator)
         self.stateVmaxEdit.setValidator(floatValidator)
         self.stateVstepEdit.setValidator(floatValidator)
         self.statePulseWidthEdit.setValidator(floatValidator)
         self.stateInterpulseEdit.setValidator(floatValidator)
         self.stateRetentionEdit.setValidator(floatValidator)
+        self.statePulsesEdit.setValidator(intValidator)
 
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.Resize:
@@ -293,7 +375,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         result["trailer_reads"] = int(self.readsEdit.text())
         result["prog_pulses"] = int(self.pulsesEdit.text())
-        result["pulse_duration"] = float(self.pulseDurationEdit.text()) / 1000.0
+        result["pulse_duration"] = float(self.pulseWidthEdit.text()) / 1000.0
         result["vmin"] = float(self.vminEdit.text())
         result["vstep"] = float(self.vstepEdit.text())
         result["vmax"] = float(self.vmaxEdit.text())
@@ -311,9 +393,11 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         result["stability_tmetric"] = float(self.tmetricEdit.text())
 
         result["state_reads"] = int(self.stateReadsEdit.text())
+        result["state_prog_pulses"] = int(self.statePulsesEdit.text())
+        result["state_vmin"] = float(self.stateVminEdit.text())
         result["state_vmax"] = float(self.stateVmaxEdit.text())
         result["state_vstep"] = float(self.stateVstepEdit.text())
-        result["state_pulse"] = float(self.statePulseWidthEdit.text()) / 1000.0
+        result["state_pulse_duration"] = float(self.statePulseWidthEdit.text()) / 1000.0
         result["state_interpulse"] = float(self.stateInterpulseEdit.text()) / 1000.0
 
         multiplier_index = self.stateRetentionMultiplierComboBox.currentIndex()
