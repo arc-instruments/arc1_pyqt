@@ -258,7 +258,7 @@ class ThreadWrapper(QtCore.QObject):
                 state = float(g.ser.readline().rstrip())
                 lbound = float(g.ser.readline().rstrip())
                 ubound = float(g.ser.readline().rstrip())
-                self.sendData.emit(w, b, state, lbound, ubound, tag_+"_STATE")
+                self.sendData.emit(w, b, values[0], values[1], 0, tag_ + "_STATE_%g_%g_%g"%(state, lbound, ubound))
                 self.displayData.emit()
                 states.append([state, lbound, ubound])
             else:
@@ -268,8 +268,7 @@ class ThreadWrapper(QtCore.QObject):
                 else:
                     self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_i")
                 self.displayData.emit()
-
-            values = newValues
+                values = newValues
 
         return states
 
@@ -277,41 +276,48 @@ class ThreadWrapper(QtCore.QObject):
 
         self.disableInterface.emit(True)
 
+        DBG = bool(os.environ.get('MSSDBG', False))
+
         for device in self.deviceList:
             w = device[0]
             b = device[1]
             self.highlight.emit(w, b)
 
+            print("### Runnning MultiStateSeeker Phase I")
             sign = self.phase1(w, b)
             if sign == None: # failed, continue to next
                 print("Cannot infer polarity for %d x %d" % (int(w), int(b)))
-                #continue
+                if DBG:
+                    print("...but continuing this run anyway...")
+                    sign = -1
+                else:
+                    continue
 
-            # print("Polarity for %d x %d: %d" % (int(w), int(b), sign))
-            # self.initialisePhase2(sign)
-            # g.ser.write(str(int(len(self.deviceList)))+"\n")
+            print("### Runnning MultiStateSeeker Phase II")
             stable = self.phase2(w, b, sign)
 
-            if not stable:
+            if (not stable) and (not DBG):
                 continue
 
+            print("### Runnning MultiStateSeeker Phase III")
             resStates = self.phase3(w, b, sign)
 
-            print(resStates)
+            print("Resistive states:", resStates)
 
         self.disableInterface.emit(False)
-        
+
         self.finished.emit()
+        print("### MultiStateSeeker finished!")
 
 class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
     PROGRAM_ONE = 0x1;
     PROGRAM_RANGE = 0x2;
     PROGRAM_ALL = 0x3;
-    
+
     def __init__(self):
         super(MultiStateSeeker, self).__init__()
-        
+
         self.setupUi(self)
 
         self.applyAllButton.setStyleSheet(s.btnStyle)
