@@ -115,7 +115,6 @@ class ThreadWrapper(QtCore.QObject):
     def initialisePhase2(self, w, b, sign = 1):
         numDevices = int(len(self.deviceList))
 
-        print(self.params)
         g.ser.write(str(162) + "\n")
 
         data = self.params
@@ -124,7 +123,7 @@ class ThreadWrapper(QtCore.QObject):
 
         g.ser.write(str(voltage) + "\n")
         g.ser.write(str(data["stability_pw"]) + "\n")
-        
+
         g.ser.write(str(numDevices)+"\n")
 
         g.ser.write(str(w)+"\n")
@@ -168,13 +167,13 @@ class ThreadWrapper(QtCore.QObject):
 
             if test == "linear" and numPoints > 25:
                 slope = abs(numpy.polyfit(numpy.arange(len(window)), window, 1)[0])
-                print(slope)
+                # print(slope)
                 if slope <= min_tan:
                     lastPoint = True # done!
                     result = True
             elif test == "ttest" and numPoints > 50:
                 tmet = abs(stat.ttest_ind(window[:int(numPoints/2)], window[-int(numPoints/2):], equal_var = False)[0])
-                print("%f vs %f" % (tmet, tmetric))
+                # print("%f vs %f" % (tmet, tmetric))
                 if tmet <= tmetric:
                     lastPoint = True # done!
                     result = True
@@ -202,7 +201,6 @@ class ThreadWrapper(QtCore.QObject):
         numDevices = int(len(self.deviceList))
 
         data = self.params
-        print(data)
 
         g.ser.write(str(163) + "\n")
 
@@ -473,7 +471,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
             minW = g.minW
             maxW = g.maxW
             minB = g.minB
-            maxB = g.maxB            
+            maxB = g.maxB
 
         # Find how many SA devices are contained in the range
         if g.checkSA == False:
@@ -494,11 +492,11 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stabilityCriterionLabelStackedWidget.setCurrentIndex(index)
 
 def main():
-    
+
     app = QtGui.QApplication(sys.argv)
     ex = SwitchSeeker()
     sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
-    main() 
+    main()
