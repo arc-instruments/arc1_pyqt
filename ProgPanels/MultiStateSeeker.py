@@ -253,7 +253,7 @@ class ThreadWrapper(QtCore.QObject):
                     # nothing is returned
                 else:
                     print("Phase 3 failed with exit code: %d", status)
-                return
+                return states
             elif(newValues[0] < 0): # we have a state
                 state = float(g.ser.readline().rstrip())
                 lbound = float(g.ser.readline().rstrip())
