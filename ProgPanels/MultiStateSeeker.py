@@ -210,10 +210,9 @@ class ThreadWrapper(QtCore.QObject):
         g.ser.write(str(data["state_prog_pulses"]) + "\n")
         g.ser.write(str(data["state_stdev"]) + "\n")
 
-        # WARNING!!! Need to account for sign and state direction
         g.ser.write(str(data["state_pulse_duration"]) + "\n")
-        g.ser.write(str(-sign * data["state_vmin"]) + "\n")
-        g.ser.write(str(-sign * data["state_vstep"]) + "\n")
+        g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
+        g.ser.write(str(-sign * data["state_mode"] * data["state_vstep"]) + "\n")
         g.ser.write(str(-sign * data["state_vmax"]) + "\n")
         g.ser.write(str(data["state_interpulse"]) + "\n")
         g.ser.write(str(data["state_retention"]) + "\n")
