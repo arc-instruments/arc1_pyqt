@@ -224,7 +224,7 @@ class ThreadWrapper(QtCore.QObject):
         g.ser.write(str(b)+"\n")
 
     def phase3(self, w, b, sign = 1):
-        self.initialisePhase2(w, b, sign)
+        self.initialisePhase3(w, b, sign)
 
         global tag
         tag_ = "%s3"%(tag)
