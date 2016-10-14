@@ -331,7 +331,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stabilityModeCombo.currentIndexChanged.connect(self.stabilityIndexChanged)
 
         self.stateRetentionMultiplierComboBox.addItem("ms", 1)
-        self.stateRetentionMultiplierComboBox.addItem("s", 0.001)
+        self.stateRetentionMultiplierComboBox.addItem("s", 1000)
 
         self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
         self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
