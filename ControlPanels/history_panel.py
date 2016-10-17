@@ -513,7 +513,7 @@ class history_panel(QtGui.QWidget):
         tagString=g.Mhistory[w][b][-1][3]
         currentTagKey=[]
         for tagKey in g.tagDict.keys():
-            if tagKey in tagString:
+            if str(tagString).startswith(tagKey):
                 tag.append(g.tagDict[tagKey])
                 currentTagKey=tagKey
 
