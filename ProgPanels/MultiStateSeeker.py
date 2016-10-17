@@ -28,7 +28,9 @@ import GlobalStyles as s
 from mss import Ui_MSSParent
 
 tag="MSS"
-g.tagDict.update({tag:"MultiStateSeeker*"})
+g.tagDict.update({tag+"1":"MultiState Polarity Inference"})
+g.tagDict.update({tag+"2":"MultiState Retention"})
+g.tagDict.update({tag+"3":"MultiState Calculation*"})
 
 class ThreadWrapper(QtCore.QObject):
 
