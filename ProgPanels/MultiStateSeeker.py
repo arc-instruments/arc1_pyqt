@@ -289,18 +289,21 @@ class ThreadWrapper(QtCore.QObject):
                     print("...but continuing this run anyway...")
                     sign = -1
                 else:
+                    self.updateTree.emit(w, b)
                     continue
 
             print("### Runnning MultiStateSeeker Phase II")
             stable = self.phase2(w, b, sign)
 
             if (not stable) and (not DBG):
+                self.updateTree.emit(w, b)
                 continue
 
             print("### Runnning MultiStateSeeker Phase III")
             resStates = self.phase3(w, b, sign)
 
             print("Resistive states:", resStates)
+            self.updateTree.emit(w, b)
 
         self.disableInterface.emit(False)
 

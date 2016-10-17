@@ -491,6 +491,9 @@ class history_panel(QtGui.QWidget):
 
             if tagKey=='VOL':
                 print "VolatilityRead"
+
+            if tagKey=='MSS':
+                print("MultiStateSeeker")
         pass
 
 
