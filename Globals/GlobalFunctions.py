@@ -139,6 +139,12 @@ def writeDelimitedData(data, dest, delimiter="\t"):
     except Exception as exc:
         print(exc)
 
+def saveFuncToFilename(func, title="", parent=None):
+    fname = QtGui.QFileDialog.getSaveFileName(parent, title)
+
+    if fname:
+        func(fname)
+
 ###########################################
 # UUpdate Hover panel
 ###########################################
