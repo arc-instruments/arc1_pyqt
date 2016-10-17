@@ -11,6 +11,7 @@ import sys
 import os
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+from functools import partial
 
 import pyqtgraph as pg
 #import pyqtgraph.opengl as gl
@@ -492,8 +493,54 @@ class history_panel(QtGui.QWidget):
             if tagKey=='VOL':
                 print "VolatilityRead"
 
-            if tagKey=='MSS':
+            # Only phase 3 has exploitable results
+            if str(tagKey).startswith('MSS3'):
+
                 print("MultiStateSeeker")
+                widget = QtGui.QWidget()
+                saveButton = QtGui.QPushButton("Export data")
+                lastRun = raw
+
+                resStates = []
+
+                topLayout = QtGui.QVBoxLayout()
+                bottomLayout = QtGui.QHBoxLayout()
+                bottomLayout.addItem(QtGui.QSpacerItem(40, 10, QtGui.QSizePolicy.Expanding))
+                bottomLayout.addWidget(saveButton)
+                topLayout.addWidget(QtGui.QLabel("Calculated resistive states for device %d x %d" % (w, b)))
+                resultTable = QtGui.QTableWidget()
+                resultTable.setColumnCount(3)
+                resultTable.setHorizontalHeaderLabels(["Resistance", "Lower bound", "Upper bound"])
+                resultTable.verticalHeader().setVisible(False)
+                resultTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+                resultTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+                resultTable.setSelectionMode(QtGui.QTableWidget.NoSelection)
+                topLayout.addWidget(resultTable)
+                topLayout.addItem(bottomLayout)
+                widget.setGeometry(100,100,600,400)
+                widget.setWindowTitle("Multistate report for W=%d | B=%d" % (w, b))
+                widget.setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png'))
+                widget.setLayout(topLayout)
+
+                for line in lastRun:
+                    tag = line[3]
+                    if str(tag).startswith("MSS3_STATE"):
+                        elements = tag.split("_")
+                        resStates.append([float(elements[2]), float(elements[3]), float(elements[4])])
+                        position = resultTable.rowCount()
+                        resultTable.insertRow(position)
+                        resultTable.setItem(position, 0, QtGui.QTableWidgetItem(elements[2]))
+                        resultTable.setItem(position, 1, QtGui.QTableWidgetItem(elements[3]))
+                        resultTable.setItem(position, 2, QtGui.QTableWidgetItem(elements[4]))
+                resultTable.resizeColumnsToContents()
+                resultTable.resizeRowsToContents()
+
+                saveCb = partial(f.writeDelimitedData, resStates)
+                saveButton.clicked.connect(partial(f.saveFuncToFilename, saveCb, "Save data to...", self))
+
+                self.resultWindow.append(widget)
+                widget.show()
+                widget.update()
         pass
 
 
