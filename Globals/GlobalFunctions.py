@@ -128,6 +128,17 @@ def updateHistory_short(m,a,pw,tag):
 	#g.PWList[g.w][g.b]=np.append(g.PWList[g.w][g.b],pw)
 	cbAntenna.recolor.emit(m,g.w,g.b)
 
+
+def writeDelimitedData(data, dest, delimiter="\t"):
+    try:
+        f = open(dest, 'w')
+        for line in data:
+            text = delimiter.join("{0:.5g}".format(x) for x in line)
+            f.write(text+"\n")
+        f.close()
+    except Exception as exc:
+        print(exc)
+
 ###########################################
 # UUpdate Hover panel
 ###########################################
