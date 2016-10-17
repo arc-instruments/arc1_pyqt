@@ -294,6 +294,7 @@ class ThreadWrapper(QtCore.QObject):
                     self.updateTree.emit(w, b)
                     continue
 
+            self.updateTree.emit(w, b)
             print("### Runnning MultiStateSeeker Phase II")
             stable = self.phase2(w, b, sign)
 
@@ -301,6 +302,7 @@ class ThreadWrapper(QtCore.QObject):
                 self.updateTree.emit(w, b)
                 continue
 
+            self.updateTree.emit(w, b)
             print("### Runnning MultiStateSeeker Phase III")
             resStates = self.phase3(w, b, sign)
 
