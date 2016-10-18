@@ -15,6 +15,7 @@ import os
 import time
 import numpy
 import scipy.stats as stat
+import pyqtgraph
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
 sys.path.append(os.path.abspath(os.getcwd()+'/generated_/'))
@@ -545,6 +546,36 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         saveCb = partial(f.writeDelimitedData, resStates)
         saveButton.clicked.connect(partial(f.saveFuncToFilename, saveCb, "Save data to...", parent))
+
+        plot = pyqtgraph.PlotWidget()
+        plot.getAxis('bottom').setLabel("State #")
+        plot.getAxis('left').setLabel("Resistance", units=u"Ω")
+        tab2 = QtGui.QWidget()
+        plotLayout = QtGui.QVBoxLayout()
+        plotLayout.addWidget(plot)
+        tab2.setLayout(plotLayout)
+        tabs.addTab(tab2, "Plot")
+
+        indices = numpy.arange(1, len(resStates)+1)
+        mainCurve = plot.plot(indices, [x[0] for x in resStates],
+            pen = pyqtgraph.mkPen({'color': '000', 'width': 2}),
+            symbolBrush = pyqtgraph.mkBrush('000'),
+            symbol = 'o', symbolSize = 6, pxMode = True)
+        lowBoundCurve = plot.plot(indices, [x[1] for x in resStates],
+            pen = pyqtgraph.mkPen({'color': '00F', 'width': 1}),
+            symbolPen = pyqtgraph.mkPen({'color': '00F', 'width': 1}),
+            symbolBrush = pyqtgraph.mkBrush('00F'),
+            symbol = '+', symbolSize = 6, pxMode = True)
+        upperBoundCurve = plot.plot(indices, [x[2] for x in resStates],
+            pen = pyqtgraph.mkPen({'color': 'F00', 'width': 1}),
+            symbolPen = pyqtgraph.mkPen({'color': 'F00', 'width': 1}),
+            symbolBrush = pyqtgraph.mkBrush('F00'),
+            symbol = '+', symbolSize = 6, pxMode = True)
+
+        filler = pyqtgraph.FillBetweenItem(lowBoundCurve, upperBoundCurve,
+                brush=pyqtgraph.mkBrush('BBB'))
+
+        plot.addItem(filler)
 
         return dialog
 
