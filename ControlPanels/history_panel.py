@@ -163,7 +163,7 @@ class history_panel(QtGui.QWidget):
             tag=item.whatsThis(1)
             startPoint=int(item.whatsThis(3))
             endPoint=int(item.whatsThis(4))
-            tagKey=item.whatsThis(5)
+            tagKey=str(item.whatsThis(5))
 
             print "#########"
             print startPoint
