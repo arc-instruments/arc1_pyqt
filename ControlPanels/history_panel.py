@@ -541,7 +541,6 @@ class history_panel(QtGui.QWidget):
                 self.resultWindow.append(widget)
                 widget.show()
                 widget.update()
-        pass
 
 
     def changeDisplayToSelectedItem(self,item):
