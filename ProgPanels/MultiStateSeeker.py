@@ -498,3 +498,56 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stabilityCriterionStackedWidget.setCurrentIndex(index)
         self.stabilityCriterionLabelStackedWidget.setCurrentIndex(index)
 
+    @staticmethod
+    def display(w, b, data, parent=None):
+        dialog = QtGui.QDialog(parent, QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowSystemMenuHint)
+        containerLayout = QtGui.QHBoxLayout()
+        dialog.setLayout(containerLayout)
+        tabs = QtGui.QTabWidget(dialog)
+        containerLayout.addWidget(tabs)
+        saveButton = QtGui.QPushButton("Export data")
+
+        resStates = []
+
+        tab1 = QtGui.QWidget()
+        topLayout = QtGui.QVBoxLayout()
+        bottomLayout = QtGui.QHBoxLayout()
+        bottomLayout.addItem(QtGui.QSpacerItem(40, 10, QtGui.QSizePolicy.Expanding))
+        bottomLayout.addWidget(saveButton)
+        topLayout.addWidget(QtGui.QLabel("Calculated resistive states for device %d x %d" % (w, b)))
+        resultTable = QtGui.QTableWidget()
+        resultTable.setColumnCount(3)
+        resultTable.setHorizontalHeaderLabels(["Resistance", "Lower bound", "Upper bound"])
+        resultTable.verticalHeader().setVisible(False)
+        resultTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        resultTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        resultTable.setSelectionMode(QtGui.QTableWidget.NoSelection)
+        topLayout.addWidget(resultTable)
+        topLayout.addItem(bottomLayout)
+        dialog.setGeometry(100,100,600,400)
+        dialog.setWindowTitle("Multistate report for W=%d | B=%d" % (w, b))
+        dialog.setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png'))
+        tab1.setLayout(topLayout)
+        tabs.addTab(tab1, "Data")
+
+        for line in data:
+            tag = line[3]
+            if str(tag).startswith("MSS3_STATE"):
+                elements = tag.split("_")
+                resStates.append([float(elements[2]), float(elements[3]), float(elements[4])])
+                position = resultTable.rowCount()
+                resultTable.insertRow(position)
+                resultTable.setItem(position, 0, QtGui.QTableWidgetItem(elements[2]))
+                resultTable.setItem(position, 1, QtGui.QTableWidgetItem(elements[3]))
+                resultTable.setItem(position, 2, QtGui.QTableWidgetItem(elements[4]))
+        resultTable.resizeColumnsToContents()
+        resultTable.resizeRowsToContents()
+
+        saveCb = partial(f.writeDelimitedData, resStates)
+        saveButton.clicked.connect(partial(f.saveFuncToFilename, saveCb, "Save data to...", parent))
+
+        return dialog
+
+
+# Add the display function to the display dictionary
+g.DispCallbacks[tag+"3"] = MultiStateSeeker.display
