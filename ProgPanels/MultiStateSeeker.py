@@ -498,12 +498,3 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stabilityCriterionStackedWidget.setCurrentIndex(index)
         self.stabilityCriterionLabelStackedWidget.setCurrentIndex(index)
 
-def main():
-
-    app = QtGui.QApplication(sys.argv)
-    ex = SwitchSeeker()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()
