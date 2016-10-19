@@ -12,14 +12,10 @@ import os
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Graphics/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
-
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
-import GlobalFonts as fonts
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
+import Globals.GlobalStyles as s
+import Globals.GlobalFonts as fonts
 
 
 class readAllWorker(QtCore.QObject):

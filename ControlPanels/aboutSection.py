@@ -11,14 +11,10 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 
-import GlobalVars as g
-import GlobalFonts as fonts
-import GlobalStyles as s
-import GlobalFunctions as f
-
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Graphics/'))
+import Globals.GlobalVars as g
+import Globals.GlobalFonts as fonts
+import Globals.GlobalStyles as s
+import Globals.GlobalFunctions as f
 
 
 class aboutSection(QtGui.QWidget):

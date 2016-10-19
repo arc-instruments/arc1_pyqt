@@ -7,13 +7,8 @@
 
 ####################################
 
-import sys
-import os
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
-
-import GlobalFunctions as f
 
 class cell(QtGui.QWidget):
     

@@ -13,7 +13,7 @@ import importlib
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 
-import GlobalStyles as s
+import Globals.GlobalStyles as s
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
 

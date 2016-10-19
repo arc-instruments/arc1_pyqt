@@ -37,8 +37,8 @@ elif sys.platform in ["linux", "linux2", "darwin"]:
 else:
     serialFormat = '%d'
 
+import GlobalPanels
 import Globals
-import ControlPanels
 
 import Globals.GlobalVars as g
 import Globals.GlobalFunctions as f
