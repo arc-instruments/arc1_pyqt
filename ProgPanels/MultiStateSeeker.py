@@ -210,6 +210,7 @@ class ThreadWrapper(QtCore.QObject):
         g.ser.write(str(data["state_reads"]) + "\n")
         g.ser.write(str(data["state_prog_pulses"]) + "\n")
         g.ser.write(str(data["state_stdev"]) + "\n")
+        g.ser.write(str(data["state_monotonic"]) + "\n")
 
         g.ser.write(str(data["state_pulse_duration"]) + "\n")
         g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
@@ -416,6 +417,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         result["state_retention"] = (float(self.stateRetentionEdit.text()) * retention_mult) / 1000.0
         result["state_stdev"] = int(self.stateStdevSpinBox.value())
+        result["state_monotonic"] = int(self.monotonicCheckBox.isChecked())
 
         return result
 
