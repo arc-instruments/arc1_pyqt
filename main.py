@@ -37,14 +37,13 @@ elif sys.platform in ["linux", "linux2", "darwin"]:
 else:
     serialFormat = '%d'
 
-import GlobalPanels
+import ControlPanels
 import Globals
 
 import Globals.GlobalVars as g
 import Globals.GlobalFunctions as f
 import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
-
 
 class Arcontrol(QtGui.QMainWindow):
     

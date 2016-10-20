@@ -9,18 +9,14 @@
 
 from PyQt4 import QtGui, QtCore
 import sys
-import os
-#import Queue
 
 import time
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
 
-import GlobalFonts as fonts
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
+import Globals.GlobalFonts as fonts
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
+import Globals.GlobalStyles as s
 
 tag="Read"
 g.tagDict.update({tag:"Read"})
@@ -132,7 +128,6 @@ class READ(QtGui.QWidget):
         # ========== ComboBox ===========
         self.combo_readType=QtGui.QComboBox()
         self.combo_readType.setStyleSheet(s.comboStyle)
-        #combo_readType.down-arrow.setPixMap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'newSeshLogo.png'))
         self.combo_readType.insertItems(1,g.readOptions)
         self.combo_readType.currentIndexChanged.connect(self.updateReadType)
         self.combo_readType.setCurrentIndex(2)

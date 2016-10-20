@@ -11,11 +11,10 @@ sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/Basic/Loops'))
 import Loop
 import End
 
-
-import GlobalFonts as fonts
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
+import Globals.GlobalFonts as fonts
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
+import Globals.GlobalStyles as s
 
 progPanelList=[]
 progPanelList_basic=[]
@@ -26,21 +25,21 @@ def loadProgModules():
     for f in files:
         progPanelList.append(f[:-3])
     progPanelList.remove("SuperMode")
-    print progPanelList
+    #print progPanelList
 loadProgModules()
 
 def loadProgModules_basic():
     files = [f for f in os.listdir('ProgPanels/Basic/') if f.endswith(".py")]  # populate prog panel dropbox
     for f in files:
         progPanelList_basic.append(f[:-3])
-    print progPanelList_basic
+    #print progPanelList_basic
 loadProgModules_basic()
 
 def loadProgModules_basic_loops():
     files = [f for f in os.listdir('ProgPanels/Basic/Loops') if f.endswith(".py")]  # populate prog panel dropbox
     for f in files:
         progPanelList_basic_loops.append(f[:-3])
-    print progPanelList_basic_loops
+    #print progPanelList_basic_loops
 loadProgModules_basic_loops()
 
 placed_module_height=20
