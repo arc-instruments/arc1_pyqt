@@ -14,7 +14,6 @@ import os
 
 import time
 
-
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -223,7 +222,7 @@ class Pulse(QtGui.QWidget):
 
         #every=float(self.leftEdits[0].text())*60
         #duration=float(self.leftEdits[1].text())*60
-
+        self.extractParams()
         self.thread=QtCore.QThread()
         self.getData=getData(self.amplitude, self.pw)
         self.getData.moveToThread(self.thread)
