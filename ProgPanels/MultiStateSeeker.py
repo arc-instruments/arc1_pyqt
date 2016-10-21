@@ -205,19 +205,36 @@ class ThreadWrapper(QtCore.QObject):
 
         data = self.params
 
-        g.ser.write(str(163) + "\n")
+        if str(data["assess_mode"]) == "pulse":
+            g.ser.write(str(163) + "\n")
 
-        g.ser.write(str(data["state_reads"]) + "\n")
-        g.ser.write(str(data["state_prog_pulses"]) + "\n")
-        g.ser.write(str(data["state_stdev"]) + "\n")
-        g.ser.write(str(data["state_monotonic"]) + "\n")
+            g.ser.write(str(data["state_reads"]) + "\n")
+            g.ser.write(str(data["state_prog_pulses"]) + "\n")
+            g.ser.write(str(data["state_stdev"]) + "\n")
+            g.ser.write(str(data["state_monotonic"]) + "\n")
 
-        g.ser.write(str(data["state_pulse_duration"]) + "\n")
-        g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
-        g.ser.write(str(-sign * data["state_mode"] * data["state_vstep"]) + "\n")
-        g.ser.write(str(-sign * data["state_vmax"]) + "\n")
-        g.ser.write(str(data["state_interpulse"]) + "\n")
-        g.ser.write(str(data["state_retention"]) + "\n")
+            g.ser.write(str(data["state_pulse_duration"]) + "\n")
+            g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
+            g.ser.write(str(-sign * data["state_mode"] * data["state_vstep"]) + "\n")
+            g.ser.write(str(-sign * data["state_vmax"]) + "\n")
+            g.ser.write(str(data["state_interpulse"]) + "\n")
+            g.ser.write(str(data["state_retention"]) + "\n")
+        elif str(data["assess_mode"]) == "voltage":
+            g.ser.write(str(164) + "\n")
+
+            g.ser.write(str(data["state_reads"]) + "\n")
+            g.ser.write(str(data["state_prog_pulses"]) + "\n")
+            g.ser.write(str(data["state_stdev"]) + "\n")
+            g.ser.write(str(data["state_monotonic"]) + "\n")
+
+            g.ser.write(str(data["state_pwmin"]) + "\n")
+            g.ser.write(str(-sign * data["state_mode"] * data["state_voltage"]) + "\n")
+            g.ser.write(str(data["state_pwstep"]) + "\n")
+            g.ser.write(str(data["state_pwmax"]) + "\n")
+            g.ser.write(str(data["state_interpulse"]) + "\n")
+            g.ser.write(str(data["state_retention"]) + "\n")
+        else:
+            raise Exception("Unknown state assessment mode")
 
         g.ser.write(str(numDevices)+"\n")
 
@@ -342,6 +359,10 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stabilityModeCombo.addItem("T-Test", "ttest")
         self.stabilityModeCombo.currentIndexChanged.connect(self.stabilityIndexChanged)
 
+        self.assessModeCombo.addItem(u"Constant Pulse width", "pulse")
+        self.assessModeCombo.addItem(u"Constant Voltage", "voltage")
+        self.assessModeCombo.currentIndexChanged.connect(self.assessModeIndexChanged)
+
         self.stateRetentionMultiplierComboBox.addItem("ms", 1)
         self.stateRetentionMultiplierComboBox.addItem("s", 1000)
 
@@ -376,6 +397,10 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stateInterpulseEdit.setValidator(floatValidator)
         self.stateRetentionEdit.setValidator(floatValidator)
         self.statePulsesEdit.setValidator(intValidator)
+        self.stateVoltageEdit.setValidator(floatValidator)
+        self.statePWminEdit.setValidator(floatValidator)
+        self.statePWstepEdit.setValidator(floatValidator)
+        self.statePWmaxEdit.setValidator(floatValidator)
 
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.Resize:
@@ -404,13 +429,20 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         result["stability_slope"] = float(self.stabilitySlopeEdit.text())
         result["stability_tmetric"] = float(self.tmetricEdit.text())
 
+        assess_index = self.assessModeCombo.currentIndex()
+        result["assess_mode"] = self.assessModeCombo.itemData(assess_index).toString()
+
         result["state_reads"] = int(self.stateReadsEdit.text())
         result["state_prog_pulses"] = int(self.statePulsesEdit.text())
         result["state_vmin"] = float(self.stateVminEdit.text())
         result["state_vmax"] = float(self.stateVmaxEdit.text())
         result["state_vstep"] = float(self.stateVstepEdit.text())
+        result["state_voltage"] = float(self.stateVoltageEdit.text())
         result["state_pulse_duration"] = float(self.statePulseWidthEdit.text()) / 1000.0
         result["state_interpulse"] = float(self.stateInterpulseEdit.text()) / 1000.0
+        result["state_pwmin"] = float(self.statePWminEdit.text()) / 1000.0
+        result["state_pwstep"] = float(self.statePWstepEdit.text()) / 1000.0
+        result["state_pwmax"] = float(self.statePWmaxEdit.text()) / 1000.0
 
         multiplier_index = self.stateRetentionMultiplierComboBox.currentIndex()
         retention_mult = self.stateRetentionMultiplierComboBox.itemData(multiplier_index).toFloat()[0]
@@ -500,6 +532,16 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
     def stabilityIndexChanged(self, index):
         self.stabilityCriterionStackedWidget.setCurrentIndex(index)
         self.stabilityCriterionLabelStackedWidget.setCurrentIndex(index)
+
+    def assessModeIndexChanged(self, index):
+        self.pwConst01LabelStackedWidget.setCurrentIndex(index)
+        self.pwConst01EditStackedWidget.setCurrentIndex(index)
+        self.pwConst02LabelStackedWidget.setCurrentIndex(index)
+        self.pwConst02EditStackedWidget.setCurrentIndex(index)
+        self.pwConst03LabelStackedWidget.setCurrentIndex(index)
+        self.pwConst03EditStackedWidget.setCurrentIndex(index)
+        self.pwConst04LabelStackedWidget.setCurrentIndex(index)
+        self.pwConst04EditStackedWidget.setCurrentIndex(index)
 
     @staticmethod
     def display(w, b, data, parent=None):
