@@ -190,8 +190,8 @@ class CurveTracerCS(QtGui.QWidget):
         lineRight.setFrameShadow(QtGui.QFrame.Raised);
         lineRight.setLineWidth(1)
 
-        gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
-        gridLayout.addWidget(lineRight, 0, 6, 5, 1)
+        gridLayout.addWidget(lineLeft, 0, 2, 7, 1)
+        gridLayout.addWidget(lineRight, 0, 6, 7, 1)
         #gridLayout.addWidget(line,1,2)
         #gridLayout.addWidget(line,2,2)
         #gridLayout.addWidget(line,3,2)
@@ -222,18 +222,23 @@ class CurveTracerCS(QtGui.QWidget):
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
 
+
+        returnCheckBox = QtGui.QCheckBox("Halt and return.")
+        returnCheckBox.stateChanged.connect(self.toggleReturn)
+        self.returnCheck=0
+        gridLayout.addWidget(returnCheckBox, 4, 5)
         #Position the combo boxes and respective labels
 
         lineLabel=QtGui.QLabel()
         lineLabel.setText('Bias type:')
-        gridLayout.addWidget(lineLabel,4,4)
+        gridLayout.addWidget(lineLabel,5,4)
 
         lineLabel=QtGui.QLabel()
         lineLabel.setText('IV span:')
-        gridLayout.addWidget(lineLabel,5,4)
+        gridLayout.addWidget(lineLabel,6,4)
 
-        gridLayout.addWidget(self.combo_IVtype,4,5)
-        gridLayout.addWidget(self.combo_IVoption,5,5)
+        gridLayout.addWidget(self.combo_IVtype,5,5)
+        gridLayout.addWidget(self.combo_IVoption,6,5)
 
         # ==============================================
 
@@ -297,6 +302,12 @@ class CurveTracerCS(QtGui.QWidget):
         #self.vW.setFixedWidth(self.sizeHint().width())
         self.gridLayout=gridLayout
 
+    def toggleReturn(self, state):
+        if state == 0:
+            self.returnCheck=0
+        else:
+            self.returnCheck=1
+
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
         
@@ -310,7 +321,6 @@ class CurveTracerCS(QtGui.QWidget):
             if isinstance(item, QtGui.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
         #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
@@ -336,9 +346,6 @@ class CurveTracerCS(QtGui.QWidget):
         #print object
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #if event.type()==QtCore.QEvent.Paint:
-        #    self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #print self.vW.size().width()
         return False
     def resizeWidget(self,event):
         pass
@@ -356,6 +363,7 @@ class CurveTracerCS(QtGui.QWidget):
         g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
         g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
         g.ser.write(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        g.ser.write(str(int(self.returnCheck))+"\n")
 
     def programOne(self):
         if g.ser.port != None:
