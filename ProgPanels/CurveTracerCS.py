@@ -136,7 +136,9 @@ class CurveTracerCS(QtGui.QWidget):
         self.leftEdits=[]
 
         rightLabels=['Cycles', \
-                    'Interpulse (ms)']
+                    'Interpulse (ms)',\
+                    'Positive current STOP (uA)',\
+                    'Negative current STOP (uA)']
 
         self.rightEdits=[]
 
@@ -146,7 +148,9 @@ class CurveTracerCS(QtGui.QWidget):
                     '0.05', \
                     '50']
         rightInit= ['1', \
-                    '10']
+                    '10',\
+                    '0',\
+                    '0']
 
         # Setup the two combo boxes
         IVtypes=['Staircase', 'Pulsed']
@@ -213,7 +217,7 @@ class CurveTracerCS(QtGui.QWidget):
             gridLayout.addWidget(lineLabel, i,4)
 
             lineEdit=QtGui.QLineEdit()
-            lineEdit.setText(leftInit[i])
+            lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
@@ -222,14 +226,14 @@ class CurveTracerCS(QtGui.QWidget):
 
         lineLabel=QtGui.QLabel()
         lineLabel.setText('Bias type:')
-        gridLayout.addWidget(lineLabel,2,4)
+        gridLayout.addWidget(lineLabel,4,4)
 
         lineLabel=QtGui.QLabel()
         lineLabel.setText('IV span:')
-        gridLayout.addWidget(lineLabel,3,4)
+        gridLayout.addWidget(lineLabel,5,4)
 
-        gridLayout.addWidget(self.combo_IVtype,2,5)
-        gridLayout.addWidget(self.combo_IVoption,3,5)
+        gridLayout.addWidget(self.combo_IVtype,4,5)
+        gridLayout.addWidget(self.combo_IVoption,5,5)
 
         # ==============================================
 
@@ -346,6 +350,8 @@ class CurveTracerCS(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[4].text())/1000)+"\n")
         g.ser.write(str(float(self.rightEdits[1].text())/1000)+"\n")
+        g.ser.write(str(float(self.rightEdits[2].text())/1000000)+"\n")
+        g.ser.write(str(float(self.rightEdits[3].text())/-1000000)+"\n")
 
         g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
         g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
@@ -353,7 +359,7 @@ class CurveTracerCS(QtGui.QWidget):
 
     def programOne(self):
         if g.ser.port != None:
-            job="20"
+            job="201"
             g.ser.write(job+"\n")   # sends the job
 
             totalCycles=int(self.rightEdits[0].text())
@@ -374,7 +380,7 @@ class CurveTracerCS(QtGui.QWidget):
 
             rangeDev=self.makeDeviceList(True)
 
-            job="20"
+            job="201"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
@@ -391,7 +397,7 @@ class CurveTracerCS(QtGui.QWidget):
             totalCycles=int(self.rightEdits[0].text())
             rangeDev=self.makeDeviceList(False)
 
-            job="20"
+            job="201"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
