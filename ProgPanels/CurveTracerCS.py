@@ -11,14 +11,13 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 
-
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
 tag="CT"
-g.tagDict.update({tag:"CurveTracer*"})
+g.tagDict.update({tag:"CurveTracerCS*"})
 
 class getData(QtCore.QObject):
 
@@ -119,9 +118,9 @@ class CurveTracerCS(QtGui.QWidget):
 
         vbox1=QtGui.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('CurveTracer')
+        titleLabel = QtGui.QLabel('CurveTracerCS')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Standard IV measurement module.')
+        descriptionLabel = QtGui.QLabel('Standard IV measurement module with current STOP.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -222,6 +221,9 @@ class CurveTracerCS(QtGui.QWidget):
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
 
+        self.rightEdits[2].editingFinished.connect(self.imposeLimitsOnCurrentStopP)
+        self.rightEdits[3].editingFinished.connect(self.imposeLimitsOnCurrentStopN)
+
 
         returnCheckBox = QtGui.QCheckBox("Halt and return.")
         returnCheckBox.stateChanged.connect(self.toggleReturn)
@@ -301,6 +303,27 @@ class CurveTracerCS(QtGui.QWidget):
 
         #self.vW.setFixedWidth(self.sizeHint().width())
         self.gridLayout=gridLayout
+
+    def imposeLimitsOnCurrentStopP(self):
+        currentText=float(self.rightEdits[2].text())
+        if (currentText<10):
+            if (currentText==0):
+                self.rightEdits[2].setText("0")
+            else:
+                self.rightEdits[2].setText("10")
+            
+        if (currentText>1000):
+            self.rightEdits[2].setText("1000")
+
+    def imposeLimitsOnCurrentStopN(self):
+        currentText=float(self.rightEdits[3].text())
+        if (currentText<10):
+            if (currentText==0):
+                self.rightEdits[3].setText("0")
+            else:
+                self.rightEdits[3].setText("10")
+        if (currentText>1000):
+            self.rightEdits[3].setText("1000")
 
     def toggleReturn(self, state):
         if state == 0:
