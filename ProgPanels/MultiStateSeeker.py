@@ -205,7 +205,7 @@ class ThreadWrapper(QtCore.QObject):
 
         data = self.params
 
-        if str(data["assess_mode"]) == "pulse":
+        if str(data["assess_mode"]) == "voltage":
             g.ser.write(str(163) + "\n")
 
             g.ser.write(str(data["state_reads"]) + "\n")
@@ -219,7 +219,7 @@ class ThreadWrapper(QtCore.QObject):
             g.ser.write(str(-sign * data["state_vmax"]) + "\n")
             g.ser.write(str(data["state_interpulse"]) + "\n")
             g.ser.write(str(data["state_retention"]) + "\n")
-        elif str(data["assess_mode"]) == "voltage":
+        elif str(data["assess_mode"]) == "pulse":
             g.ser.write(str(164) + "\n")
 
             g.ser.write(str(data["state_reads"]) + "\n")
@@ -359,8 +359,8 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stabilityModeCombo.addItem("T-Test", "ttest")
         self.stabilityModeCombo.currentIndexChanged.connect(self.stabilityIndexChanged)
 
-        self.assessModeCombo.addItem(u"Constant Pulse width", "pulse")
-        self.assessModeCombo.addItem(u"Constant Voltage", "voltage")
+        self.assessModeCombo.addItem(u"Voltage sweep", "voltage")
+        self.assessModeCombo.addItem(u"Pulse width sweep", "pulse")
         self.assessModeCombo.currentIndexChanged.connect(self.assessModeIndexChanged)
 
         self.stateRetentionMultiplierComboBox.addItem("ms", 1)
