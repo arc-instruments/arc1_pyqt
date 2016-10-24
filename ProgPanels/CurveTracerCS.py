@@ -380,8 +380,18 @@ class CurveTracerCS(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[4].text())/1000)+"\n")
         g.ser.write(str(float(self.rightEdits[1].text())/1000)+"\n")
-        g.ser.write(str(float(self.rightEdits[2].text())/1000000)+"\n")
-        g.ser.write(str(float(self.rightEdits[3].text())/-1000000)+"\n")
+
+        CSp=float(self.rightEdits[2].text())
+        CSn=float(self.rightEdits[3].text())
+
+        if CSp==10.0:
+            CSp=10.1
+        if CSn==10.0:
+            CSn=10.1
+
+
+        g.ser.write(str(CSp/1000000)+"\n")
+        g.ser.write(str(CSn/-1000000)+"\n")
 
         g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
         g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
