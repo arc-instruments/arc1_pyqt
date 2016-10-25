@@ -233,6 +233,20 @@ class ThreadWrapper(QtCore.QObject):
             g.ser.write(str(data["state_pwmax"]) + "\n")
             g.ser.write(str(data["state_interpulse"]) + "\n")
             g.ser.write(str(data["state_retention"]) + "\n")
+        elif str(data["assess_mode"]) == "program":
+            g.ser.write(str(165) + "\n")
+
+            g.ser.write(str(data["state_reads"]) + "\n")
+            g.ser.write(str(data["state_prog_pulses_min"]) + "\n")
+            g.ser.write(str(data["state_prog_pulses_step"]) + "\n")
+            g.ser.write(str(data["state_prog_pulses_max"]) + "\n")
+            g.ser.write(str(data["state_stdev"]) + "\n")
+            g.ser.write(str(data["state_monotonic"]) + "\n")
+
+            g.ser.write(str(data["state_pulse_duration"]) + "\n")
+            g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
+            g.ser.write(str(data["state_interpulse"]) + "\n")
+            g.ser.write(str(data["state_retention"]) + "\n")
         else:
             raise Exception("Unknown state assessment mode")
 
@@ -361,6 +375,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         self.assessModeCombo.addItem(u"Voltage sweep", "voltage")
         self.assessModeCombo.addItem(u"Pulse width sweep", "pulse")
+        self.assessModeCombo.addItem(u"Programming sweep", "program")
         self.assessModeCombo.currentIndexChanged.connect(self.assessModeIndexChanged)
 
         self.stateRetentionMultiplierComboBox.addItem("ms", 1)
@@ -369,6 +384,8 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
         self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
         self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
+
+        self.updateInputWidgets()
 
     def applyValidators(self):
         floatValidator = QtGui.QDoubleValidator()
@@ -401,6 +418,9 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.statePWminEdit.setValidator(floatValidator)
         self.statePWstepEdit.setValidator(floatValidator)
         self.statePWmaxEdit.setValidator(floatValidator)
+        self.statePulsesMinEdit.setValidator(intValidator)
+        self.statePulsesStepEdit.setValidator(intValidator)
+        self.statePulsesMaxEdit.setValidator(intValidator)
 
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.Resize:
@@ -443,6 +463,9 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         result["state_pwmin"] = float(self.statePWminEdit.text()) / 1000.0
         result["state_pwstep"] = float(self.statePWstepEdit.text()) / 1000.0
         result["state_pwmax"] = float(self.statePWmaxEdit.text()) / 1000.0
+        result["state_prog_pulses_min"] = int(self.statePulsesMinEdit.text())
+        result["state_prog_pulses_step"] = int(self.statePulsesStepEdit.text())
+        result["state_prog_pulses_max"] = int(self.statePulsesMaxEdit.text())
 
         multiplier_index = self.stateRetentionMultiplierComboBox.currentIndex()
         retention_mult = self.stateRetentionMultiplierComboBox.itemData(multiplier_index).toFloat()[0]
@@ -534,14 +557,38 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.stabilityCriterionLabelStackedWidget.setCurrentIndex(index)
 
     def assessModeIndexChanged(self, index):
-        self.pwConst01LabelStackedWidget.setCurrentIndex(index)
-        self.pwConst01EditStackedWidget.setCurrentIndex(index)
         self.pwConst02LabelStackedWidget.setCurrentIndex(index)
         self.pwConst02EditStackedWidget.setCurrentIndex(index)
         self.pwConst03LabelStackedWidget.setCurrentIndex(index)
         self.pwConst03EditStackedWidget.setCurrentIndex(index)
         self.pwConst04LabelStackedWidget.setCurrentIndex(index)
         self.pwConst04EditStackedWidget.setCurrentIndex(index)
+
+        state_mode = self.assessModeCombo.itemData(index).toString()
+        self.updateInputWidgets()
+
+    def updateInputWidgets(self):
+        index = self.assessModeCombo.currentIndex()
+        sweep_mode = str(self.assessModeCombo.itemData(index).toString())
+
+        self.voltageBiasLabel.setEnabled(True)
+        self.stateVoltageEdit.setEnabled(True)
+
+        self.pulseWidthLabel.setEnabled(True)
+        self.statePulseWidthEdit.setEnabled(True)
+
+        self.progPulsesLabel.setEnabled(True)
+        self.statePulsesEdit.setEnabled(True)
+
+        if sweep_mode == "voltage":
+            self.voltageBiasLabel.setEnabled(False)
+            self.stateVoltageEdit.setEnabled(False)
+        elif sweep_mode == "pulse":
+            self.pulseWidthLabel.setEnabled(False)
+            self.statePulseWidthEdit.setEnabled(False)
+        elif sweep_mode == "program":
+            self.progPulsesLabel.setEnabled(False)
+            self.statePulsesEdit.setEnabled(False)
 
     @staticmethod
     def display(w, b, data, parent=None):
