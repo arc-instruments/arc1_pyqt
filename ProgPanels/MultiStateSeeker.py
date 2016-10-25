@@ -349,8 +349,9 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
     PROGRAM_RANGE = 0x2;
     PROGRAM_ALL = 0x3;
 
-    def __init__(self):
+    def __init__(self, short=False):
         super(MultiStateSeeker, self).__init__()
+        self.short = short
 
         self.setupUi(self)
 
