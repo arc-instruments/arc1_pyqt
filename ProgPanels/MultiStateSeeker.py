@@ -17,14 +17,12 @@ import numpy
 import scipy.stats as stat
 import pyqtgraph
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
 sys.path.append(os.path.abspath(os.getcwd()+'/generated_/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
 
-import GlobalFonts as fonts
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
+import Globals.GlobalFonts as fonts
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
+import Globals.GlobalStyles as s
 
 from mss import Ui_MSSParent
 
