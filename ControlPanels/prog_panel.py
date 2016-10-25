@@ -13,7 +13,7 @@ import importlib
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 
-import GlobalStyles as s
+import Globals.GlobalStyles as s
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
 
@@ -39,6 +39,10 @@ class prog_panel(QtGui.QWidget):
         files = [f for f in os.listdir('ProgPanels') if f.endswith(".py")]  # populate prog panel dropbox
         for f in files:
             self.prog_panelList.addItem(f[:-3])
+
+        boldFont=QtGui.QFont("FontFamily")
+        boldFont.setBold(True)
+        self.prog_panelList.setItemData(self.prog_panelList.findText("SuperMode"), boldFont, QtCore.Qt.FontRole)
 
         self.push_add=QtGui.QPushButton('Add')
         self.push_add.setStyleSheet(s.btnStyle2)

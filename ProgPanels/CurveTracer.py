@@ -11,13 +11,11 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
 
-import GlobalFonts as fonts
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
+import Globals.GlobalFonts as fonts
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
+import Globals.GlobalStyles as s
 
 tag="CT"
 g.tagDict.update({tag:"CurveTracer*"})
@@ -41,7 +39,7 @@ class getData(QtCore.QObject):
     def getIt(self):
 
         self.disableInterface.emit(True)
-        self.changeArcStatus.emit('Busy')
+        #self.changeArcStatus.emit('Busy')
         global tag
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
@@ -104,15 +102,16 @@ class getData(QtCore.QObject):
             self.updateTree.emit(w,b)
 
         self.disableInterface.emit(False)
-        self.changeArcStatus.emit('Ready')
+        #self.changeArcStatus.emit('Ready')
         
         self.finished.emit()
 
-
 class CurveTracer(QtGui.QWidget):
     
-    def __init__(self):
+    def __init__(self, short=False):
         super(CurveTracer, self).__init__()
+
+        self.short=short
         
         self.initUI()
         
@@ -170,9 +169,11 @@ class CurveTracer(QtGui.QWidget):
         gridLayout.setColumnStretch(2,1)
         gridLayout.setColumnStretch(3,1)
         gridLayout.setColumnStretch(4,3)
-        gridLayout.setColumnStretch(5,1)
-        gridLayout.setColumnStretch(6,1)
-        gridLayout.setColumnStretch(7,2)
+
+        if self.short==False:
+            gridLayout.setColumnStretch(5,1)
+            gridLayout.setColumnStretch(6,1)
+            gridLayout.setColumnStretch(7,2)
         #gridLayout.setSpacing(2)
 
         #setup a line separator
@@ -248,31 +249,39 @@ class CurveTracer(QtGui.QWidget):
 
         self.scrlArea.installEventFilter(self)
 
+        #dummyEvent=QtGui.QResizeEvent()
+        #size=QtCore.QSize(200,200)
+        #self.scrlArea.resizeEvent(dummyEvent)
+
         vbox1.addWidget(self.scrlArea)
         vbox1.addStretch()
 
-        self.hboxProg=QtGui.QHBoxLayout()
+        if self.short==False:
 
-        push_single=QtGui.QPushButton('Apply to One')
-        push_range=QtGui.QPushButton('Apply to Range')
-        push_all=QtGui.QPushButton('Apply to All')
+            self.hboxProg=QtGui.QHBoxLayout()
 
-        push_single.setStyleSheet(s.btnStyle)
-        push_range.setStyleSheet(s.btnStyle)
-        push_all.setStyleSheet(s.btnStyle)
+            push_single=QtGui.QPushButton('Apply to One')
+            push_range=QtGui.QPushButton('Apply to Range')
+            push_all=QtGui.QPushButton('Apply to All')
 
-        push_single.clicked.connect(self.programOne)
-        push_range.clicked.connect(self.programRange)
+            push_single.setStyleSheet(s.btnStyle)
+            push_range.setStyleSheet(s.btnStyle)
+            push_all.setStyleSheet(s.btnStyle)
 
-        push_all.clicked.connect(self.programAll)
+            push_single.clicked.connect(self.programOne)
+            push_range.clicked.connect(self.programRange)
 
-        self.hboxProg.addWidget(push_single)
-        self.hboxProg.addWidget(push_range)
-        self.hboxProg.addWidget(push_all)
+            push_all.clicked.connect(self.programAll)
 
-        vbox1.addLayout(self.hboxProg)
+            self.hboxProg.addWidget(push_single)
+            self.hboxProg.addWidget(push_range)
+            self.hboxProg.addWidget(push_all)
+
+            vbox1.addLayout(self.hboxProg)
 
         self.setLayout(vbox1)
+        #width=self.width()
+        #self.setFixedWidth(width)
         self.vW.setFixedWidth(self.size().width())
         #print '-------'
         #print self.vW.size().width()
@@ -282,6 +291,36 @@ class CurveTracer(QtGui.QWidget):
         #self.scrlArea.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
 
         #self.vW.setFixedWidth(self.sizeHint().width())
+        self.gridLayout=gridLayout
+
+    def extractPanelParameters(self):
+        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
+        
+        layoutWidgets=[]
+
+        for i,item in layoutItems:
+            if isinstance(item, QtGui.QLineEdit):
+                layoutWidgets.append([i,'QLineEdit', item.text()])
+            if isinstance(item, QtGui.QComboBox):
+                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
+            if isinstance(item, QtGui.QCheckBox):
+                layoutWidgets.append([i,'QCheckBox', item.checkState()])
+
+        
+        #self.setPanelParameters(layoutWidgets)
+        return layoutWidgets
+
+    def setPanelParameters(self, layoutWidgets):
+        for i,type,value in layoutWidgets:
+            if type=='QLineEdit':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setText(value)
+            if type=='QComboBox':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
+            if type=='QCheckBox':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def updateIVtype(self, event):
         print event   
@@ -313,73 +352,56 @@ class CurveTracer(QtGui.QWidget):
         g.ser.write(str(int(self.combo_IVoption.currentIndex()))+"\n")
 
     def programOne(self):
-        job="20"
-        g.ser.write(job+"\n")   # sends the job
+        if g.ser.port != None:
+            job="20"
+            g.ser.write(job+"\n")   # sends the job
 
-        totalCycles=int(self.rightEdits[0].text())
-        
-        self.sendParams()
+            totalCycles=int(self.rightEdits[0].text())
+            
+            self.sendParams()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData([[g.w,g.b]],totalCycles)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory_CT)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
-        self.getData.changeArcStatus.connect(f.interfaceAntenna.changeArcStatus.emit)
+            self.thread=QtCore.QThread()
+            self.getData=getData([[g.w,g.b]],totalCycles)
+            self.finalise_thread_initialisation()
 
-        self.thread.start()
+            self.thread.start()
 
-    def disableProgPanel(self,state):
-        if state==True:
-            self.hboxProg.setEnabled(False)
-        else:
-            self.hboxProg.setEnabled(True)
 
 
     def programRange(self):
-        totalCycles=int(self.rightEdits[0].text())
+        if g.ser.port != None:
+            totalCycles=int(self.rightEdits[0].text())
 
-        rangeDev=self.makeDeviceList(True)
+            rangeDev=self.makeDeviceList(True)
 
-        job="20"
-        g.ser.write(job+"\n")   # sends the job
+            job="20"
+            g.ser.write(job+"\n")   # sends the job
 
-        self.sendParams()
+            self.sendParams()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev,totalCycles)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory_CT)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
+            self.thread=QtCore.QThread()
+            self.getData=getData(rangeDev,totalCycles)
+            self.finalise_thread_initialisation()
 
-        self.thread.start()
+            self.thread.start()
         
 
     def programAll(self):
-        totalCycles=int(self.rightEdits[0].text())
-        rangeDev=self.makeDeviceList(False)
+        if g.ser.port != None:
+            totalCycles=int(self.rightEdits[0].text())
+            rangeDev=self.makeDeviceList(False)
 
-        job="20"
-        g.ser.write(job+"\n")   # sends the job
+            job="20"
+            g.ser.write(job+"\n")   # sends the job
 
-        self.sendParams()
+            self.sendParams()
+            self.thread=QtCore.QThread()
+            self.getData=getData(rangeDev,totalCycles)
+            self.finalise_thread_initialisation()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev,totalCycles)
+            self.thread.start()
+
+    def finalise_thread_initialisation(self):
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
@@ -389,9 +411,8 @@ class CurveTracer(QtGui.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
-
-        self.thread.start()
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.getData.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)        
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:

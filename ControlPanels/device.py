@@ -8,14 +8,13 @@
 ####################################
 
 import sys
-import os
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 import numpy as np
 
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
 
-import GlobalFunctions as f
-import GlobalVars as g
+import Globals
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
 
 class device(QtGui.QWidget):
     

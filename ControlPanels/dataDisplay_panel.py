@@ -15,11 +15,9 @@ from PyQt4 import QtCore
 import pyqtgraph as pg
 import numpy as np
 
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
-
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
+import Globals.GlobalStyles as s
 
 
 class dataDisplay_panel(QtGui.QWidget):

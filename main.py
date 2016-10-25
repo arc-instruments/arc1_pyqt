@@ -37,15 +37,13 @@ elif sys.platform in ["linux", "linux2", "darwin"]:
 else:
     serialFormat = '%d'
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Graphics/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
+import ControlPanels
+import Globals
 
-import GlobalVars as g
-import GlobalFunctions as f
-import GlobalStyles as s
-import GlobalFonts as fonts
-
+import Globals.GlobalVars as g
+import Globals.GlobalFunctions as f
+import Globals.GlobalStyles as s
+import Globals.GlobalFonts as fonts
 
 class Arcontrol(QtGui.QMainWindow):
     
@@ -241,11 +239,11 @@ class Arcontrol(QtGui.QMainWindow):
 
         splashScreen.showMessage("Loading Modules...", alignment=QtCore.Qt.AlignBottom, color=QtCore.Qt.white)
 
-        import crossbar_panel
-        import dataDisplay_panel
-        import history_panel
-        import manualOperations_panel
-        import prog_panel
+        from ControlPanels import crossbar_panel
+        from ControlPanels import dataDisplay_panel
+        from ControlPanels import history_panel
+        from ControlPanels import manualOperations_panel
+        from ControlPanels import prog_panel
 
         ##########################
         # Import control panels as separate widgets
@@ -293,10 +291,10 @@ class Arcontrol(QtGui.QMainWindow):
         layoutRight.setStretchFactor(layoutTop, 5)	# define how scaling the window scales the two sections
         layoutRight.setStretchFactor(self.layoutBot, 6)
 
-        self.layoutBot.setStretchFactor(self.pp, 5)			# define how scaling the window scales the two sections
+        self.layoutBot.setStretchFactor(self.pp, 6)			# define how scaling the window scales the two sections
         self.layoutBot.setStretchFactor(self.cp, 6)
 
-        self.pp.setMinimumWidth(500)
+        self.pp.setMinimumWidth(700)
         self.cp.setMinimumWidth(600)
 
         layoutTop.setSpacing(0)
@@ -333,7 +331,7 @@ class Arcontrol(QtGui.QMainWindow):
         self.newSessionStart()
 
     def showConfig(self):
-        import configHardware
+        from ControlPanels import configHardware
         self.cfgHW=configHardware.configHardware()
         self.cfgHW.setFixedWidth(500)
         self.cfgHW.setFixedHeight(150)
@@ -362,8 +360,7 @@ class Arcontrol(QtGui.QMainWindow):
 
 
     def showAbout(self):
-        print "entered"
-        import aboutSection
+        from ControlPanels import aboutSection
         self.aboutSesh=aboutSection.aboutSection()
         self.aboutSesh.setFixedWidth(600)
         self.aboutSesh.setFixedHeight(300)
@@ -417,7 +414,7 @@ class Arcontrol(QtGui.QMainWindow):
 
     def redrawCrossbar(self):
         self.cp.deleteLater()
-        import crossbar_panel
+        from ControlPanels import crossbar_panel
         self.cp=crossbar_panel.crossbar_panel()
 
         self.layoutBot.addWidget(self.cp)
@@ -492,7 +489,7 @@ class Arcontrol(QtGui.QMainWindow):
 
     def newSessionStart(self):
         self.deleteAllData()
-        import new_Session
+        from ControlPanels import new_Session
         self.newSesh=new_Session.new_Session()
         self.newSesh.setFixedWidth(500)
         self.newSesh.setFixedHeight(850)

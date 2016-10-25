@@ -14,17 +14,12 @@ from PyQt4 import QtCore
 from functools import partial
 
 import pyqtgraph as pg
-#import pyqtgraph.opengl as gl
 import numpy as np
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Graphics/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
-
-import GlobalStyles as s
-import GlobalFonts as fonts
-import GlobalFunctions as f
-import GlobalVars as g
+import Globals.GlobalStyles as s
+import Globals.GlobalFonts as fonts
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
 
 
 class history_panel(QtGui.QWidget):

@@ -14,13 +14,10 @@ import os
 
 import time
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
-
-import GlobalFonts as fonts
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
+import Globals.GlobalFonts as fonts
+import Globals.GlobalFunctions as f
+import Globals.GlobalVars as g
+import Globals.GlobalStyles as s
 
 tag="RET"
 g.tagDict.update({tag:"Retention*"})
@@ -115,9 +112,9 @@ class getData(QtCore.QObject):
 
 class Retention(QtGui.QWidget):
     
-    def __init__(self):
+    def __init__(self, short=False):
         super(Retention, self).__init__()
-        
+        self.short=short
         self.initUI()
         
     def initUI(self):      
@@ -150,7 +147,8 @@ class Retention(QtGui.QWidget):
         gridLayout.setColumnStretch(4,3)
         gridLayout.setColumnStretch(5,1)
         gridLayout.setColumnStretch(6,1)
-        gridLayout.setColumnStretch(7,2)
+        if self.short==False:
+            gridLayout.setColumnStretch(7,2)
         #gridLayout.setSpacing(2)
 
         #setup a line separator
@@ -205,13 +203,18 @@ class Retention(QtGui.QWidget):
         self.duration_dropDown.insertItems(1,self.units)
         self.duration_dropDown.setCurrentIndex(1)
 
-        every_lay.addWidget(self.leftEdits[0])
-        every_lay.addWidget(self.every_dropDown)
-        duration_lay.addWidget(self.leftEdits[1])
-        duration_lay.addWidget(self.duration_dropDown)
+        #every_lay.addWidget(self.leftEdits[0])
+        #every_lay.addWidget(self.every_dropDown)
+        #duration_lay.addWidget(self.leftEdits[1])
+        #duration_lay.addWidget(self.duration_dropDown)
 
-        gridLayout.addLayout(every_lay,0,1)
-        gridLayout.addLayout(duration_lay,1,1)
+        #gridLayout.addLayout(every_lay,0,1)
+        #gridLayout.addLayout(duration_lay,1,1)
+
+        gridLayout.addWidget(self.leftEdits[0],0,1)
+        gridLayout.addWidget(self.every_dropDown,0,3)
+        gridLayout.addWidget(self.leftEdits[1],1,1)
+        gridLayout.addWidget(self.duration_dropDown,1,3)
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -231,27 +234,59 @@ class Retention(QtGui.QWidget):
         vbox1.addWidget(scrlArea)
         vbox1.addStretch()
 
-        self.hboxProg=QtGui.QHBoxLayout()
+        if self.short==False:
+            self.hboxProg=QtGui.QHBoxLayout()
 
-        push_single=QtGui.QPushButton('Apply to One')
-        push_range=QtGui.QPushButton('Apply to Range')
-        push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtGui.QPushButton('Apply to One')
+            push_range=QtGui.QPushButton('Apply to Range')
+            push_all=QtGui.QPushButton('Apply to All')
 
-        push_single.setStyleSheet(s.btnStyle)
-        push_range.setStyleSheet(s.btnStyle)
-        push_all.setStyleSheet(s.btnStyle)
+            push_single.setStyleSheet(s.btnStyle)
+            push_range.setStyleSheet(s.btnStyle)
+            push_all.setStyleSheet(s.btnStyle)
 
-        push_single.clicked.connect(self.programOne)
-        push_range.clicked.connect(self.programRange)
-        push_all.clicked.connect(self.programAll)
+            push_single.clicked.connect(self.programOne)
+            push_range.clicked.connect(self.programRange)
+            push_all.clicked.connect(self.programAll)
 
-        self.hboxProg.addWidget(push_single)
-        self.hboxProg.addWidget(push_range)
-        self.hboxProg.addWidget(push_all)
+            self.hboxProg.addWidget(push_single)
+            self.hboxProg.addWidget(push_range)
+            self.hboxProg.addWidget(push_all)
 
-        vbox1.addLayout(self.hboxProg)
+            vbox1.addLayout(self.hboxProg)
 
         self.setLayout(vbox1)
+        self.gridLayout=gridLayout
+
+    def extractPanelParameters(self):
+        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
+        
+        layoutWidgets=[]
+
+        for i,item in layoutItems:
+            if isinstance(item, QtGui.QLineEdit):
+                layoutWidgets.append([i,'QLineEdit', item.text()])
+            if isinstance(item, QtGui.QComboBox):
+                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
+            if isinstance(item, QtGui.QCheckBox):
+                layoutWidgets.append([i,'QCheckBox', item.checkState()])
+
+        
+        #self.setPanelParameters(layoutWidgets)
+        return layoutWidgets
+
+    def setPanelParameters(self, layoutWidgets):
+        for i,type,value in layoutWidgets:
+            if type=='QLineEdit':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setText(value)
+            if type=='QComboBox':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
+            if type=='QCheckBox':
+                print i, type, value
+                self.gridLayout.itemAt(i).widget().setChecked(value)
+
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
@@ -259,32 +294,24 @@ class Retention(QtGui.QWidget):
         return False
 
     def programOne(self):
+        if g.ser.port != None:
 
-        time_mag=float(self.leftEdits[0].text())
-        unit=float(self.multiply[self.every_dropDown.currentIndex()])        
-        every=time_mag*unit
+            time_mag=float(self.leftEdits[0].text())
+            unit=float(self.multiply[self.every_dropDown.currentIndex()])        
+            every=time_mag*unit
 
-        time_mag=float(self.leftEdits[1].text())
-        unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
-        duration=time_mag*unit
+            time_mag=float(self.leftEdits[1].text())
+            unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
+            duration=time_mag*unit
 
-        #every=float(self.leftEdits[0].text())*60
-        #duration=float(self.leftEdits[1].text())*60
+            #every=float(self.leftEdits[0].text())*60
+            #duration=float(self.leftEdits[1].text())*60
 
-        self.thread=QtCore.QThread()
-        self.getData=getData([[g.w,g.b]],every,duration,g.Vread)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
+            self.thread=QtCore.QThread()
+            self.getData=getData([[g.w,g.b]],every,duration,g.Vread)
+            self.finalise_thread_initialisation()
 
-        self.thread.start()
+            self.thread.start()
 
     def disableProgPanel(self,state):
         if state==True:
@@ -294,46 +321,44 @@ class Retention(QtGui.QWidget):
 
 
     def programRange(self):
+        if g.ser.port != None:
+            rangeDev=self.makeDeviceList(True)
 
-        rangeDev=self.makeDeviceList(True)
+            time_mag=float(self.leftEdits[0].text())
+            unit=float(self.multiply[self.every_dropDown.currentIndex()])        
+            every=time_mag*unit
 
-        time_mag=float(self.leftEdits[0].text())
-        unit=float(self.multiply[self.every_dropDown.currentIndex()])        
-        every=time_mag*unit
+            time_mag=float(self.leftEdits[1].text())
+            unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
+            duration=time_mag*unit
 
-        time_mag=float(self.leftEdits[1].text())
-        unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
-        duration=time_mag*unit
+            self.thread=QtCore.QThread()
+            self.getData=getData(rangeDev,every,duration,g.Vread)
+            self.finalise_thread_initialisation()
 
-        self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev,every,duration,g.Vread)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
-
-        self.thread.start()
+            self.thread.start()
         
 
     def programAll(self):
-        rangeDev=self.makeDeviceList(False)
+        if g.ser.port != None:
+            rangeDev=self.makeDeviceList(False)
 
-        time_mag=float(self.leftEdits[0].text())
-        unit=float(self.multiply[self.every_dropDown.currentIndex()])        
-        every=time_mag*unit
+            time_mag=float(self.leftEdits[0].text())
+            unit=float(self.multiply[self.every_dropDown.currentIndex()])        
+            every=time_mag*unit
 
-        time_mag=float(self.leftEdits[1].text())
-        unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
-        duration=time_mag*unit
+            time_mag=float(self.leftEdits[1].text())
+            unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
+            duration=time_mag*unit
 
-        self.thread=QtCore.QThread()
-        self.getData=getData(rangeDev,every,duration,g.Vread)
+            self.thread=QtCore.QThread()
+            self.getData=getData(rangeDev,every,duration,g.Vread)
+            self.finalise_thread_initialisation()
+
+
+            self.thread.start()
+
+    def finalise_thread_initialisation(self):
         self.getData.moveToThread(self.thread)
         self.thread.started.connect(self.getData.getIt)
         self.getData.finished.connect(self.thread.quit)
@@ -343,9 +368,7 @@ class Retention(QtGui.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
-
-        self.thread.start()
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)        
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
