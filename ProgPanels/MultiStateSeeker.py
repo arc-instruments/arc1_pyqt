@@ -17,14 +17,12 @@ import numpy
 import scipy.stats as stat
 import pyqtgraph
 
-sys.path.append(os.path.abspath(os.getcwd()+'/generated_/'))
-
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
-from mss import Ui_MSSParent
+from GeneratedUiElements.mss import Ui_MSSParent
 
 tag="MSS"
 g.tagDict.update({tag+"1":"MultiState Polarity Inference"})
