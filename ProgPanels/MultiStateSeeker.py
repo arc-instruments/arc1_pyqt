@@ -118,6 +118,9 @@ class ThreadWrapper(QtCore.QObject):
 
         data = self.params
         stateMode = data["state_mode"]
+        if data["single_phase_run"]: # always use the values supplied by user
+            sign = 1
+            stateMode = 1
         voltage = float(data["stability_voltage"] * sign * stateMode)
 
         g.ser.write(str(voltage) + "\n")
@@ -208,6 +211,7 @@ class ThreadWrapper(QtCore.QObject):
             g.ser.write(str(data["state_prog_pulses"]) + "\n")
             g.ser.write(str(data["state_stdev"]) + "\n")
             g.ser.write(str(data["state_monotonic"]) + "\n")
+            g.ser.write(str(data["state_counter_reset"]) + "\n")
 
             g.ser.write(str(data["state_pulse_duration"]) + "\n")
             g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
@@ -222,6 +226,7 @@ class ThreadWrapper(QtCore.QObject):
             g.ser.write(str(data["state_prog_pulses"]) + "\n")
             g.ser.write(str(data["state_stdev"]) + "\n")
             g.ser.write(str(data["state_monotonic"]) + "\n")
+            g.ser.write(str(data["state_counter_reset"]) + "\n")
 
             g.ser.write(str(data["state_pwmin"]) + "\n")
             g.ser.write(str(-sign * data["state_mode"] * data["state_voltage"]) + "\n")
@@ -238,6 +243,7 @@ class ThreadWrapper(QtCore.QObject):
             g.ser.write(str(data["state_prog_pulses_max"]) + "\n")
             g.ser.write(str(data["state_stdev"]) + "\n")
             g.ser.write(str(data["state_monotonic"]) + "\n")
+            g.ser.write(str(data["state_counter_reset"]) + "\n")
 
             g.ser.write(str(data["state_pulse_duration"]) + "\n")
             g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
@@ -307,35 +313,47 @@ class ThreadWrapper(QtCore.QObject):
 
         DBG = bool(os.environ.get('MSSDBG', False))
 
+        singlePhaseRun = self.params["single_phase_run"]
+        singlePhase = self.params["single_phase_run_phase"]
+
         for device in self.deviceList:
             w = device[0]
             b = device[1]
             self.highlight.emit(w, b)
 
-            print("### Runnning MultiStateSeeker Phase I")
-            sign = self.phase1(w, b)
-            if sign == None: # failed, continue to next
-                print("Cannot infer polarity for %d x %d" % (int(w), int(b)))
-                if DBG:
-                    print("...but continuing this run anyway...")
-                    sign = -1
-                else:
+            if singlePhaseRun and singlePhase != 1:
+                sign = 1 # use default sign if we are running a single phase
+
+            if (not singlePhaseRun) or (singlePhase == 1):
+                print("### Runnning MultiStateSeeker Phase I")
+                sign = self.phase1(w, b)
+                if sign == None: # failed, continue to next
+                    print("Cannot infer polarity for %d x %d" % (int(w), int(b)))
+                    if DBG:
+                        print("...but continuing this run anyway...")
+                        sign = -1
+                    else:
+                        self.updateTree.emit(w, b)
+                        continue
+
+            self.updateTree.emit(w, b)
+
+            if (not singlePhaseRun) or (singlePhase == 2):
+                print("### Runnning MultiStateSeeker Phase II")
+                stable = self.phase2(w, b, sign)
+
+                if (not stable) and (not DBG):
                     self.updateTree.emit(w, b)
                     continue
 
             self.updateTree.emit(w, b)
-            print("### Runnning MultiStateSeeker Phase II")
-            stable = self.phase2(w, b, sign)
 
-            if (not stable) and (not DBG):
-                self.updateTree.emit(w, b)
-                continue
+            if (not singlePhaseRun) or (singlePhase == 3):
+                print("### Runnning MultiStateSeeker Phase III")
+                resStates = self.phase3(w, b, sign)
 
-            self.updateTree.emit(w, b)
-            print("### Runnning MultiStateSeeker Phase III")
-            resStates = self.phase3(w, b, sign)
+                print("Resistive states:", resStates)
 
-            print("Resistive states:", resStates)
             self.updateTree.emit(w, b)
 
         self.disableInterface.emit(False)
@@ -363,8 +381,8 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         self.applyValidators()
 
-        self.stateModeCombo.addItem(u"Low → High", 1)
-        self.stateModeCombo.addItem(u"High → Low", -1)
+        self.stateModeCombo.addItem(u"As calculated", 1)
+        self.stateModeCombo.addItem(u"Inverse polarity", -1)
 
         self.stabilityModeCombo.addItem("Linear fit", "linear")
         self.stabilityModeCombo.addItem("T-Test", "ttest")
@@ -374,6 +392,12 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.assessModeCombo.addItem(u"Pulse width sweep", "pulse")
         self.assessModeCombo.addItem(u"Programming sweep", "program")
         self.assessModeCombo.currentIndexChanged.connect(self.assessModeIndexChanged)
+
+        self.singlePhaseRunComboBox.addItem("Phase I", 1)
+        self.singlePhaseRunComboBox.addItem("Phase II", 2)
+        self.singlePhaseRunComboBox.addItem("Phase III", 3)
+        self.singlePhaseRunCheckBox.stateChanged.connect(self.singlePhaseRunChecked)
+        self.singlePhaseRunComboBox.currentIndexChanged.connect(self.singlePhaseRunPhaseChanged)
 
         self.stateRetentionMultiplierComboBox.addItem("ms", 1)
         self.stateRetentionMultiplierComboBox.addItem("s", 1000)
@@ -470,6 +494,16 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         result["state_retention"] = (float(self.stateRetentionEdit.text()) * retention_mult) / 1000.0
         result["state_stdev"] = int(self.stateStdevSpinBox.value())
         result["state_monotonic"] = int(self.monotonicCheckBox.isChecked())
+        result["state_counter_reset"] = int(self.resetCounterCheckBox.isChecked())
+
+        result["single_phase_run"] = bool(self.singlePhaseRunCheckBox.isChecked())
+
+        if result["single_phase_run"]:
+            phaseIndex = self.singlePhaseRunComboBox.currentIndex()
+            phase = self.singlePhaseRunComboBox.itemData(phaseIndex).toInt()[0]
+            result["single_phase_run_phase"] = phase
+        else:
+            result["single_phase_run_phase"] = None
 
         return result
 
@@ -563,6 +597,36 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         state_mode = self.assessModeCombo.itemData(index).toString()
         self.updateInputWidgets()
+
+    def singlePhaseRunChecked(self, *args):
+        checked = self.singlePhaseRunCheckBox.isChecked()
+        self.singlePhaseRunComboBox.setEnabled(checked)
+
+        if not checked:
+            self.phase1GroupBox.setEnabled(True)
+            self.phase2GroupBox.setEnabled(True)
+            self.phase3GroupBox.setEnabled(True)
+            self.stateModeCombo.setEnabled(True)
+        else:
+            phaseIndex = self.singlePhaseRunComboBox.currentIndex()
+            self.singlePhaseRunPhaseChanged(phaseIndex)
+            self.stateModeCombo.setEnabled(False)
+
+    def singlePhaseRunPhaseChanged(self, phaseIndex):
+        phase = self.singlePhaseRunComboBox.itemData(phaseIndex).toInt()[0]
+
+        if phase == 1:
+            self.phase1GroupBox.setEnabled(True)
+            self.phase2GroupBox.setEnabled(False)
+            self.phase3GroupBox.setEnabled(False)
+        elif phase == 2:
+            self.phase1GroupBox.setEnabled(False)
+            self.phase2GroupBox.setEnabled(True)
+            self.phase3GroupBox.setEnabled(False)
+        else:
+            self.phase1GroupBox.setEnabled(False)
+            self.phase2GroupBox.setEnabled(False)
+            self.phase3GroupBox.setEnabled(True)
 
     def updateInputWidgets(self):
         index = self.assessModeCombo.currentIndex()
