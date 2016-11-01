@@ -11,7 +11,6 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 
-
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -121,7 +120,7 @@ class CurveTracer(QtGui.QWidget):
 
         titleLabel = QtGui.QLabel('CurveTracer')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Standard IV measurement module.')
+        descriptionLabel = QtGui.QLabel('Standard IV measurement module with current cut-off.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -136,7 +135,9 @@ class CurveTracer(QtGui.QWidget):
         self.leftEdits=[]
 
         rightLabels=['Cycles', \
-                    'Interpulse (ms)']
+                    'Interpulse (ms)',\
+                    'Positive current cut-off (uA)',\
+                    'Negative current cut-off (uA)']
 
         self.rightEdits=[]
 
@@ -146,7 +147,9 @@ class CurveTracer(QtGui.QWidget):
                     '0.05', \
                     '50']
         rightInit= ['1', \
-                    '10']
+                    '10',\
+                    '0',\
+                    '0']
 
         # Setup the two combo boxes
         IVtypes=['Staircase', 'Pulsed']
@@ -186,8 +189,8 @@ class CurveTracer(QtGui.QWidget):
         lineRight.setFrameShadow(QtGui.QFrame.Raised);
         lineRight.setLineWidth(1)
 
-        gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
-        gridLayout.addWidget(lineRight, 0, 6, 5, 1)
+        gridLayout.addWidget(lineLeft, 0, 2, 7, 1)
+        gridLayout.addWidget(lineRight, 0, 6, 7, 1)
         #gridLayout.addWidget(line,1,2)
         #gridLayout.addWidget(line,2,2)
         #gridLayout.addWidget(line,3,2)
@@ -213,23 +216,31 @@ class CurveTracer(QtGui.QWidget):
             gridLayout.addWidget(lineLabel, i,4)
 
             lineEdit=QtGui.QLineEdit()
-            lineEdit.setText(leftInit[i])
+            lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
 
+        self.rightEdits[2].editingFinished.connect(self.imposeLimitsOnCurrentStopP)
+        self.rightEdits[3].editingFinished.connect(self.imposeLimitsOnCurrentStopN)
+
+
+        returnCheckBox = QtGui.QCheckBox("Halt and return.")
+        returnCheckBox.stateChanged.connect(self.toggleReturn)
+        self.returnCheck=0
+        gridLayout.addWidget(returnCheckBox, 4, 5)
         #Position the combo boxes and respective labels
 
         lineLabel=QtGui.QLabel()
         lineLabel.setText('Bias type:')
-        gridLayout.addWidget(lineLabel,2,4)
+        gridLayout.addWidget(lineLabel,5,4)
 
         lineLabel=QtGui.QLabel()
         lineLabel.setText('IV span:')
-        gridLayout.addWidget(lineLabel,3,4)
+        gridLayout.addWidget(lineLabel,6,4)
 
-        gridLayout.addWidget(self.combo_IVtype,2,5)
-        gridLayout.addWidget(self.combo_IVoption,3,5)
+        gridLayout.addWidget(self.combo_IVtype,5,5)
+        gridLayout.addWidget(self.combo_IVoption,6,5)
 
         # ==============================================
 
@@ -293,6 +304,33 @@ class CurveTracer(QtGui.QWidget):
         #self.vW.setFixedWidth(self.sizeHint().width())
         self.gridLayout=gridLayout
 
+    def imposeLimitsOnCurrentStopP(self):
+        currentText=float(self.rightEdits[2].text())
+        if (currentText<10):
+            if (currentText==0):
+                self.rightEdits[2].setText("0")
+            else:
+                self.rightEdits[2].setText("10")
+            
+        if (currentText>1000):
+            self.rightEdits[2].setText("1000")
+
+    def imposeLimitsOnCurrentStopN(self):
+        currentText=float(self.rightEdits[3].text())
+        if (currentText<10):
+            if (currentText==0):
+                self.rightEdits[3].setText("0")
+            else:
+                self.rightEdits[3].setText("10")
+        if (currentText>1000):
+            self.rightEdits[3].setText("1000")
+
+    def toggleReturn(self, state):
+        if state == 0:
+            self.returnCheck=0
+        else:
+            self.returnCheck=1
+
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
         
@@ -306,7 +344,6 @@ class CurveTracer(QtGui.QWidget):
             if isinstance(item, QtGui.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
         #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
@@ -332,9 +369,6 @@ class CurveTracer(QtGui.QWidget):
         #print object
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #if event.type()==QtCore.QEvent.Paint:
-        #    self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #print self.vW.size().width()
         return False
     def resizeWidget(self,event):
         pass
@@ -347,13 +381,26 @@ class CurveTracer(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[4].text())/1000)+"\n")
         g.ser.write(str(float(self.rightEdits[1].text())/1000)+"\n")
 
+        CSp=float(self.rightEdits[2].text())
+        CSn=float(self.rightEdits[3].text())
+
+        if CSp==10.0:
+            CSp=10.1
+        if CSn==10.0:
+            CSn=10.1
+
+
+        g.ser.write(str(CSp/1000000)+"\n")
+        g.ser.write(str(CSn/-1000000)+"\n")
+
         g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
         g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
         g.ser.write(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        g.ser.write(str(int(self.returnCheck))+"\n")
 
     def programOne(self):
         if g.ser.port != None:
-            job="20"
+            job="201"
             g.ser.write(job+"\n")   # sends the job
 
             totalCycles=int(self.rightEdits[0].text())
@@ -374,7 +421,7 @@ class CurveTracer(QtGui.QWidget):
 
             rangeDev=self.makeDeviceList(True)
 
-            job="20"
+            job="201"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
@@ -391,7 +438,7 @@ class CurveTracer(QtGui.QWidget):
             totalCycles=int(self.rightEdits[0].text())
             rangeDev=self.makeDeviceList(False)
 
-            job="20"
+            job="201"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
