@@ -18,7 +18,7 @@ import numpy as np
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
-
+from datetime import datetime as dt
 
 class dataDisplay_panel(QtGui.QWidget):
     
@@ -127,6 +127,9 @@ class dataDisplay_panel(QtGui.QWidget):
 
         # make the size of the viewboxes of PWplot and pusle plot the same
         self.plot_pls.getViewBox().sigResized.connect(self.updateViews)
+        self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
+        self.plot_pls.enableAutoRange()
+
         self.updateViews()
 
    # def rangeChangedViaMouse(self, event):
@@ -156,27 +159,9 @@ class dataDisplay_panel(QtGui.QWidget):
         # type = 2: display a nr of points
         firstPoint=0
         lastPoint=1
-        self.plot_mem.enableAutoRange()
-        self.plot_pls.enableAutoRange()
+        #self.plot_mem.enableAutoRange()
+        #self.plot_pls.enableAutoRange()
 
-        # Changed here
-        """
-        if type == 1:
-            firstPoint=0
-            lastPoint=len(g.Mhistory[w][b])-1
-            pNrList=np.linspace(0,len(g.Mhistory[g.w][g.b])-1,len(g.Mhistory[g.w][g.b]))
-        
-        if type == 2:
-            if points>=len(g.Mhistory[w][b]):
-                firstPoint=0
-                lastPoint=len(g.Mhistory[w][b])-1
-                pNrList=np.asarray(range(lastPoint+1))
-            else:
-                firstPoint=int(len(g.Mhistory[w][b])-points)
-                lastPoint=firstPoint+points
-                pNrList=np.asarray(range(firstPoint,lastPoint+1))
-        
-        """
 
         lastPoint2=len(g.Mhistory[g.w][g.b])
         lastPoint=lastPoint2
@@ -195,12 +180,23 @@ class dataDisplay_panel(QtGui.QWidget):
             else:
                 self.plot_mem.setXRange(max(lastPoint-points,0),lastPoint-1)
                 self.plot_pls.setXRange(max(lastPoint-points,0),lastPoint-1)
-        
+
+            # Improvement
+            # Mlist=[0 for x in g.Mhistory[g.w][g.b][firstPoint:lastPoint]]
+            # PList=[0 for x in g.Mhistory[g.w][g.b][firstPoint:lastPoint]]
+            # PWList=[]
+            # PMarkerList=[]
+            # ReadMarkerList=[]
+
+            d=dt.now()
+            print d.second, d.microsecond
             Mlist=[]
             PList=[]
             PWList=[]
             PMarkerList=[]
             ReadMarkerList=[]
+
+
 
             for item in g.Mhistory[g.w][g.b][firstPoint:lastPoint]:
                 Mlist.append(item[0])
@@ -216,53 +212,23 @@ class dataDisplay_panel(QtGui.QWidget):
                 
                 ReadMarkerList.append(item[5])
 
+            self.plot_pls.enableAutoRange()
+
+
             pNrList=np.asarray(range(firstPoint,lastPoint))
-            
-            # Till  here
-            #PList=[]
-            #for item in g.Mhistory[g.w][g.b]:
-            #   MList.append
-            #    PList.append(0)
-            #    PList.append(item[1])
-            #    PList.append(0)
-
-            #Mlist=np.asarray(g.Mhistory[g.w][g.b][firstPoint:lastPoint+1])
-            #lastPoint=len(g.Mhistory[g.w][g.b])-1
-            #pNrList=np.asarray(range(lastPoint+1))
-
-            #Mlist=[el[0] for el in g.Mhistory[g.w][g.b]]
-            #PWList=[el[2] for el in g.Mhistory[g.w][g.b]]
-            #PMarkerList=[el[1] for el in g.Mhistory[g.w][g.b]]
-
+            d=dt.now()
+            print d.second, d.microsecond
             self.curveM.setData(pNrList,np.asarray(Mlist))
             self.curveP.setData(np.repeat(pNrList,3),np.asarray(PList))
             self.curvePW.setData(pNrList,np.asarray(PWList))
             self.curvePMarkers.setData(pNrList,np.asarray(PMarkerList))
             self.curveReadMarkers.setData(pNrList, np.asarray(ReadMarkerList))
 
-            #self.curveM.setData(pNrList,g.MList[g.w][g.b])
-            #self.curveP.setData(np.repeat(pNrList,3),g.PList[g.w][g.b])
-            #self.curvePW.setData(pNrList,g.PWList[g.w][g.b])
-            #self.curvePMarkers.setData(pNrList,g.PMarkerList[w][b])
-            #print min(Mlist)/2
-            #print max(Mlist)*2
-            
-            #self.plot_width.setYRange(np.log10(min(PWList)/2),np.log10(max(PWList)*1.5))
-            #self.plot_pulses.setYRange(min(PList)-1,max(PList)+1)
-            self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
-            #try:
-
-            # while g.inf in Mlist:
-            #     Mlist.remove(g.inf) # remove all 'inf' before computing range
-
             if self.log==0: 
-                self.plot_mem.setYRange(min(Mlist)/1.1,self.max_without_inf(Mlist)*1.1) #If any infinite numbers arise, deal appropriately.
-                #self.plot_mem.setYRange(min(Mlist)/1.1,min([max(Mlist),1000000000])*1.1) #If any infinite numbers arise, deal appropriately.
+                self.plot_mem.setYRange(min(Mlist)/1.2,self.max_without_inf(Mlist)*1.2) #If any infinite numbers arise, deal appropriately.
             else:
-                #self.plot_mem.setYRange(np.log10(min(Mlist)/1.1),np.log10(min([max(Mlist), 1000000000])*1.1))
-                self.plot_mem.setYRange(np.log10(min(Mlist)/1.1),np.log10(self.max_without_inf(Mlist)*1.1))
+                self.plot_mem.setYRange(np.log10(min(Mlist)/1.2),np.log10(self.max_without_inf(Mlist)*1.2))
 
-        #except ValueError:
         else:
             self.curveM.setData([],[])
             self.curveP.setData([],[])
@@ -273,6 +239,9 @@ class dataDisplay_panel(QtGui.QWidget):
             self.plot_pls.setXRange(0,1)
 
         self.update()
+        d=dt.now()
+        print d.second, d.microsecond
+        print " "
 
     def max_without_inf(self, lst):
         maxim=0
