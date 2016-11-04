@@ -293,18 +293,22 @@ class history_panel(QtGui.QWidget):
                 maxRes=max(maxRes_arr)
                 minRes=max(minRes_arr)
 
-                self.plot_R.setYRange(np.log10(min([minRes, 1000000000])/10), np.log10(min([maxRes, 1000000000])*10)) #Deal with infinities appropriately.
+                #self.plot_R.setYRange(np.log10(min([minRes, 1000000000])/10), np.log10(min([maxRes, 1000000000])*10)) #Deal with infinities appropriately.
 
                 for cycle in range(1,totalCycles+1):
                     aux1=self.plot_abs.plot(pen=(cycle,totalCycles), symbolPen=None, symbolBrush=(cycle,totalCycles), symbol='s', symbolSize=5, pxMode=True, name='Cycle '+str(cycle))
                     aux1.setData(np.asarray(voltage[cycle-1]),np.asarray(abs_current[cycle-1]))
+                    #aux1.setYRange(max(abs_current[cycle-1]), self.max_without_inf(abs_current[cycle-1]))
 
                     aux2=self.plot_IV.plot(pen=(cycle,totalCycles), symbolPen=None, symbolBrush=(cycle,totalCycles), symbol='s', symbolSize=5, pxMode=True, name='Cycle '+str(cycle))
                     aux2.setData(np.asarray(voltage[cycle-1]),np.asarray(current[cycle-1]))
 
                     aux3=self.plot_R.plot(pen=(cycle,totalCycles), symbolPen=None, symbolBrush=(cycle,totalCycles), symbol='s', symbolSize=5, pxMode=True, name='Cycle '+str(cycle))
                     aux3.setData(np.asarray(voltage[cycle-1]),np.asarray(resistance[cycle-1]))
-
+                    #aux3.setYRange(max(resistance[cycle-1]), self.max_without_inf(resistance[cycle-1]))
+                
+                self.plot_R.setYRange(np.log10(self.min_without_inf(resistance, g.inf)),np.log10(self.max_without_inf(resistance, g.inf)))
+                self.plot_abs.setYRange(np.log10(self.min_without_inf(abs_current, 0.0)),np.log10(self.max_without_inf(abs_current, 0.0)))
 
 
                 #self.curveAbs.setData(np.asarray(V),np.asarray(C_abs))
@@ -488,6 +492,32 @@ class history_panel(QtGui.QWidget):
                 print "VolatilityRead"
         pass
 
+    def min_without_inf(self, lst, exclude):
+        maxim=1e100
+        for value in lst:
+            if type(value)==list:
+                value=self.min_without_inf(value, exclude)
+                if value<maxim:
+                    maxim=value
+            else:
+                if value<maxim and value!=exclude:
+                    maxim=value
+
+        return maxim
+
+
+    def max_without_inf(self, lst, exclude):
+        maxim=0
+        for value in lst:
+            if type(value)==list:
+                value=self.max_without_inf(value, exclude)
+                if value>maxim:
+                    maxim=value
+            else:
+                if value>maxim and value!=exclude:
+                    maxim=value
+
+        return maxim
 
     def changeDisplayToSelectedItem(self,item):
         if item.whatsThis(1)=='-1':

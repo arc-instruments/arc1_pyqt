@@ -95,3 +95,6 @@ sneakPathOption=0
 waitCondition = QtCore.QWaitCondition()
 mutex = QtCore.QMutex()
 globalDisable=False
+
+####################################
+inf=float('inf')

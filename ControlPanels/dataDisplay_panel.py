@@ -251,12 +251,16 @@ class dataDisplay_panel(QtGui.QWidget):
             #self.plot_pulses.setYRange(min(PList)-1,max(PList)+1)
             self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
             #try:
+
+            # while g.inf in Mlist:
+            #     Mlist.remove(g.inf) # remove all 'inf' before computing range
+
             if self.log==0: 
-                self.plot_mem.setYRange(min(Mlist)/1.1,max(Mlist)*1.1) #If any infinite numbers arise, deal appropriately.
+                self.plot_mem.setYRange(min(Mlist)/1.1,self.max_without_inf(Mlist)*1.1) #If any infinite numbers arise, deal appropriately.
                 #self.plot_mem.setYRange(min(Mlist)/1.1,min([max(Mlist),1000000000])*1.1) #If any infinite numbers arise, deal appropriately.
             else:
                 #self.plot_mem.setYRange(np.log10(min(Mlist)/1.1),np.log10(min([max(Mlist), 1000000000])*1.1))
-                self.plot_mem.setYRange(np.log10(min(Mlist)/1.1),np.log10(min(Mlist)*1.1))
+                self.plot_mem.setYRange(np.log10(min(Mlist)/1.1),np.log10(self.max_without_inf(Mlist)*1.1))
 
         #except ValueError:
         else:
@@ -269,7 +273,15 @@ class dataDisplay_panel(QtGui.QWidget):
             self.plot_pls.setXRange(0,1)
 
         self.update()
-        
+
+    def max_without_inf(self, lst):
+        maxim=0
+        for value in lst:
+            if value>maxim and value!=g.inf:
+                maxim=value
+
+        return maxim
+
         
 def main():
     
