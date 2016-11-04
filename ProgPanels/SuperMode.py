@@ -642,10 +642,17 @@ class SuperMode(QtGui.QWidget):
 
     def loadPickle(self):
         global globalID
-        reply = QtGui.QMessageBox.question(self, "Load a measurement chain",
-            "Loading a measurement chain will replace the current one. Do you want to proceed?",
-            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-        if reply == QtGui.QMessageBox.Yes:
+
+        proceed=False
+
+        if self.dropWidget.vbox.count()>0:
+            reply = QtGui.QMessageBox.question(self, "Load a measurement chain",
+                "Loading a measurement chain will replace the current one. Do you want to proceed?",
+                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
+        else:
+            proceed=True
+
+        if proceed or reply == QtGui.QMessageBox.Yes:
             for i in reversed(range(self.dropWidget.vbox.count())): 
                 self.dropWidget.vbox.itemAt(i).widget().setParent(None)
 
@@ -653,10 +660,12 @@ class SuperMode(QtGui.QWidget):
             self.dropWidget.resizeHeight()
             self.dropWidget.routerDisplayModule(None)
             self.dropWidget.update()
-            print self.dropWidget.vbox.count()
+           # print self.dropWidget.vbox.count()
+            
 
             path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Load file', "*.pkl"))
             name=path.fileName()
+            self.loaded_label.setText(name)
 
             file=QtCore.QFile(path.filePath())
 
@@ -704,7 +713,7 @@ class SuperMode(QtGui.QWidget):
                 self.dropWidget.vbox.addWidget(newCenterWidget)
                 globalID+=1
 
-                print "Added module: ", moduleName, " at index ", self.dropWidget.vbox.count()-1
+                #print "Added module: ", moduleName, " at index ", self.dropWidget.vbox.count()-1
 
             #self.dropWidget.setFixedHeight(self.dropWidget.vbox.count()*placed_module_height)
             self.dropWidget.count=self.dropWidget.vbox.count()

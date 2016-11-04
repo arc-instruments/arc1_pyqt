@@ -202,23 +202,26 @@ class READ(QtGui.QWidget):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
             if isinstance(item, QtGui.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
+            if isinstance(item, QtGui.QDoubleSpinBox):
+                layoutWidgets.append([i,'QDoubleSpinBox', item.value()])
 
         
         #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                print i, type, value
+        for i,w_type,value in layoutWidgets:
+            if w_type=='QLineEdit':
+                print i, w_type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                print i, type, value
+            if w_type=='QComboBox':
+                print i, w_type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                print i, type, value
+            if w_type=='QCheckBox':
+                print i, w_type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
-
+            if w_type=='QDoubleSpinBox':
+                self.gridLayout.itemAt(i).widget().setValue(value)
 
     def setVread(self, value):
         self.Vread=value
