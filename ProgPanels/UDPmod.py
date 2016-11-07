@@ -62,7 +62,7 @@ class getData(QtCore.QObject):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create a socket object - for Internet (INET) and UDP (DGRAM).
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #Configure socket.
         ip = ""
-        port = 5005
+        port = 10000
         sock.bind((ip, port)) #Bind socket.
 
         #Auxiliary variables.
@@ -99,7 +99,7 @@ class getData(QtCore.QObject):
 
                 #print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
-                if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as arriving from Zurich. - WARNING: CURRENTLY HARD-CODED AS 'PRE' SIDE.
+                if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as presynaptic.
                     #Absolute time clock.
                     tabs += tst_in #Update absolute time clock.
                     if tabs > 1000000000000: #Reset time counter if it gets too large.
@@ -166,7 +166,7 @@ class getData(QtCore.QObject):
 
                         ready = select.select([sock], [], [], 5)
 
-                elif id_res_in == g.partcode[1] and (id_in < len(g.ConnMat[0,:,0])): #Recognise input as arriving from Padova. - WARNING: CURRENTLY HARD-CODED AS 'POST' SIDE.
+                elif id_res_in == g.partcode[1] and (id_in < len(g.ConnMat[0,:,0])): #Recognise input as post-synaptic.
                     #Register arrival of post-spike and store new neur. specific abs. time firing time.
                     self.postNeurdt[id_in,0] = tst_in
 
@@ -275,10 +275,10 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
 
-        topLabels=['Postsynaptic partner IP', 'Postsynaptic partner port']
+        topLabels=['First partner IP', 'First partner port']
         self.topEdits=[]
 
-        btmLabels=['Presynaptic partner IP', 'Presynaptic partner port']
+        btmLabels=['Second partner IP', 'Second partner port']
         self.btmEdits=[]
 
         opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)']
@@ -467,7 +467,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         self.getData.finished.connect(self.thread.quit)     #Once task finishes connect it to ending the thread.
         self.getData.finished.connect(self.getData.deleteLater)     #Clear some memory, again, in response to 'finished' signal (getData).
         self.thread.finished.connect(self.getData.deleteLater)      #Clear some memory, again, in response to 'finished' signal (thread).
-        self.getData.sendData.connect(f.updateHistory)      #Typical example of 'signal and slot'. FUnction from within thread calls function outside it.
+        self.getData.sendData.connect(f.updateHistory)      #Typical example of 'signal and slot'. Function from within thread calls function outside it.
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
