@@ -286,7 +286,7 @@ class FormFinder(QtGui.QWidget):
 
         g.ser.write(str(float(self.leftEdits[0].text())*polarity)+"\n")
         g.ser.write(str(float(self.leftEdits[1].text())*polarity)+"\n")
-        g.ser.write(str(int(self.leftEdits[2].text())*polarity)+"\n")
+        g.ser.write(str(float(self.leftEdits[2].text())*polarity)+"\n")
 
         g.ser.write(str(float(self.leftEdits[3].text())/1000000)+"\n")
         g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
