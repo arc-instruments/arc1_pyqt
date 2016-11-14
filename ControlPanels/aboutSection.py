@@ -30,8 +30,6 @@ class aboutSection(QtGui.QWidget):
         p.setColor(self.backgroundRole(), QtCore.Qt.white)
         self.setPalette(p)      
 
-
-
         mainLayout=QtGui.QVBoxLayout()  # Set main vertical layout
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
