@@ -129,6 +129,10 @@ class Arcontrol(QtGui.QMainWindow):
         fileMenu.addAction(exitAction)
 
         # 2) Settings Menu
+        updateAction = QtGui.QAction('Check for updates', self)
+        updateAction.setStatusTip('Check for updates')
+        updateAction.triggered.connect(self.checkUpdates)
+
         setCWDAction = QtGui.QAction('Set working directory', self)
         setCWDAction.setStatusTip('Set current working directory')
         setCWDAction.triggered.connect(self.setCWD)
@@ -139,8 +143,9 @@ class Arcontrol(QtGui.QMainWindow):
 
         # Populate settings menu
         settingsMenu.addAction(configAction)
-        settingsMenu.addSeparator()
         settingsMenu.addAction(setCWDAction)
+        settingsMenu.addSeparator()
+        settingsMenu.addAction(updateAction)
 
         # 3) Help menu
         documentationAction = QtGui.QAction('Documentation', self)
@@ -330,6 +335,9 @@ class Arcontrol(QtGui.QMainWindow):
 
 
         self.newSessionStart()
+
+    def checkUpdates(self):
+        print "Launch platform manager"
 
     def showConfig(self):
         from ControlPanels import configHardware
