@@ -333,11 +333,11 @@ class Arcontrol(QtGui.QMainWindow):
 
         splashScreen.finish(self)
 
-
         self.newSessionStart()
 
     def checkUpdates(self):
         print "Launch platform manager"
+        # get current version
 
     def showConfig(self):
         from ControlPanels import configHardware
