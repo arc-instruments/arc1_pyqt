@@ -20,6 +20,8 @@ import importlib
 import csv
 import time
 import FileDialog
+import requests
+import subprocess
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4 import QtWebKit
@@ -129,9 +131,13 @@ class Arcontrol(QtGui.QMainWindow):
         fileMenu.addAction(exitAction)
 
         # 2) Settings Menu
-        updateAction = QtGui.QAction('Check for updates', self)
-        updateAction.setStatusTip('Check for updates')
-        updateAction.triggered.connect(self.checkUpdates)
+        self.updateAction = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Update available', self)
+        self.updateAction.setStatusTip('Update available')
+        self.updateAction.triggered.connect(self.launch_manager)
+
+        self.updateAction_menu = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Check for updates', self)
+        self.updateAction_menu.setStatusTip('Check for updates')
+        self.updateAction_menu.triggered.connect(self.launch_manager)        
 
         setCWDAction = QtGui.QAction('Set working directory', self)
         setCWDAction.setStatusTip('Set current working directory')
@@ -145,7 +151,7 @@ class Arcontrol(QtGui.QMainWindow):
         settingsMenu.addAction(configAction)
         settingsMenu.addAction(setCWDAction)
         settingsMenu.addSeparator()
-        settingsMenu.addAction(updateAction)
+        settingsMenu.addAction(self.updateAction_menu)
 
         # 3) Help menu
         documentationAction = QtGui.QAction('Documentation', self)
@@ -214,6 +220,7 @@ class Arcontrol(QtGui.QMainWindow):
         self.toolbar.addAction(self.newAction)
         self.toolbar.addAction(self.openAction)
         self.toolbar.addAction(self.saveAction)
+        self.toolbar.addAction(self.updateAction)
         self.toolbar.addSeparator()
         self.toolbar.addWidget(self.connectBtn)
         self.toolbar.addWidget(self.comPorts)
@@ -333,10 +340,43 @@ class Arcontrol(QtGui.QMainWindow):
 
         splashScreen.finish(self)
 
+        self.updateAction.setEnabled(False)
+        self.check_for_updates()
+
         self.newSessionStart()
 
-    def checkUpdates(self):
+    def check_for_updates(self):
+        # check local version:
+        with open(os.path.join("source","version.txt"), "r") as f:
+            g.local_version=f.read().split("\n")[1]
+
+        connection=False
+        # check remote version:
+        version_url="http://arc-instruments.com/files/release/version.txt"
+        try:
+            response = requests.get(version_url, stream=True, timeout=2)
+            g.remote_version=response.text.split("\n")[1]
+            connection=True
+        except:
+            pass
+
+        if connection: # if there is an internet connection and the remote version has been retrieved
+            if g.local_version != g.remote_version:
+                self.updateAction.setEnabled(True)
+        
+
+    def launch_manager(self):
         print "Launch platform manager"
+        reply = QtGui.QMessageBox.question(self, "Launch ArC Platform Manager",
+                "This will delete all saved data and proceed with a platform update.",
+                QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)
+        if reply:
+            directory=os.path.join(os.getcwd(),os.pardir,"platform_manager")
+            os.chdir(directory)
+            launcher_path=os.path.join(directory,"1.bat")#+" "+g.local_version
+            subprocess.Popen([launcher_path])
+            QtCore.QCoreApplication.instance().quit()
+
         # get current version
 
     def showConfig(self):

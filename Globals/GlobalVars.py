@@ -98,3 +98,6 @@ globalDisable=False
 
 ####################################
 inf=float('inf')
+
+local_version=1
+remote_version=1
