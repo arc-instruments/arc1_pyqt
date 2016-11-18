@@ -371,9 +371,9 @@ class Arcontrol(QtGui.QMainWindow):
                 "This will delete all saved data and proceed with a platform update.",
                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)
         if reply:
-            directory=os.path.join(os.getcwd(),os.pardir,"platform_manager")
+            directory=os.path.join(os.getcwd(),os.pardir,"ArC Platform Manager")
             os.chdir(directory)
-            launcher_path=os.path.join(directory,"1.bat")#+" "+g.local_version
+            launcher_path=os.path.join(directory,"ArC ONE Control.exe" + g.local_version)
             subprocess.Popen([launcher_path])
             QtCore.QCoreApplication.instance().quit()
 
