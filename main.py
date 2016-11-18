@@ -373,8 +373,8 @@ class Arcontrol(QtGui.QMainWindow):
         if reply:
             directory=os.path.join(os.getcwd(),os.pardir,"ArC Platform Manager")
             os.chdir(directory)
-            launcher_path=os.path.join(directory,"ArC ONE Control.exe" + g.local_version)
-            subprocess.Popen([launcher_path])
+            launcher_path=os.path.join(directory,"ArC Platform Manager.exe")# + g.local_version)
+            subprocess.Popen([launcher_path, g.local_version])
             QtCore.QCoreApplication.instance().quit()
 
         # get current version
