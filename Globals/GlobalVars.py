@@ -90,7 +90,7 @@ saveFileName=[]
 # ArC One mode variables
 sessionMode=0
 sessionName='Package 1'
-sneakPathOption=0
+sneakPathOption=1
 
 waitCondition = QtCore.QWaitCondition()
 mutex = QtCore.QMutex()

@@ -135,7 +135,7 @@ class new_Session(QtGui.QWidget):
         self.sneakCombo.addItem("Write: V/3")
         self.sneakCombo.addItem("Write: V/2")
         self.sneakCombo.setFont(fonts.font3)
-        self.sneakCombo.setCurrentIndex(1)
+        self.sneakCombo.setCurrentIndex(g.sneakPathOption)
 
         cbHBox=QtGui.QHBoxLayout(self)
         self.cb_w=QtGui.QSpinBox(self)
@@ -334,6 +334,7 @@ class new_Session(QtGui.QWidget):
 
         g.readCycles=int(self.readCyclesEntry.text())
         g.sneakPathOption=self.sneakCombo.currentIndex()
+        print "Sneak option: ", g.sneakPathOption
         g.sessionMode=self.wModeCombo.currentIndex()
         g.sessionName=self.wNameEntry.text()
 
