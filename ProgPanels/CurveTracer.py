@@ -66,6 +66,8 @@ class getData(QtCore.QObject):
                 valuesNew.append(float(g.ser.readline().rstrip()))
                 valuesNew.append(float(g.ser.readline().rstrip()))
 
+                print valuesNew
+
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     if (firstPoint==1):
                         tag_=tag+'_s'
@@ -80,11 +82,13 @@ class getData(QtCore.QObject):
 
                     #measurementResult=g.ser.readline().rstrip()
                     #print measurementResult
-
+                    
                     valuesNew=[]
                     valuesNew.append(float(g.ser.readline().rstrip()))
                     valuesNew.append(float(g.ser.readline().rstrip()))
                     valuesNew.append(float(g.ser.readline().rstrip()))
+                    print valuesNew
+
 
                     if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                         self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
