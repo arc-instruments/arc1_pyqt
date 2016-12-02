@@ -64,6 +64,7 @@ class interfaceAntenna(QObject):
 	changeArcStatus=pyqtSignal(str)
 	changeSessionMode=pyqtSignal(str)
 	updateHW=pyqtSignal()
+	lastDisplaySignal=pyqtSignal()
 
 	globalDisable=False
 
@@ -75,6 +76,9 @@ class interfaceAntenna(QObject):
 			print " --> waitCondition wakedAll"
 		if self.globalDisable==False:
 			self.disable.emit(value)
+			sleep(0.1)
+			self.lastDisplaySignal.emit()
+			
 
 	def castArcStatus(self, value):
 		if self.globalDisable==False:

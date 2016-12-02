@@ -66,7 +66,7 @@ class getData(QtCore.QObject):
                 valuesNew.append(float(g.ser.readline().rstrip()))
                 valuesNew.append(float(g.ser.readline().rstrip()))
 
-                print valuesNew
+                #print valuesNew
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     if (firstPoint==1):
@@ -87,7 +87,7 @@ class getData(QtCore.QObject):
                     valuesNew.append(float(g.ser.readline().rstrip()))
                     valuesNew.append(float(g.ser.readline().rstrip()))
                     valuesNew.append(float(g.ser.readline().rstrip()))
-                    print valuesNew
+                    #print valuesNew
 
 
                     if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
@@ -354,20 +354,22 @@ class CurveTracer(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
+                #print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
+                #print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
+                #print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def updateIVtype(self, event):
-        print event   
+        #print event
+        pass   
 
     def updateIVoption(self, event):
-        print event 
+        #print event 
+        pass
 
     def eventFilter(self, object, event):
         #print object

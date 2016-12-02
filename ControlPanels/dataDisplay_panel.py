@@ -18,7 +18,8 @@ import numpy as np
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
-from datetime import datetime as dt
+
+import time
 
 class dataDisplay_panel(QtGui.QWidget):
     
@@ -124,11 +125,16 @@ class dataDisplay_panel(QtGui.QWidget):
         f.displayUpdate.updateSignal.connect(self.updateDisplay)
         f.displayUpdate.updateSignal_short.connect(self.updateDisplay_short)
         f.displayUpdate.updateLog.connect(self.updateLogScale)
+        f.interfaceAntenna.lastDisplaySignal.connect(self.last_updateDisplay_short)
 
         # make the size of the viewboxes of PWplot and pusle plot the same
         self.plot_pls.getViewBox().sigResized.connect(self.updateViews)
         self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
         self.plot_pls.enableAutoRange()
+
+        self.last_display_time=time.time()
+        self.frame_time=0.05    # max 10 frames per second
+        self.min_frame_time=0.05
 
         self.updateViews()
 
@@ -151,8 +157,12 @@ class dataDisplay_panel(QtGui.QWidget):
         self.plot_width.setGeometry(self.plot_pls.getViewBox().sceneBoundingRect())
         self.plot_width.linkedViewChanged(self.plot_pls.getViewBox(),self.plot_width.XAxis)
 
+    def last_updateDisplay_short(self):
+        self.bulk_updateDisplay(g.w,g.b,2,g.dispPoints,99)
+
     def updateDisplay_short(self):
         self.updateDisplay(g.w,g.b,2,g.dispPoints,99)
+
 
     def updateDisplay(self,w,b,type,points,slider):
         # type = 1: display all data
@@ -161,7 +171,18 @@ class dataDisplay_panel(QtGui.QWidget):
         lastPoint=1
         #self.plot_mem.enableAutoRange()
         #self.plot_pls.enableAutoRange()
+        timenow=time.time()
+        if timenow-self.last_display_time>self.frame_time:
+            self.last_display_time=time.time()
+            self.bulk_updateDisplay(w,b,type,points,slider)
+            stopDisplayTime=time.time()
+            last_frame_time=stopDisplayTime-self.last_display_time
+            if last_frame_time<self.min_frame_time:
+                self.frame_time=self.min_frame_time
+            else:
+                self.frame_time=last_frame_time
 
+    def bulk_updateDisplay(self,w,b,type,points,slider):
 
         lastPoint2=len(g.Mhistory[g.w][g.b])
         lastPoint=lastPoint2
@@ -188,15 +209,11 @@ class dataDisplay_panel(QtGui.QWidget):
             # PMarkerList=[]
             # ReadMarkerList=[]
 
-            d=dt.now()
-            print d.second, d.microsecond
             Mlist=[]
             PList=[]
             PWList=[]
             PMarkerList=[]
             ReadMarkerList=[]
-
-
 
             for item in g.Mhistory[g.w][g.b][firstPoint:lastPoint]:
                 Mlist.append(item[0])
@@ -216,8 +233,7 @@ class dataDisplay_panel(QtGui.QWidget):
 
 
             pNrList=np.asarray(range(firstPoint,lastPoint))
-            d=dt.now()
-            print d.second, d.microsecond
+
             self.curveM.setData(pNrList,np.asarray(Mlist))
             self.curveP.setData(np.repeat(pNrList,3),np.asarray(PList))
             self.curvePW.setData(pNrList,np.asarray(PWList))
@@ -239,9 +255,6 @@ class dataDisplay_panel(QtGui.QWidget):
             self.plot_pls.setXRange(0,1)
 
         self.update()
-        d=dt.now()
-        print d.second, d.microsecond
-        print " "
 
     def max_without_inf(self, lst):
         maxim=0
