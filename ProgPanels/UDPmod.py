@@ -35,14 +35,19 @@ class getData(QtCore.QObject):
     changeArcStatus=QtCore.pyqtSignal(str)
 
     def __init__(self, deviceList, preip, preport, postip, postport):
+        #Plasticity rule inits.
+        self.LTDwin = 500
+        self.LTPwin = 500
+
+        #Other inits.
         super(getData,self).__init__()
         self.deviceList=deviceList
         self.preip = preip
         self.preport = preport
         self.postip = postip
         self.postport = postport
-        self.preNeurdt = np.zeros((256,2)) #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
-        self.postNeurdt = np.zeros((4096,2)) #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+        self.preNeurdt = np.zeros((256,2)) - self.LTDwin - 1 #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+        self.postNeurdt = np.zeros((4096,2)) - self.LTPwin - 1 #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
 
         #Matrix initalisations.
         self.preNeurdt[:,1] = range(len(self.preNeurdt[:,0]))
@@ -56,13 +61,13 @@ class getData(QtCore.QObject):
         maxtime = 30 #Maximum time allowed for UDP operation before returning control (s).
         Rmin = 1000.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
         Rmax = 20000.0
-        maxlisten = 5 #Maximum time to listen on socket for events.
+        maxlisten = 10 #Maximum time to listen on socket for events.
 
         #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create a socket object - for Internet (INET) and UDP (DGRAM).
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #Configure socket.
         ip = ""
-        port = 10000
+        port = 5005
         sock.bind((ip, port)) #Bind socket.
 
         #Auxiliary variables.
@@ -76,17 +81,35 @@ class getData(QtCore.QObject):
         ### ESTABLISH CONNECTIONS WITH SENDER AND RECEIVER ###
 
         if self.postip: #If we have defined a POST partner.
-            sock.sendto("RDY", (self.postip, int(self.postport)))
-            ready = select.select([sock], [], [], maxlisten) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
-            #...3) list of sockets to check for errors, 4) time allocated to these tasks. Returns 3 lists in this order: 1) Readable socket. 2) Writable. 3) In error.
-            tstart = time.clock() #Set starting point for operation. Helps for time-limiting UDP operation.
 
             #Create packer through use of 'struct' library.
             packer = struct.Struct('!I I') #'!' character tells the packer this data has to be sent to a network, so the byte order has to be correctly rendered.
 
+            #Start by sending initialiser packet.
+            # Prepare to send response via UDP.
+            id_res = 82  # Identify this packet as RDY (d82, ASCII 'R')
+            id = 0
+            tst_res = 0
+            tst = 0  # Send to post side absolute time when this neuron fires.
+            # Preparation for packing.
+            id_int = (((id_res & 0xff) << 24) | (id & (0x00fffff)))
+            tst_int = (((tst_res & 0xff) << 24) | (tst & (0x00fffff)))
+
+            pack = (id_int, tst_int)
+            pack_data = packer.pack(*pack)
+
+            sock.sendto(pack_data, (self.postip, int(self.postport)))
+
+            #sock.sendto("RDY", (self.postip, int(self.postport)))
+
+            #LISTENING MODE.
+            ready = select.select([sock], [], [], maxlisten) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
+            #...3) list of sockets to check for errors, 4) time allocated to these tasks. Returns 3 lists in this order: 1) Readable socket. 2) Writable. 3) In error.
+
+            tstart = time.clock() #Set starting point for operation. Helps for time-limiting UDP operation.
+
             #Initialise helper variables.
             packnum = 0
-
             while (time.clock()-tstart) <= maxtime and ready[0] and g.UDPampel:
                 data, addr = sock.recvfrom(1024)
                 packnum += 1 #Count arriving packets (total regardless of direction).
@@ -97,9 +120,11 @@ class getData(QtCore.QObject):
                 tst_res_in = (unpacked_data[1]>>24)&0xff #Unused.
                 tst_in = unpacked_data[1]&0xffffff #Timestamp in. General relative time (time between events regardless of origin).
 
-                #print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
+                print "---------------------------------------------------------------"
+                print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
-                if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as presynaptic.
+                if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as presynaptic.  # PRE #
+
                     #Absolute time clock.
                     tabs += tst_in #Update absolute time clock.
                     if tabs > 1000000000000: #Reset time counter if it gets too large.
@@ -114,8 +139,7 @@ class getData(QtCore.QObject):
                     id_out = postNeurLookup[:,1]
 
                     #Determine whether plasticity should be triggered.
-                    LTDwin = 500
-                    id_plast = postNeurLookup[np.where(postNeurLookup[:,0] > (tabs - LTDwin))[0], 1]
+                    id_plast = postNeurLookup[np.where(postNeurLookup[:,0] > (tabs - self.LTDwin))[0], 1]
 
                     for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
 
@@ -143,7 +167,7 @@ class getData(QtCore.QObject):
                         #If plasticity should be triggered carry it out.
                         if id_out[elem] in id_plast:
                             self.plastfun(0)
-                            #print('LTD')
+                            print('LTD')
 
                         result = float(result)
 
@@ -164,9 +188,10 @@ class getData(QtCore.QObject):
                         sock.sendto(pack_data, (self.postip, int(self.postport)))
                         sock.sendto(pack_data, (self.preip, int(self.preport)))
 
-                        ready = select.select([sock], [], [], 5)
+                    ready = select.select([sock], [], [], maxlisten)
 
-                elif id_res_in == g.partcode[1] and (id_in < len(g.ConnMat[0,:,0])): #Recognise input as post-synaptic.
+                elif id_res_in == g.partcode[1] and (id_in < len(g.ConnMat[0,:,0])): #Recognise input as post-synaptic. # POST #
+
                     #Register arrival of post-spike and store new neur. specific abs. time firing time.
                     self.postNeurdt[id_in,0] = tst_in
 
@@ -175,8 +200,7 @@ class getData(QtCore.QObject):
                     preNeurLookup = self.preNeurdt[preNeurIdx,:] #Generate sub-vector holding only pre-neurons to be 'looked up'.
 
                     #Determine whether plasticity should be triggered.
-                    LTPwin = 500
-                    id_out = preNeurLookup[np.where(preNeurLookup[:,0] > (tst_in - LTPwin))[0], 1]
+                    id_out = preNeurLookup[np.where(preNeurLookup[:,0] > (tst_in - self.LTPwin))[0], 1]
 
                     for elem in range(len(id_out)):
                         #Determine physical device that corresponds to affected synapse.
@@ -192,7 +216,8 @@ class getData(QtCore.QObject):
                         g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
                         g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
                         self.plastfun(1) #Carry out plasticity.
-                        #print("LTP")
+                        print("LTP")
+
                         #Read results.
                         g.ser.write("03\n") #Read operation.
                         g.ser.write("k\n") #Calibrated read operation.
@@ -205,9 +230,9 @@ class getData(QtCore.QObject):
                         result = float(result)
                         print('POST: ' + str(result)+', '+str(tst_in))
 
-                        ready = select.select([sock], [], [], 5)
+                    ready = select.select([sock], [], [], maxlisten)
                 else:
-                    ready = select.select([sock], [], [], 5)
+                    ready = select.select([sock], [], [], maxlisten)
                     #print("Unrecognised partner or neuron ID out of range.")
 
         #self.disableInterface.emit(False)
@@ -275,17 +300,17 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
 
-        topLabels=['First partner IP', 'First partner port']
+        topLabels=['Presynaptic partner IP', 'Presynaptic partner port']
         self.topEdits=[]
 
-        btmLabels=['Second partner IP', 'Second partner port']
+        btmLabels=['Postsynaptic partner IP', 'Postsynaptic partner port']
         self.btmEdits=[]
 
         opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)']
         g.opEdits=[]
 
-        leftInit=  ['10.9.165.60', '5005']
-        rightInit= ['152.78.66.191', '5005']
+        leftInit=  ['25.56.39.168', '10000']
+        rightInit= ['25.55.36.74', '25002']
         opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
         # Setup the column 'length' ratios.
