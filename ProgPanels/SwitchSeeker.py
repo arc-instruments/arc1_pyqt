@@ -322,6 +322,7 @@ class SwitchSeeker(QtGui.QWidget):
         if g.ser.port != None:
             job="%d"%self.getJobCode()
             g.ser.write(job+"\n")   # sends the job
+            print self.getJobCode()
 
             self.sendParams()
 

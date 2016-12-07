@@ -21,16 +21,19 @@ import Globals.GlobalFonts as fonts
 class readAllWorker(QtCore.QObject):
     finished=QtCore.pyqtSignal()
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    sendPosition=QtCore.pyqtSignal(int,int)
+    sendPosition=QtCore.pyqtSignal(int, int)
     disableInterface=QtCore.pyqtSignal(bool)
 
     Vread=g.Vread
     tag='F R'+str(g.readOption)+' V='+str(Vread)
 
+
     def __init__(self):
         super(readAllWorker,self).__init__()
 
     def readAll(self):
+        self.w_old=g.w
+        self.b_old=g.b
         self.disableInterface.emit(True)
         job="2"
         g.ser.write(job+"\n")   # sends the job
@@ -49,8 +52,8 @@ class readAllWorker(QtCore.QObject):
 
                     #f.cbAntenna.selectDeviceSignal.emit(word,bit)
             #self.updateHistoryTree.emit()
-            self.disableInterface.emit(False)
-            self.finished.emit()
+            #self.disableInterface.emit(False)
+            #self.finished.emit()
         else:
             g.ser.write(str(2)+"\n")    # send the type of read - read stand alone custom array
             g.ser.write(str(g.wline_nr)+"\n")
@@ -70,8 +73,9 @@ class readAllWorker(QtCore.QObject):
 
                     #f.cbAntenna.selectDeviceSignal.emit(word,bit)
             #self.updateHistoryTree.emit()
-            self.disableInterface.emit(False)
-            self.finished.emit()
+        self.sendPosition.emit(self.w_old,self.b_old)
+        self.disableInterface.emit(False)
+        self.finished.emit()
 
 
 
@@ -428,7 +432,10 @@ class manualOperations_panel(QtGui.QWidget):
         g.b=b
 
     def readSingle(self):
+        print "readSingle"
+        print g.ser.port
         if g.ser.port != None:
+            print "passed"
             job="1"
             g.ser.write(job+"\n")
             g.ser.write(str(g.w)+"\n")
