@@ -58,10 +58,10 @@ class getData(QtCore.QObject):
         g.UDPampel = 1
 
         #Operational parameters.
-        maxtime = 30 #Maximum time allowed for UDP operation before returning control (s).
+        maxtime = 90 #Maximum time allowed for UDP operation before returning control (s).
         Rmin = 1000.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
         Rmax = 20000.0
-        maxlisten = 10 #Maximum time to listen on socket for events.
+        maxlisten = 20 #Maximum time to listen on socket for events.
 
         #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Create a socket object - for Internet (INET) and UDP (DGRAM).
@@ -123,7 +123,12 @@ class getData(QtCore.QObject):
                 print "---------------------------------------------------------------"
                 print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
-                if id_res_in == g.partcode[0] and (id_in < len(g.ConnMat[:,0,0])): #Recognise input as presynaptic.  # PRE #
+                if(id_res_in == g.partcode[0]):
+                    print("(PRE)")
+                elif(id_res_in == g.partcode[1]):
+                    print("(POST)")
+
+                if id_res_in == g.partcode[0] and (np.sum(g.ConnMat[id_in,:,0] > 0)): #Recognise input as presynaptic.  # PRE # ...and check it actually connects to something.
 
                     #Absolute time clock.
                     tabs += tst_in #Update absolute time clock.
@@ -171,7 +176,7 @@ class getData(QtCore.QObject):
 
                         result = float(result)
 
-                        print('PRE: ' + str(result)+', '+str(tabs))
+                        print('PRE: ' + str(result)+', '+str(tabs)+', '+str(id_in)+', '+str(id_out[elem])) #  RS | Abs. time | PRE ID | POST ID
 
                         #Prepare to send response via UDP.
                         id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
@@ -190,7 +195,7 @@ class getData(QtCore.QObject):
 
                     ready = select.select([sock], [], [], maxlisten)
 
-                elif id_res_in == g.partcode[1] and (id_in < len(g.ConnMat[0,:,0])): #Recognise input as post-synaptic. # POST #
+                elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
 
                     #Register arrival of post-spike and store new neur. specific abs. time firing time.
                     self.postNeurdt[id_in,0] = tst_in
@@ -228,7 +233,7 @@ class getData(QtCore.QObject):
                             result='%.10f' % 0.001
 
                         result = float(result)
-                        print('POST: ' + str(result)+', '+str(tst_in))
+                        print('POST: ' + str(result)+', '+str(tst_in)+', '+str(id_out[elem])+', '+str(id_in)) #  RS | Abs. time | PRE ID | POST ID
 
                     ready = select.select([sock], [], [], maxlisten)
                 else:
@@ -243,6 +248,7 @@ class getData(QtCore.QObject):
         print('No. of packets throughout session: ' + str(packnum)) #Display number of packets received throughout session.
         print('Total runtime: ' + str(time.clock() - tstart)) #Display time elapsed during UDP run.
         print('Average packet rate: ' + str(packnum/(time.clock() - tstart))) #Display packets/second.
+        print('Bias parameters: '+ str(float(g.opEdits[0].text())) + '    ' + str(float(g.opEdits[1].text())) + '    ' + str(float(g.opEdits[2].text())) + '    ' + str(float(g.opEdits[3].text())))
 
         return 0
 
@@ -310,7 +316,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         g.opEdits=[]
 
         leftInit=  ['25.56.39.168', '10000']
-        rightInit= ['25.55.36.74', '25002']
+        rightInit= ['25.23.99.180', '25002']
         opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
         # Setup the column 'length' ratios.
