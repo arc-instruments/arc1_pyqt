@@ -38,6 +38,7 @@ class getData(QtCore.QObject):
         #Plasticity rule inits.
         self.LTDwin = 500
         self.LTPwin = 500
+        self.searchLim = 100 #How many elements in the past to check for 'missed plasticity opportunities'.
 
         #Other inits.
         super(getData,self).__init__()
@@ -148,7 +149,8 @@ class getData(QtCore.QObject):
                     #Determine whether plasticity should be triggered.
                     id_plast = [-1]
                     for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
-                        if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
+                        #if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
+                        if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTDwin)]):
                             id_plast = id_plast + [postNeurIdx[i]]
                     id_plast = id_plast[1:]
 
@@ -218,7 +220,8 @@ class getData(QtCore.QObject):
                     #Determine whether plasticity should be triggered.
                     id_out = [-1]
                     for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
-                        if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                        #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                        if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tst_in - e) <= self.LTPwin)]):
                             id_out = id_out + [preNeurIdx[i]]
                     id_out = id_out[1:]
 
