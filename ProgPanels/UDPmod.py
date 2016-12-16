@@ -46,12 +46,9 @@ class getData(QtCore.QObject):
         self.preport = preport
         self.postip = postip
         self.postport = postport
-        self.preNeurdt = np.zeros((256,2)) - self.LTDwin - 1 #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
-        self.postNeurdt = np.zeros((4096,2)) - self.LTPwin - 1 #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+        self.preNeurdt = 256*[[- self.LTDwin - 1]] #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
+        self.postNeurdt = 4096*[[- self.LTPwin - 1]] #Matrix holding timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
 
-        #Matrix initalisations.
-        self.preNeurdt[:,1] = range(len(self.preNeurdt[:,0]))
-        self.postNeurdt[:,1] = range(len(self.postNeurdt[:,0]))
 
     def runUDP(self):
         #First, set the green light for the UDP protocol.
@@ -136,15 +133,25 @@ class getData(QtCore.QObject):
                         tabs -= 1000000000000
 
                     #Register arrival of pre-spike and store new neur. specific abs. time firing time.
-                    self.preNeurdt[id_in,0] = tabs
+                    self.preNeurdt[id_in] = self.preNeurdt[id_in] + [tabs]
 
                     #Decide which post-neurons to look at based on post neuron id.
                     postNeurIdx = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
-                    postNeurLookup = self.postNeurdt[postNeurIdx,:] #Generate sub-vector holding only pre-neurons to be 'looked up'.
-                    id_out = postNeurLookup[:,1]
+
+                    postNeurLookup = [-1]
+                    for i in postNeurIdx:
+                        postNeurLookup = postNeurLookup + [self.postNeurdt[i]] #Generate sub-vector holding only post-neurons to be 'looked up'.
+                    postNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
+
+                    id_out = postNeurIdx
 
                     #Determine whether plasticity should be triggered.
-                    id_plast = postNeurLookup[np.where(postNeurLookup[:,0] > (tabs - self.LTDwin))[0], 1]
+                    id_plast = [-1]
+                    for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
+                        if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
+                            id_plast = id_plast + [postNeurIdx[i]]
+                    id_plast = id_plast[1:]
+
 
                     for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
 
@@ -198,14 +205,22 @@ class getData(QtCore.QObject):
                 elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
 
                     #Register arrival of post-spike and store new neur. specific abs. time firing time.
-                    self.postNeurdt[id_in,0] = tst_in
+                    self.postNeurdt[id_in] = self.postNeurdt[id_in] + [tst_in]
 
                     #Decide which pre-neurons to look at based on post neuron id.
                     preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
-                    preNeurLookup = self.preNeurdt[preNeurIdx,:] #Generate sub-vector holding only pre-neurons to be 'looked up'.
+
+                    preNeurLookup = [-1]
+                    for i in preNeurIdx:
+                        preNeurLookup = preNeurLookup + [self.preNeurdt[i]] #Generate sub-vector holding only pre-neurons to be 'looked up'.
+                    preNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
 
                     #Determine whether plasticity should be triggered.
-                    id_out = preNeurLookup[np.where(preNeurLookup[:,0] > (tst_in - self.LTPwin))[0], 1]
+                    id_out = [-1]
+                    for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
+                        if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                            id_out = id_out + [preNeurIdx[i]]
+                    id_out = id_out[1:]
 
                     for elem in range(len(id_out)):
                         #Determine physical device that corresponds to affected synapse.
@@ -315,8 +330,10 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)']
         g.opEdits=[]
 
-        leftInit=  ['25.56.39.168', '10000']
-        rightInit= ['25.23.99.180', '25002']
+        #leftInit=  ['25.56.39.168', '10000']
+        #rightInit= ['25.23.99.180', '25002']
+        leftInit = ['152.78.67.67', '5005']
+        rightInit = ['10.9.167.3', '5005']
         opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
         # Setup the column 'length' ratios.
