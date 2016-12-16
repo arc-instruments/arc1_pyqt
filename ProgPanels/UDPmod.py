@@ -147,12 +147,21 @@ class getData(QtCore.QObject):
                     id_out = postNeurIdx
 
                     #Determine whether plasticity should be triggered.
+
+                    #Check for LTD.
                     id_plast = [-1]
                     for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
                         #if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
                         if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTDwin)]):
                             id_plast = id_plast + [postNeurIdx[i]]
                     id_plast = id_plast[1:]
+
+                    #Check for LTP.
+                    id_plast2 = [-1]
+                    for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
+                        if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTPwin)]):
+                            id_plast2 = id_plast2 + [postNeurIdx[i]]
+                    id_plast2 = id_plast2[1:]
 
 
                     for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
@@ -179,9 +188,12 @@ class getData(QtCore.QObject):
                             result='%.10f' % 0.0
 
                         #If plasticity should be triggered carry it out.
-                        if id_out[elem] in id_plast:
+                        if id_out[elem] in id_plast and id_out[elem] not in id_plast2:
                             self.plastfun(0)
                             print('LTD')
+                        elif id_out[elem] in id_plast2 and id_out[elem] not in id_plast:
+                            self.plastfun(1)
+                            print('LTP')
 
                         result = float(result)
 
@@ -217,13 +229,25 @@ class getData(QtCore.QObject):
                         preNeurLookup = preNeurLookup + [self.preNeurdt[i]] #Generate sub-vector holding only pre-neurons to be 'looked up'.
                     preNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
 
+                    id_out = preNeurIdx
+
                     #Determine whether plasticity should be triggered.
-                    id_out = [-1]
+
+                    #Check for LTP.
+                    id_plast = [-1]
                     for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
                         #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
                         if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tst_in - e) <= self.LTPwin)]):
-                            id_out = id_out + [preNeurIdx[i]]
-                    id_out = id_out[1:]
+                            id_plast = id_plast + [preNeurIdx[i]]
+                    id_plast = id_plast[1:]
+
+                    #Check for LTD.
+                    id_plast2 = [-1]
+                    for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
+                        #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                        if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tst_in - e) >= -self.LTDwin)]):
+                            id_plast2 = id_plast2 + [preNeurIdx[i]]
+                    id_plast2 = id_plast2[1:]
 
                     for elem in range(len(id_out)):
                         #Determine physical device that corresponds to affected synapse.
@@ -238,8 +262,13 @@ class getData(QtCore.QObject):
                         g.ser.write("02\n") #Select device operation.
                         g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
                         g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
-                        self.plastfun(1) #Carry out plasticity.
-                        print("LTP")
+
+                        if id_out[elem] in id_plast and id_out[elem] not in  id_plast2:
+                            self.plastfun(1) #Carry out plasticity.
+                            print("LTP")
+                        elif id_out[elem] in id_plast2 and id_out[elem] not in  id_plast:
+                            self.plastfun(0) #Carry out plasticity.
+                            print("LTD")
 
                         #Read results.
                         g.ser.write("03\n") #Read operation.
