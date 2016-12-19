@@ -96,6 +96,7 @@ waitCondition = QtCore.QWaitCondition()
 mutex = QtCore.QMutex()
 globalDisable=False
 
+####################################
 inf=float('inf')
 
 local_version=1
