@@ -96,6 +96,12 @@ waitCondition = QtCore.QWaitCondition()
 mutex = QtCore.QMutex()
 globalDisable=False
 
+inf=float('inf')
+
+local_version=1
+
+remote_version=1
+
 ####################################
 # UDP module globals.
 ConnMat = np.zeros((1,1,1)) #ConnMat(x,y,z): x-> input neuron, y-> output neuron, z-> =1: connection exists (1/0), =2: w address, =3: b address, =4: last operation pre? (0) or post? (1)
