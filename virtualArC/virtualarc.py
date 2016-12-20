@@ -2,6 +2,9 @@ import numpy as np
 from memristor import memristor
 import time
 
+#from PIL import Image
+#import PIL
+
 import Queue
 
 readNoise=0.01
@@ -33,6 +36,31 @@ class virtualArC(object):
 				mx.initialise(mx.Ron+5e5+(1-2*np.random.rand())*5e5)
 				self.crossbar[w].append(mx)
 
+		# basewidth = 32
+		# img = Image.open('5.png')
+		# wpercent = (basewidth / float(img.size[0]))
+		# hsize = int((float(img.size[1]) * float(wpercent)))
+		# img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
+		# img.save('resized_image.png')
+
+		# mat=(np.asarray(Image.open('resized_image.png').convert('L')))/255.0
+
+		# blurFactor=1
+
+		# Roff=1e7
+		# Ron=1e4
+
+		# mat2=(mat-(mat-0.5)/blurFactor)*(Roff-Ron)+Ron
+
+		# for w in range(32+1):
+		# 	self.crossbar[w].append(0)
+		# 	for b in range(32):
+		# 		mx=memristor()
+		# 		mx.initialise(mat2[w-1,b-1]+(1-2*np.random.rand())*Ron)
+		# 		self.crossbar[w].append(mx)
+
+
+
 		pass
 		#print self.crossbar
 
@@ -44,7 +72,7 @@ class virtualArC(object):
 	def readline(self):
 		#time.sleep(0.001)
 		value=self.q_out.get()
-		print value
+		#print value
 		return str(value)+"\n"
 		pass
 
@@ -63,9 +91,20 @@ class virtualArC(object):
 			self.write=self.get_endurance
 		if job=="152":
 			self.write=self.get_switchseeker_slow
+		if job=="15":
+			self.write=self.get_switchseeker_fast
 
 		if job=="201":
 			self.write=self.get_curvetracer
+
+		if job=="14":
+			self.write=self.get_formfinder
+
+		if job=="14":
+			self.write=self.get_formfinder
+
+		if job=="33":
+			pass
 
 		print "Task received:", job
 
@@ -87,10 +126,118 @@ class virtualArC(object):
 		if job=="152":
 			self.write=self.get_switchseeker_slow
 
+		if job=="15":
+			self.write=self.get_switchseeker_fast
+
 		if job=="201":
 			self.write=self.get_curvetracer
 
+		if job=="14":
+			self.write=self.get_formfinder
+
+		if job=="33":
+			pass
+
 		print "Task received:",job
+
+	################################################## CURVETRACER ####
+	def get_formfinder(self, value):
+		self.counter+=1
+		print "counter at: ", self.counter
+		self.q_in.put(value.rstrip())
+		if self.counter==12:
+			#self.execute_endurance()
+			self.FF_Vmin=float(self.q_in.get())
+			self.FF_Vstep=float(self.q_in.get())
+			self.FF_Vmax=float(self.q_in.get())
+			self.FF_pwmin=float(self.q_in.get())
+			self.FF_pwstep=float(self.q_in.get())
+			self.FF_pwmax=float(self.q_in.get())
+			self.FF_interpulse=float(self.q_in.get())
+			self.FF_nrP=int(float(self.q_in.get()))
+
+			self.FF_Rthr=float(float(self.q_in.get()))
+			self.FF_Rthr_p=int(float(self.q_in.get()))
+
+			self.pSR=int(float(self.q_in.get()))
+
+			self.nr_of_devices=int(float(self.q_in.get()))
+
+			self.counter=0
+			self.write=self.get_formfinder_device
+
+	def get_formfinder_device(self, value):
+		self.counter+=1
+		self.q_in.put(value.rstrip())
+		if self.counter==2:
+			self.w=int(float(self.q_in.get()))
+			self.b=int(float(self.q_in.get()))
+			print "Executing for device: ", self.w, self.b
+			self.counter=0
+			self.execute_formfinder()
+
+	def execute_formfinder(self):
+		self.nr_of_devices-=1
+		Vmin=self.FF_Vmin
+		Vstep=self.FF_Vstep
+		Vmax=self.FF_Vmax
+		pwmin=self.FF_pwmin
+		pwstep=self.FF_pwstep
+		pwmax=self.FF_pwmax
+		interpulse=self.FF_interpulse
+		nrP=self.FF_nrP
+		Rthr=self.FF_Rthr
+		Rthr_p=self.FF_Rthr_p
+
+		exitFlag=0
+
+		Vp=Vmin
+		pw=pwmin
+
+		self.tripleSend(read(self.crossbar,self.w,self.b), 0.5, 0.0)
+		Mstart=read(self.crossbar,self.w,self.b)
+
+		print Rthr_p, Mstart, Rthr
+
+		if Rthr_p==0 and Mstart<Rthr:
+			exitFlag=1
+			self.tripleSend(0.0, 0.0, 0.0)
+
+		while not exitFlag:
+			for i in range(1,nrP+1):
+				if exitFlag==0:
+					pulse(self.crossbar, self.w, self.b, Vp, pw, self.dt)
+					Mnow=read(self.crossbar,self.w,self.b)
+					self.tripleSend(read(self.crossbar,self.w,self.b), Vp, pw)
+					if (Rthr_p==0):
+						if (Mnow<Rthr):
+							exitFlag=1
+							self.tripleSend(0.0, 0.0, 0.0)
+					else:
+						if (abs(Mnow-Mstart)/Mstart>Rthr_p/100.0):
+							exitFlag=1
+							self.tripleSend(0.0, 0.0, 0.0)
+
+			if exitFlag==0:
+				if (pw*(1+pwstep/100.0)>pwmax):
+					if (abs(Vp+Vstep)>abs(Vmax)):
+						exitFlag=1
+						self.tripleSend(0.0, 0.0, 0.0)
+					else:
+						Vp=Vp+Vstep
+						pw=pwmin
+				else:
+					pw=pw*(1+pwstep/100.0)
+
+		if self.nr_of_devices==0:
+			self.write=self.base_write
+		else:
+			self.write=self.get_formfinder_device
+
+
+
+
+
 
 	################################################## CURVETRACER ####
 	def get_curvetracer(self, value):
@@ -103,7 +250,7 @@ class virtualArC(object):
 			self.Vneg=float(self.q_in.get())
 			self.Vstart=float(self.q_in.get())
 			self.Vstep=float(self.q_in.get())
-			self.pwstep=float(self.q_in.get())/1000
+			self.pwstep=float(self.q_in.get())
 			self.interpulse=float(self.q_in.get())
 			self.CSp=float(self.q_in.get())
 			self.CSn=float(self.q_in.get())
@@ -118,6 +265,7 @@ class virtualArC(object):
 
 			self.counter=0
 			self.write=self.get_curvetracer_device
+			print "pwstep is: ", self.pwstep
 	
 	def get_curvetracer_device(self, value):
 		self.counter+=1
@@ -212,10 +360,114 @@ class virtualArC(object):
 		if self.nr_of_devices==0:
 			self.write=self.base_write
 		else:
-			self.write=self.get_switchseeker_slow_device
+			self.write=self.get_curvetracer_device
+
+	################################################## SWITCHSEEKER FAST ###
+	def get_switchseeker_fast(self, value):
+		self.counter+=1
+		print "counter at: ", self.counter
+		self.q_in.put(value.rstrip())
+		if self.counter==13:
+			self.pw=float(self.q_in.get())
+			self.Vmin=float(self.q_in.get())
+			self.Vstep=float(self.q_in.get())
+			self.Vmax=float(self.q_in.get())
+			self.interpulse=float(self.q_in.get())
+			self.thr=float(self.q_in.get())
+			self.reads_in_trailercard=int(float(self.q_in.get()))
+			self.pPulses=int(float(self.q_in.get()))
+			self.cycles=int(float(self.q_in.get()))
+			self.tol=float(self.q_in.get())
+
+			self.checkRead=int(float(self.q_in.get()))
+			self.skipStage1=int(float(self.q_in.get()))
+
+			self.nr_of_devices=int(float(self.q_in.get()))
+
+			self.counter=0
+			self.write=self.get_switchseeker_fast_device
+
+	def get_switchseeker_fast_device(self, value):
+		self.counter+=1
+		self.q_in.put(value.rstrip())
+		if self.counter==2:
+			self.w=int(float(self.q_in.get()))
+			self.b=int(float(self.q_in.get()))
+			print "Executing for device: ", self.w, self.b
+			self.counter=0
+			self.execute_switchseeker_fast()
+
+	def execute_switchseeker_fast(self):
+		self.nr_of_devices-=1
+		baseline=0
+		
+		currR=0
+		exitFlag=False
+		terminate=False
+		Vbias=self.Vmin
+		RES=[[0,0,0,0] for x in range(100)]
+
+		#maxSteps=int((self.Vmax-self.Vmin)/self.Vstep)
+		#maxSteps_i=0
+		polarity=1
+		inverse=0
+		i=0
+		n=0
 
 
-	################################################## SWITCHSEEKER ###
+		for dev in range(self.reads_in_trailercard):
+			self.tripleSend(read(self.crossbar,self.w,self.b),self.Vread,0.0)
+			baseline+=read(self.crossbar,self.w,self.b)
+		baseline/=self.reads_in_trailercard
+
+		if self.skipStage1!=0:
+			exitFlag=True
+			RES[0][0]=Vbias*(-1*self.skipStage1)
+			RES[0][1]=self.pw
+			RES[0][3]=currR
+
+		while not exitFlag:
+			currR=self.SS_BasicUnit(self.reads_in_trailercard, self.pPulses, \
+								Vbias, self.pw, self.checkRead, self.interpulse)
+
+			RES[0][0]=Vbias
+			RES[0][1]=self.pw
+			RES[0][3]=currR
+
+			if ((currR/baseline<=(1+self.tol/100.0)) and (currR > baseline) or \
+				((currR/baseline >= (1/(1+self.tol/100))) and (currR<baseline))):
+
+				if Vbias>0:
+					Vbias*=-1
+				else:
+					Vbias*=-1
+					Vbias+=self.Vstep
+
+				if abs(Vbias)>self.Vmax:
+					RES[0][2]=0
+					exitFlag=True
+					terminate=True
+
+			else:
+				if (currR/baseline >= (1+self.tol/100)):
+					RES[n][2]=1
+				else:
+					RES[n][2]=-1
+				exitFlag=True
+
+		if not terminate:
+			self.SS_round2(self.reads_in_trailercard, self.pPulses, self.checkRead, \
+							self.pw, self.interpulse, self.tol, self.cycles, self.Vmin, \
+							self.Vstep, self.Vmax, RES)
+
+		if self.nr_of_devices==0:
+			self.write=self.base_write
+		else:
+			self.write=self.get_switchseeker_fast_device
+		self.tripleSend(0.0,0.0,0.0)
+
+
+	################################################## SWITCHSEEKER SLOW ###
 	def get_switchseeker_slow(self, value):
 		self.counter+=1
 		print "counter at: ", self.counter
@@ -342,7 +594,7 @@ class virtualArC(object):
 		print "Basic unitting..."
 		for i in range(N):
 			pulse(self.crossbar,self.w,self.b,Vbias,T,self.dt)
-			if rw:
+			if True:
 				self.tripleSend(read(self.crossbar,self.w,self.b),Vbias,T)
 		for i in range(M):
 			Rmem=read(self.crossbar,self.w,self.b)

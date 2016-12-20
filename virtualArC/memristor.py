@@ -12,7 +12,7 @@ class memristor(object):
 					   type_f=1, \
 					   Vthrp=1, \
 					   Vthrn=-1, \
-					   p=2):
+					   p=1):
 
 		super(memristor, self).__init__()
 
@@ -31,8 +31,8 @@ class memristor(object):
 		#self.alpha=self.K*self.uv*self.Ron/(self.D**2)
 
 		#self.f=lambda x: 1-(2*x-1)**(2*p)
-		self.stp=lambda x: 1 if x>0 else 0
-		self.f=lambda x,i: 1-(x-self.stp(-i))**(2*p)
+		self.stp=lambda x: 0.8 if x>0 else 0
+		self.f=lambda x,i: (x-self.stp(-i))**(2*p)
 		
 	def initialise(self, Rinit):
 		self.x=float(self.Roff-Rinit)/(self.deltaR)
