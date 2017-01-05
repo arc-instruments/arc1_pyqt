@@ -14,6 +14,7 @@ from PyQt4 import QtCore
 
 import pyqtgraph as pg
 import numpy as np
+import re
 
 import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
@@ -72,7 +73,7 @@ class history_panel(QtGui.QWidget):
         existingItem=self.historyTree.findItems("W=" + str(w) + " | B=" + str(b), QtCore.Qt.MatchExactly,0)
 
         if existingItem==[]:        # if no entry for that adress exists, make a new one
-            newTag=self.formatItemText(w,b) # format the text of the new history entry item taken form the dictionary of the prog panels
+            newTag=self.formatItemText(w,b) # format the text of the new history entry item taken from the dictionary of the prog panels
             if newTag:
                 newTree=QtGui.QTreeWidgetItem(self.historyTree)
                 newTree.setText(0,"W=" + str(w) + " | B=" + str(b))
@@ -494,6 +495,65 @@ class history_panel(QtGui.QWidget):
 
             if tagKey=='VOL':
                 print "VolatilityRead"
+
+            if tagKey=='stdp':
+
+                reg=re.compile(r'-?[0-9\.]+')
+                for line in raw:
+                    print line
+
+                i=0
+                list_dt=[]
+                Mbefore=0
+                Mafter=0
+                dG=[]
+                dt=0
+                while i<len(raw):
+                    stdp_tag=str(raw[i][3])
+                    if "before" in stdp_tag:
+                        Mbefore=raw[i][0]
+                        Mafter=raw[i+1][0]
+                        dt=float(re.findall(reg,stdp_tag)[0])
+                        list_dt.append(dt)
+                        dG.append((1/Mafter-1/Mbefore)/(1/Mbefore))
+                        i+=2
+                    else:
+                        i+=1
+
+
+                # setup display
+                self.resultWindow.append(QtGui.QWidget())
+                self.resultWindow[-1].setGeometry(100,100,500,500)
+                self.resultWindow[-1].setWindowTitle("STDP: W="+ str(w) + " | B=" + str(b))
+                self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
+                self.resultWindow[-1].show()
+
+                view=pg.GraphicsLayoutWidget()
+                label_style = {'color': '#000000', 'font-size': '10pt'}
+
+                #pen1=QtGui.QPen()
+                #pen1.setColor(QtCore.Qt.blue)
+
+                self.plot_stdp=view.addPlot()
+                self.curve_stdp=self.plot_stdp.plot(pen=None, symbolPen=None, symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
+                self.plot_stdp.getAxis('left').setLabel('dG/G0', **label_style)
+                self.plot_stdp.getAxis('bottom').setLabel('deltaT', units='s', **label_style)
+                self.plot_stdp.getAxis('left').setGrid(50)
+                self.plot_stdp.getAxis('bottom').setGrid(50)
+                self.curve_stdp.setData(np.asarray(list_dt),np.asarray(dG))
+
+                resLayout = QtGui.QHBoxLayout()
+                resLayout.addWidget(view)
+                resLayout.setContentsMargins(0,0,0,0)
+
+                self.resultWindow[-1].setLayout(resLayout)
+
+                self.resultWindow[-1].update()
+
+
+
+
+
         pass
 
     def min_without_inf(self, lst, exclude):
@@ -543,7 +603,8 @@ class history_panel(QtGui.QWidget):
                 tag.append(g.tagDict[tagKey])
                 currentTagKey=tagKey
 
-        # if the operation is a custom pulsing script (such as SS or CT or FF),
+
+        # if the operation is a custom pulsing script (such as SS or CT or FF or STDP or Endurance),
         # return also the start and stop indexes for the raw data
         indexList=[0,0]
         results=0
