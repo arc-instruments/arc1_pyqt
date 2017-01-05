@@ -559,6 +559,7 @@ class STDP(QtGui.QWidget):
             self.pre_voltage.append(self.pre_time[-1])
 
     def updateSpikes(self, sliderValue):
+        # Updates the spike figure when the slider is moved.
 
         dt=self.max_spike_time*(self.slider.value()-50)/50.0*self.warp
         if dt<0:
@@ -569,16 +570,6 @@ class STDP(QtGui.QWidget):
         msg2="dt=" + str(dt) + " s  |  "
 
         self.spikes_dt_text.setText(msg2)
-
-        # self.spikes_description.repaint()
-
-        # QtGui.QApplication.processEvents()
-        # print "Timer is executing"
-
-        # self.spikes_description.repaint()
-        # QtGui.QApplication.processEvents()
-        # QtGui.QApplication.processEvents()
-        # QtGui.QApplication.processEvents()
 
         if sliderValue>50:
             dt=self.max_spike_time*(sliderValue-50)/50.0
@@ -606,6 +597,8 @@ class STDP(QtGui.QWidget):
 
             post_time=self.post_time
             post_voltage=self.post_voltage
+
+        # Creates the pre and post voltage waveforms
 
         total_time=[0]
         total_voltage=[0]   
@@ -706,6 +699,7 @@ class STDP(QtGui.QWidget):
         max_time=max([self.pre_time[-1],self.post_time[-1]])*self.warp
 
         i=1
+        # Prepares the timesteps (dt's) for STDP measurement run.
         while i*timeStep<max_time:
             timeSteps.append(i*timeStep)
             timeSteps.append(i*timeStep*-1)
