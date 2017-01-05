@@ -233,11 +233,9 @@ class STDP(QtGui.QWidget):
 
         leftLabels=['Scale voltage', \
                     'Scale time', \
-                    'Time step (ms)', \
-                    'Cycles']
+                    'Time step (ms)']
         leftInit=  ['1',\
                     '1', \
-                    '1',\
                     '1']
 
         self.leftEdits=[]
@@ -296,8 +294,8 @@ class STDP(QtGui.QWidget):
         self.leftEdits[0].textChanged.connect(self.scale_voltage)
         self.leftEdits[1].textChanged.connect(self.warp_time)
 
-        self.check_return=QtGui.QCheckBox("Return to G0")
-        gridLayout.addWidget(self.check_return,7,0)
+        #self.check_return=QtGui.QCheckBox("Return to G0")
+        #gridLayout.addWidget(self.check_return,7,0)
 
         self.gain=1
         self.warp=1
