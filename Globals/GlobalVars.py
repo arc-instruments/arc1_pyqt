@@ -13,6 +13,7 @@ import matplotlib.pyplot as mpl
 import numpy as np
 
 import serial
+from virtualArC import virtualarc
 
 Mnow=1000
 
@@ -32,7 +33,8 @@ N=32
 
 Vread=0.5
 readCycles=50
-ser=serial.Serial() # serial object
+#ser=serial.Serial() # serial object
+ser=virtualarc.virtualArC([])
 
 Mhistory=[[[] for bit in range(33)] for word in range(33)] 	# Main data container
 # arrays of floats updated each time Mhistory is updated to be used for data display
@@ -90,7 +92,7 @@ saveFileName=[]
 # ArC One mode variables
 sessionMode=0
 sessionName='Package 1'
-sneakPathOption=0
+sneakPathOption=1
 
 waitCondition = QtCore.QWaitCondition()
 mutex = QtCore.QMutex()
@@ -100,7 +102,6 @@ globalDisable=False
 inf=float('inf')
 
 local_version=1
-
 remote_version=1
 
 ####################################
