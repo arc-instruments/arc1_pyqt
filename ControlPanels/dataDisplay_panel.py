@@ -133,7 +133,7 @@ class dataDisplay_panel(QtGui.QWidget):
         self.plot_pls.enableAutoRange()
 
         self.last_display_time=time.time()
-        self.frame_time=0.05    # max 10 frames per second
+        self.frame_time=0.05    # max 20 frames per second
         self.min_frame_time=0.05
 
         self.updateViews()

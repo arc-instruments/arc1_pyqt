@@ -27,7 +27,7 @@ from PyQt4 import QtCore
 from PyQt4 import QtWebKit
 from PyQt4.QtWebKit import QWebView
 from PyQt4.QtCore import QUrl
-
+from virtualArC import virtualarc
 import ctypes
 myappid = 'ArC ONE Control' # arbitrary string
 
@@ -838,11 +838,14 @@ class Arcontrol(QtGui.QMainWindow):
     	pass
 
     def connectArC(self):
-
-        if g.ser.port == None:  # only connect if it's disconnected
+        #g.ser=virtualarc.virtualArC([])
+        if g.COM=="VirtualArC":
+            g.ser=virtualarc.virtualArC([])
+        elif g.ser.port == None:  # only connect if it's disconnected
             job="0"
             try:
-                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=11) # connect to the serial port
+                #g.ser=virtualarc.virtualArC([])
+                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=3) # connect to the serial port
                 g.ser.write(job+"\n")                       # Send initial parameters
                 g.ser.write(str(g.readCycles)+"\n")         # readcycles and array size
                 g.ser.write(str(g.wline_nr)+"\n")           # send total nr of wordlines
@@ -851,7 +854,6 @@ class Arcontrol(QtGui.QMainWindow):
                 g.ser.write(str(int(g.readOption))+"\n")
                 g.ser.write(str(int(g.sessionMode))+"\n")        # send session mode
                 g.ser.write(str(int(g.sneakPathOption))+"\n")
-
 
                 g.ser.write(str(float(g.Vread))+"\n")
 
@@ -893,8 +895,6 @@ class Arcontrol(QtGui.QMainWindow):
                     QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
 
 
-
-
     def discArC(self):
         g.ser.close()
         g.ser.port=None
@@ -913,6 +913,7 @@ class Arcontrol(QtGui.QMainWindow):
                 s.close()
             except serial.SerialException:
                 pass
+        available.append("VirtualArC")
         return available
 
     def updateComPort(self):

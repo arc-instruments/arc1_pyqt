@@ -339,7 +339,9 @@ class history_panel(QtGui.QWidget):
                 # Find the pulse amplitudes and the resistance (averaged over the read sequence) after each pulse train
                 index=0
                 print "entered here"
-                print lastRun
+                #print "last run and len", lastRun, len(lastRun)
+                #for i, r in enumerate(lastRun):
+                #    print i, r
                 #return 0
                 while index < len(lastRun):
 
@@ -356,7 +358,7 @@ class history_panel(QtGui.QWidget):
                                 break
                         readAvgRun=readAvgRun/idx # When we exit the while loop we are at the end of the reading run
 
-                        print index
+                        #print "index=",index
 
                         Rs.append(readAvgRun) # append with this resistance
 
@@ -364,14 +366,14 @@ class history_panel(QtGui.QWidget):
                         # maybe not the best way to do this but still
                             if abs(lastRun[start_index+i][0]-readAvgRun)/readAvgRun>max_dR:
                                 max_dR=abs(lastRun[start_index+i][0]-readAvgRun)/readAvgRun
-                    print "Stage 2"
-                    print index
-                    print len(lastRun)
+                    #print "Stage 2"
+                    #print index
+                    #print len(lastRun)
                     # if both amplitude and pw are non-zero, we are in a pulsing run
                     if index<len(lastRun) and lastRun[index][1] != 0 and lastRun[index][2] != 0: # if this is the first  pulse of a write sequence:
                         while index<len(lastRun) and lastRun[index][1] != 0 and lastRun[index][2] != 0:
                             index+=1 # increment the index
-                            print index
+                            #print "in read: ", index
 
                             if index==len(lastRun)-1: # if the index exceeded the lenght of the run, exit
                                 break
@@ -379,6 +381,8 @@ class history_panel(QtGui.QWidget):
 
 
                 # Record initial resistances and delta R.
+                #print len(ampl)
+                #print len(Rs)
                 for i in range(len(ampl)):
                     initR.append(Rs[i])
                     deltaR.append((Rs[i+1]-Rs[i])/Rs[i])

@@ -81,7 +81,6 @@ class getData(QtCore.QObject):
             self.updateTree.emit(w,b)
 
         self.disableInterface.emit(False)
-        
         self.finished.emit()
 
 
