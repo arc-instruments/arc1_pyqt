@@ -78,9 +78,9 @@ class getData(QtCore.QObject):
 
                 for i in range(len(total_time)):
                     g.ser.write(str(float(total_time[i]))+"\n")
-                    time.sleep(0.001)
+                    time.sleep(0.0001)
                     g.ser.write(str(float(total_voltage[i]))+"\n")
-                    time.sleep(0.001)
+                    time.sleep(0.0001)
 
                 valuesNew=[]
                 valuesNew.append(float(g.ser.readline().rstrip()))
@@ -201,10 +201,10 @@ class getData(QtCore.QObject):
         total_voltage.append(0)
         total_time.append(max([pre_time[-1],post_time[-1]]))
 
-        print "Total votlage"
-        print total_voltage
-        print "Total time"
-        print total_time
+        # print "Total votlage"
+        # print total_voltage
+        # print "Total time"
+        # print total_time
         
         return total_time, total_voltage
 
@@ -297,6 +297,10 @@ class STDP(QtGui.QWidget):
         #self.check_return=QtGui.QCheckBox("Return to G0")
         #gridLayout.addWidget(self.check_return,7,0)
 
+        self.check_single=QtGui.QCheckBox("Only single event ->")
+        gridLayout.addWidget(self.check_single, 8,0)
+
+
         self.gain=1
         self.warp=1
 
@@ -331,7 +335,7 @@ class STDP(QtGui.QWidget):
         self.plot_total=view.addPlot()
         self.plot_total.setMouseEnabled(False,False)
         self.curve_total=self.plot_total.plot(pen=pg.mkPen(color="00F", width=2)) 
-        self.plot_total.getAxis('left').setLabel('Total', units='V', **labeltotal_style)
+        self.plot_total.getAxis('left').setLabel('Pre-Post', units='V', **labeltotal_style)
         #self.plot_total.setFixedHeight(plot_height)
         self.plot_total.getAxis('left').setGrid(50)
         self.plot_total.getAxis('left').setWidth(60)
@@ -347,7 +351,7 @@ class STDP(QtGui.QWidget):
         self.curve_pre=self.plot_p.plot(pen=pg.mkPen(color="F00", width=2))
         self.curve_post=self.plot_p.plot(pen=pg.mkPen(color="0F0", width=2))
         #self.plot_pre.setFixedHeight(plot_height)
-        self.plot_p.getAxis('left').setLabel('Pre/Post', units='V', **labeltotal_style)
+        self.plot_p.getAxis('left').setLabel('Pre and Post', units='V', **labeltotal_style)
         self.plot_p.getAxis('left').setGrid(50)
         self.plot_p.getAxis('bottom').setGrid(50)
         self.plot_p.getAxis('left').setWidth(60)
@@ -428,6 +432,8 @@ class STDP(QtGui.QWidget):
         self.pre_time=[]
         self.post_voltage=[]
         self.post_time=[]
+
+        self.dt=0
 
     def updateDescription(self,value):
         self.spikes_description.setText(str(value))
@@ -559,13 +565,13 @@ class STDP(QtGui.QWidget):
     def updateSpikes(self, sliderValue):
         # Updates the spike figure when the slider is moved.
 
-        dt=self.max_spike_time*(self.slider.value()-50)/50.0*self.warp
-        if dt<0:
+        self.dt=self.max_spike_time*(self.slider.value()-50)/50.0*self.warp
+        if self.dt<0:
             self.spikes_order_text.setText("before")
         else:
             self.spikes_order_text.setText("after")
 
-        msg2="dt=" + str(dt) + " s  |  "
+        msg2="dt=" + str(self.dt) + " s  |  "
 
         self.spikes_dt_text.setText(msg2)
 
@@ -691,18 +697,22 @@ class STDP(QtGui.QWidget):
 
     def prepare_time_steps(self):
         timeSteps=[]
-        timeStep=float(self.leftEdits[2].text())/1000.0
-        #timeSteps.append(timeStep)
+        if self.check_single.isChecked():
+            timeSteps.append(self.dt)
+        else:
+            timeSteps.append(0)
+            timeStep=float(self.leftEdits[2].text())/1000.0
+            #timeSteps.append(timeStep)
 
-        max_time=max([self.pre_time[-1],self.post_time[-1]])*self.warp
+            max_time=max([self.pre_time[-1],self.post_time[-1]])*self.warp
 
-        i=1
-        # Prepares the timesteps (dt's) for STDP measurement run.
-        while i*timeStep<max_time:
-            timeSteps.append(i*timeStep)
-            timeSteps.append(i*timeStep*-1)
-            i+=1
-        print " =========> Timesteps", timeSteps
+            i=1
+            # Prepares the timesteps (dt's) for STDP measurement run.
+            while i*timeStep<=max_time:
+                timeSteps.append(i*timeStep)
+                timeSteps.append(i*timeStep*-1)
+                i+=1
+            print " =========> Timesteps", timeSteps
         return timeSteps
 
     def programOne(self):
