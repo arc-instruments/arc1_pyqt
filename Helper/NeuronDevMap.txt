@@ -1,0 +1,13 @@
+# Mapping neuron IDs to specific devices.
+# Start by simple format:
+# [Pre neuron ID, Post neuron ID, target w, target b]
+# -Later upgrade so that if Neuron ID field is omitted, neurons are dynamically mapped in order of priority and the mapping logged.
+# -Remember to introduce condition that lines starting with '#' are comments.
+# -The accepted delimited is the ',' character.
+# -Blank lines should be ignored automatically by code.
+
+1, 7, 26, 26
+2, 4, 7, 7
+2, 5, 3, 3
+3, 4, 1, 1
+63, 1, 29, 4

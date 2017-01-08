@@ -3,6 +3,7 @@ import sys, os
 import pickle
 import importlib
 import pickle
+import time
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/Basic/'))
@@ -19,6 +20,8 @@ import Globals.GlobalStyles as s
 progPanelList=[]
 progPanelList_basic=[]
 progPanelList_basic_loops=[]
+
+mutex = QtCore.QMutex()
 
 def loadProgModules():
     files = [f for f in os.listdir('ProgPanels') if f.endswith(".py")]  # populate prog panel dropbox
@@ -53,6 +56,7 @@ tag="SM"
 g.tagDict.update({tag:"SuperMode"})
 
 class getData(QtCore.QObject):
+    global mutex
 
     finished=QtCore.pyqtSignal()
 
@@ -93,19 +97,20 @@ class getData(QtCore.QObject):
                     if module_aux=='End':
                         if self.checkLoopOrder(chain[i+1:len(chain)-endLoopIndex-1]):
                             break
-                print "times= ", times
+                #print "times= ", times
                 for j in range(times):
                     self.ping_and_resolveLoops(chain[i+1:len(chain)-endLoopIndex-1])
                 i=len(chain)-endLoopIndex
-                print "i= ", i
+                #print "i= ", i
             elif module!='End':
                 self.execute.emit(module)
-                g.mutex.lock()
-                g.waitCondition.wait(g.mutex)
-                g.mutex.unlock()
+                mutex.lock()
+                g.waitCondition.wait(mutex)
+                mutex.unlock()
                 i+=1
 
     def checkLoopOrder(self, chain):
+        # Checks the order of Start and End loops.
         sumOfLoops=0
         for module in chain:
             if isinstance(module, Loop.Loop):
@@ -777,6 +782,7 @@ class SuperMode(QtGui.QWidget):
 
             self.dropWidget.count=0    
             self.dropWidget.resizeHeight()
+            self.dropWidget.routerDisplayModule(None)
             self.loaded_label.setText("")
 
     def throw_wrong_loops_dialogue(self):
@@ -843,6 +849,7 @@ class SuperMode(QtGui.QWidget):
 
     def execute(self, index):
         print "###### EXECUTING ", index
+        time.sleep(0.001)
         self.mainChain[index].programOne()
 
     def makeDeviceList(self,isRange):

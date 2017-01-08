@@ -127,19 +127,22 @@ class manualOperations_panel(QtGui.QWidget):
         hbox_1.addWidget(push_read)
         hbox_1.addWidget(push_readAll)
 
+        #'Update read' button.
         push_updateRead=QtGui.QPushButton('Update Read')
         push_updateRead.setStyleSheet(s.btnStyle2)
         push_updateRead.clicked.connect(self.updateRead)
         push_updateRead.setMinimumWidth(100)
 
+        # Read-out type options drop-down.
         combo_readType=QtGui.QComboBox()
         combo_readType.setStyleSheet(s.comboStyle)
         #combo_readType.down-arrow.setPixMap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'newSeshLogo.png'))
         combo_readType.insertItems(1,g.readOptions)
-        combo_readType.currentIndexChanged.connect(self.updateReadType)
+        combo_readType.currentIndexChanged.connect(self.updateReadType) #In-built signal for class QComboBox
         combo_readType.setCurrentIndex(2)
         g.readOption=combo_readType.currentIndex()
 
+        #Numerical 'spin box' to set read-out voltage.
         read_voltage=QtGui.QDoubleSpinBox()
         #read_voltage.setHeight(25)
         read_voltage.setStyleSheet(s.spinStyle)
@@ -150,17 +153,21 @@ class manualOperations_panel(QtGui.QWidget):
         read_voltage.setSuffix(' V')
         read_voltage.valueChanged.connect(self.setVread)
 
+        #Instantiate GUI row including update read, read-out type and read-out voltage spin-box.
         hbox_2=QtGui.QHBoxLayout()
         hbox_2.addWidget(push_updateRead)
         hbox_2.addWidget(combo_readType)
         hbox_2.addWidget(read_voltage)
 
+        #Check-box.
         self.customArrayCheckbox = QtGui.QCheckBox("Custom array")
         self.customArrayCheckbox.stateChanged.connect(self.toggleSA)
 
+        #Text field to show selected file containing SA locations for particular application.
         self.customArrayFileName=QtGui.QLabel()
         self.customArrayFileName.setStyleSheet(s.style1)
 
+        #File browser. Push-button connecting to function opening file browser.
         push_browse = QtGui.QPushButton('...')
         push_browse.clicked.connect(self.findSAfile)    # open custom array defive position file
         push_browse.setFixedWidth(20)
