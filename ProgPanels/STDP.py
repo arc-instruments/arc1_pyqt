@@ -78,9 +78,9 @@ class getData(QtCore.QObject):
 
                 for i in range(len(total_time)):
                     g.ser.write(str(float(total_time[i]))+"\n")
-                    time.sleep(0.0001)
+                    time.sleep(0.001)
                     g.ser.write(str(float(total_voltage[i]))+"\n")
-                    time.sleep(0.0001)
+                    time.sleep(0.001)
 
                 valuesNew=[]
                 valuesNew.append(float(g.ser.readline().rstrip()))
