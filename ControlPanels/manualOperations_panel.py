@@ -570,8 +570,9 @@ class manualOperations_panel(QtGui.QWidget):
             ser.write(str(float(self.pw))+"\n")
 
             # Read the value of M after the pulse
-            currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-            g.Mnow=float(currentline)
+            # currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+            Mnow=f.getFloats(1)
+            g.Mnow=Mnow
 
             tag='P'
             f.updateHistory(g.w,g.b,g.Mnow,self.amplitude,self.pw,tag)
