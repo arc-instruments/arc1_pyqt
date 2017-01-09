@@ -744,13 +744,15 @@ class STDP(QtGui.QWidget):
             rangeDev=self.makeDeviceList(True)
 
 
-            job="19"
+            job="40"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
 
             self.thread=QtCore.QThread()
-            self.getData=getData(rangeDev)
+            self.getData=getData(rangeDev,[self.gain, self.warp, self.max_spike_time, \
+                self.pre_time, self.pre_voltage, self.post_time, self.post_voltage], \
+                timeSteps)
             self.finalise_thread_initialisation()
 
             self.thread.start()
@@ -758,15 +760,18 @@ class STDP(QtGui.QWidget):
 
     def programAll(self):
         if g.ser.port != None:
-            rangeDev=self.makeDeviceList(False)
+            rangeDev=self.makeDeviceList(True)
 
-            job="19"
+
+            job="40"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
 
             self.thread=QtCore.QThread()
-            self.getData=getData(rangeDev)
+            self.getData=getData(rangeDev,[self.gain, self.warp, self.max_spike_time, \
+                self.pre_time, self.pre_voltage, self.post_time, self.post_voltage], \
+                timeSteps)
             self.finalise_thread_initialisation()
 
             self.thread.start()

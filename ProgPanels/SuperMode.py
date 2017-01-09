@@ -103,8 +103,8 @@ class getData(QtCore.QObject):
                 i=len(chain)-endLoopIndex
                 #print "i= ", i
             elif module!='End':
-                self.execute.emit(module)
                 mutex.lock()
+                self.execute.emit(module)
                 g.waitCondition.wait(mutex)
                 mutex.unlock()
                 i+=1
@@ -643,7 +643,9 @@ class SuperMode(QtGui.QWidget):
               
             self.loaded_label.setText(saveFileName)
         else:
-            print "Problems with loops dude. wtf."
+            pass
+            self.throw_wrong_loops_dialogue()
+            #print "Problems with loops dude. wtf."
 
     def loadPickle(self):
         global globalID

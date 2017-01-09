@@ -263,8 +263,8 @@ class Endurance(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
         g.ser.write(str(int(self.leftEdits[4].text()))+"\n")
 
-        for i in range(len(self.leftEdits)):
-            print self.leftEdits[i].text()
+        # for i in range(len(self.leftEdits)):
+        #     print self.leftEdits[i].text()
 
 
 
