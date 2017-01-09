@@ -70,13 +70,17 @@ class interfaceAntenna(QObject):
 
 	def __init__(self):
 		super(interfaceAntenna,self).__init__()
+
+	def wakeUp(self):
+		g.waitCondition.wakeAll()
+		print " --> waitCondition wakedAll"
 	def cast(self, value):
-		if value==False:
-			g.waitCondition.wakeAll()
-			print " --> waitCondition wakedAll"
+		# if value==False:
+		# 	g.waitCondition.wakeAll()
+		# 	print " --> waitCondition wakedAll"
 		if self.globalDisable==False:
 			self.disable.emit(value)
-			sleep(0.1)
+			#sleep(0.1)
 			self.lastDisplaySignal.emit()
 			
 

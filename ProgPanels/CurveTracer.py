@@ -471,7 +471,8 @@ class CurveTracer(QtGui.QWidget):
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
-        self.getData.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)        
+        self.getData.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)        
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:

@@ -369,6 +369,7 @@ class FormFinder(QtGui.QWidget):
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
 
     def makeDeviceList(self,isRange):
