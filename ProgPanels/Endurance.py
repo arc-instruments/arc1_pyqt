@@ -51,10 +51,10 @@ class getData(QtCore.QObject):
             firstPoint=1
             endCommand=0
 
-            valuesNew=[]
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
+            valuesNew=f.getFloats(3)
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
 
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
@@ -64,10 +64,10 @@ class getData(QtCore.QObject):
             while(endCommand==0):
                 valuesOld=valuesNew
 
-                valuesNew=[]
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
+                valuesNew=f.getFloats(3)
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -263,8 +263,8 @@ class Endurance(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
         g.ser.write(str(int(self.leftEdits[4].text()))+"\n")
 
-        for i in range(len(self.leftEdits)):
-            print self.leftEdits[i].text()
+        # for i in range(len(self.leftEdits)):
+        #     print self.leftEdits[i].text()
 
 
 
@@ -330,7 +330,8 @@ class Endurance(QtGui.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)        
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)     
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)   
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:

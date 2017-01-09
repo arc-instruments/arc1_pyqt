@@ -59,10 +59,10 @@ class getData(QtCore.QObject):
             g.ser.write(str(int(b))+"\n")
 
             #store a first read
-            valuesNew=[]
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
+            valuesNew=f.getFloats(3)
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
             tag_=tag+"_s"
             self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
             self.displayData.emit()
@@ -78,22 +78,22 @@ class getData(QtCore.QObject):
 
                 for i in range(len(total_time)):
                     g.ser.write(str(float(total_time[i]))+"\n")
-                    time.sleep(0.001)
+                    time.sleep(0.0001)
                     g.ser.write(str(float(total_voltage[i]))+"\n")
-                    time.sleep(0.001)
+                    time.sleep(0.0001)
 
-                valuesNew=[]
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
+                valuesNew=f.getFloats(3)
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
                 tag_=tag+" dt="+str("%.6f" % dt)+" before"
                 self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
                 self.displayData.emit()
 
-                valuesNew=[]
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
+                valuesNew=f.getFloats(3)
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
 
                 tag_=tag+" dt="+str("%.6f" % dt)+" after"
 
@@ -106,10 +106,10 @@ class getData(QtCore.QObject):
                 self.sendData.emit(w,b,valuesNew[0],max_ampl,max(total_time),tag_)
                 self.displayData.emit()
 
-            valuesNew=[]
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
+            valuesNew=f.getFloats(3)
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
 
             tag_=tag+"_e"
 
@@ -744,13 +744,15 @@ class STDP(QtGui.QWidget):
             rangeDev=self.makeDeviceList(True)
 
 
-            job="19"
+            job="40"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
 
             self.thread=QtCore.QThread()
-            self.getData=getData(rangeDev)
+            self.getData=getData(rangeDev,[self.gain, self.warp, self.max_spike_time, \
+                self.pre_time, self.pre_voltage, self.post_time, self.post_voltage], \
+                timeSteps)
             self.finalise_thread_initialisation()
 
             self.thread.start()
@@ -758,15 +760,18 @@ class STDP(QtGui.QWidget):
 
     def programAll(self):
         if g.ser.port != None:
-            rangeDev=self.makeDeviceList(False)
+            rangeDev=self.makeDeviceList(True)
 
-            job="19"
+
+            job="40"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
 
             self.thread=QtCore.QThread()
-            self.getData=getData(rangeDev)
+            self.getData=getData(rangeDev,[self.gain, self.warp, self.max_spike_time, \
+                self.pre_time, self.pre_voltage, self.post_time, self.post_voltage], \
+                timeSteps)
             self.finalise_thread_initialisation()
 
             self.thread.start()
@@ -781,7 +786,8 @@ class STDP(QtGui.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)        
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)      
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)  
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:

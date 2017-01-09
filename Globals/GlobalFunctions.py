@@ -70,13 +70,17 @@ class interfaceAntenna(QObject):
 
 	def __init__(self):
 		super(interfaceAntenna,self).__init__()
+
+	def wakeUp(self):
+		g.waitCondition.wakeAll()
+		print " --> waitCondition wakedAll"
 	def cast(self, value):
-		if value==False:
-			g.waitCondition.wakeAll()
-			print " --> waitCondition wakedAll"
+		# if value==False:
+		# 	g.waitCondition.wakeAll()
+		# 	print " --> waitCondition wakedAll"
 		if self.globalDisable==False:
 			self.disable.emit(value)
-			sleep(0.1)
+			#sleep(0.1)
 			self.lastDisplaySignal.emit()
 			
 
@@ -168,6 +172,15 @@ class addressAntenna(QObject):
 		g.w,g.b=w,b
 		cbAntenna.selectDeviceSignal.emit(w, b)
 addressAntenna=addressAntenna()
+
+dataBuffer=[]
+
+def getFloats(n):
+	values=g.ser.read(size=n*4)	# read n * 4 bits of data (n floats) from the input serial
+	return np.frombuffer(buffer(values), dtype=np.float32)	# returns a list of these floats
+
+
+
 
 
 

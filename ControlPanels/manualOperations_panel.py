@@ -43,7 +43,8 @@ class readAllWorker(QtCore.QObject):
             g.ser.write(str(g.bline_nr)+"\n")
             for word in range(1,g.wline_nr+1):    # perform standard read All
                 for bit in range(1,g.bline_nr+1):      
-                    Mnow=float(g.ser.readline().rstrip())         # read the value
+                    #Mnow=float(g.ser.readline().rstrip())         # read the value
+                    Mnow=f.getFloats(1)
 
                     #g.Mhistory[word][bit].append([g.Mnow,0,0,0])    # store it
 
@@ -64,7 +65,8 @@ class readAllWorker(QtCore.QObject):
                 g.ser.write(str(word)+"\n")  # send wordline
                 g.ser.write(str(bit)+"\n")  # send bitline
 
-                Mnow=float(g.ser.readline().rstrip())         # read the value
+                #Mnow=float(g.ser.readline().rstrip())         # read the value
+                Mnow=f.getFloats(1)
 
                 #g.Mhistory[word][bit].append([g.Mnow,0,0,0])    # store it
 
@@ -448,12 +450,13 @@ class manualOperations_panel(QtGui.QWidget):
             g.ser.write(str(g.w)+"\n")
             g.ser.write(str(g.b)+"\n")
 
-            try:
-                currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-            except ValueError:
-                currentline='%.10f' % 0.0
+            # try:
+            #     currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+            # except ValueError:
+            #     currentline='%.10f' % 0.0
 
-            currentM=float(currentline)
+            # currentM=float(currentline)
+            currentM=f.getFloats(1)
 
             g.Mnow=currentM       # conver to float
             tag='S R'+str(g.readOption)+' V='+str(g.Vread)
@@ -567,8 +570,8 @@ class manualOperations_panel(QtGui.QWidget):
             ser.write(str(float(self.pw))+"\n")
 
             # Read the value of M after the pulse
-            currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-            g.Mnow=float(currentline)
+            # currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+            g.Mnow=f.getFloats(1)
 
             tag='P'
             f.updateHistory(g.w,g.b,g.Mnow,self.amplitude,self.pw,tag)
