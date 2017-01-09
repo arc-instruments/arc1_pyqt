@@ -59,10 +59,10 @@ class getData(QtCore.QObject):
             g.ser.write(str(int(b))+"\n")
 
             #store a first read
-            valuesNew=[]
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
+            valuesNew=f.getFloats(3)
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
             tag_=tag+"_s"
             self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
             self.displayData.emit()
@@ -82,18 +82,18 @@ class getData(QtCore.QObject):
                     g.ser.write(str(float(total_voltage[i]))+"\n")
                     time.sleep(0.0001)
 
-                valuesNew=[]
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
+                valuesNew=f.getFloats(3)
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
                 tag_=tag+" dt="+str("%.6f" % dt)+" before"
                 self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
                 self.displayData.emit()
 
-                valuesNew=[]
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
+                valuesNew=f.getFloats(3)
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
 
                 tag_=tag+" dt="+str("%.6f" % dt)+" after"
 
@@ -106,10 +106,10 @@ class getData(QtCore.QObject):
                 self.sendData.emit(w,b,valuesNew[0],max_ampl,max(total_time),tag_)
                 self.displayData.emit()
 
-            valuesNew=[]
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
-            valuesNew.append(float(g.ser.readline().rstrip()))
+            valuesNew=f.getFloats(3)
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
+            # valuesNew.append(float(g.ser.readline().rstrip()))
 
             tag_=tag+"_e"
 

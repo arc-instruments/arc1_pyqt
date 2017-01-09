@@ -56,7 +56,7 @@ class getData(QtCore.QObject):
             g.ser.write(str(int(w))+"\n")
             g.ser.write(str(int(b))+"\n")
 
-            Mnow=float(g.ser.readline())
+            Mnow=f.getFloats(1)
             tag_=tag+"_s"
             self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
             self.displayData.emit()
@@ -76,7 +76,7 @@ class getData(QtCore.QObject):
                 g.ser.write(str(int(w))+"\n")
                 g.ser.write(str(int(b))+"\n")
 
-                Mnow=float(g.ser.readline())
+                Mnow=f.getFloats(1)
                 tag_=tag+"_"+ str(time.time())
                 self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
                 self.displayData.emit()
@@ -99,7 +99,7 @@ class getData(QtCore.QObject):
             g.ser.write(str(int(w))+"\n")
             g.ser.write(str(int(b))+"\n")
 
-            Mnow=float(g.ser.readline())
+            Mnow=f.getFloats(1)
             tag_=tag+"_e"
             self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
             self.displayData.emit()

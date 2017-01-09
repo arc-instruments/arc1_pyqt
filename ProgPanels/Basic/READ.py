@@ -55,12 +55,12 @@ class getData(QtCore.QObject):
         g.ser.write(str(g.w)+"\n")
         g.ser.write(str(g.b)+"\n")
 
-        try:
-            currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-        except ValueError:
-            currentline='%.10f' % 0.0
+        # try:
+        #     currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+        # except ValueError:
+        #     currentline='%.10f' % 0.0
 
-        currentM=float(currentline)
+        currentM=f.getFloats(1)
 
         tag='S R'+str(self.readType)+' V='+str(self.Vread)
         self.sendData.emit(g.w,g.b,currentM,float(self.Vread),0,tag)
@@ -73,8 +73,8 @@ class getData(QtCore.QObject):
             # Update Read
             job='01'
             g.ser.write(job+"\n")
-            g.ser.write(str(self.readType)+"\n")
-            g.ser.write(str(self.Vread)+"\n") 
+            g.ser.write(str(g.readType)+"\n")
+            g.ser.write(str(g.Vread)+"\n") 
 
         self.disableInterface.emit(False)
         
