@@ -60,11 +60,11 @@ class getData(QtCore.QObject):
 
                 #measurementResult=g.ser.readline().rstrip()
                 #print measurementResult
-
-                valuesNew=[]
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
-                valuesNew.append(float(g.ser.readline().rstrip()))
+                valuesNew=f.getFloats(3)
+                # valuesNew=[]
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
+                # valuesNew.append(float(g.ser.readline().rstrip()))
 
                 #print valuesNew
 
@@ -83,10 +83,10 @@ class getData(QtCore.QObject):
                     #measurementResult=g.ser.readline().rstrip()
                     #print measurementResult
                     
-                    valuesNew=[]
-                    valuesNew.append(float(g.ser.readline().rstrip()))
-                    valuesNew.append(float(g.ser.readline().rstrip()))
-                    valuesNew.append(float(g.ser.readline().rstrip()))
+                    valuesNew=f.getFloats(3)
+                    # valuesNew.append(float(g.ser.readline().rstrip()))
+                    # valuesNew.append(float(g.ser.readline().rstrip()))
+                    # valuesNew.append(float(g.ser.readline().rstrip()))
                     #print valuesNew
 
 
@@ -227,6 +227,7 @@ class CurveTracer(QtGui.QWidget):
 
         self.rightEdits[2].editingFinished.connect(self.imposeLimitsOnCurrentStopP)
         self.rightEdits[3].editingFinished.connect(self.imposeLimitsOnCurrentStopN)
+        self.leftEdits[4].editingFinished.connect(self.imposeLimitsOnStepWidth)
 
 
         returnCheckBox = QtGui.QCheckBox("Halt and return.")
@@ -308,6 +309,11 @@ class CurveTracer(QtGui.QWidget):
         #self.vW.setFixedWidth(self.sizeHint().width())
         self.gridLayout=gridLayout
 
+    def imposeLimitsOnStepWidth(self):
+        currentText=float(self.leftEdits[4].text())
+        if (currentText<2):
+            self.leftEdits[4].setText("2")
+
     def imposeLimitsOnCurrentStopP(self):
         currentText=float(self.rightEdits[2].text())
         if (currentText<10):
@@ -384,7 +390,7 @@ class CurveTracer(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[1].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[4].text())/1000)+"\n")
+        g.ser.write(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
         g.ser.write(str(float(self.rightEdits[1].text())/1000)+"\n")
 
         CSp=float(self.rightEdits[2].text())
