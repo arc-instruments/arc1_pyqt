@@ -170,4 +170,10 @@ class addressAntenna(QObject):
 addressAntenna=addressAntenna()
 
 
+def getFloats(n):
+	values=g.ser.read(size=n*4)	# read n * 4 bits of data (n floats) from the input serial
+	return np.frombuffer(buffer(values), dtype=np.float32)	# returns a list of these floats
+
+
+
 

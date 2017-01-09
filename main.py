@@ -845,15 +845,17 @@ class Arcontrol(QtGui.QMainWindow):
             job="0"
             try:
                 #g.ser=virtualarc.virtualArC([])
-                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=3) # connect to the serial port
-                g.ser.write(job+"\n")                       # Send initial parameters
-                g.ser.write(str(g.readCycles)+"\n")         # readcycles and array size
-                g.ser.write(str(g.wline_nr)+"\n")           # send total nr of wordlines
-                g.ser.write(str(g.bline_nr)+"\n")           # send total nr of bitlines
+                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=5, parity=serial.PARITY_EVEN, \
+                                stopbits=serial.STOPBITS_ONE) # connect to the serial port
 
-                g.ser.write(str(int(g.readOption))+"\n")
-                g.ser.write(str(int(g.sessionMode))+"\n")        # send session mode
-                g.ser.write(str(int(g.sneakPathOption))+"\n")
+                g.ser.write(job+"\n")                       # Send initial parameters
+                g.ser.write(str(float(g.readCycles))+"\n")         # readcycles and array size
+                g.ser.write(str(float(g.wline_nr))+"\n")           # send total nr of wordlines
+                g.ser.write(str(float(g.bline_nr))+"\n")           # send total nr of bitlines
+
+                g.ser.write(str(float(g.readOption))+"\n")
+                g.ser.write(str(float(g.sessionMode))+"\n")        # send session mode
+                g.ser.write(str(float(g.sneakPathOption))+"\n")
 
                 g.ser.write(str(float(g.Vread))+"\n")
 
