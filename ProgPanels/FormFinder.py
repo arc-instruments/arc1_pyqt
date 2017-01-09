@@ -79,9 +79,9 @@ class getData(QtCore.QObject):
                     self.displayData.emit()
                     endCommand=1
 
-                print " "
-                print valuesNew
-                print "End command " + str(endCommand)
+                #print " "
+                #print valuesNew
+                #print "End command " + str(endCommand)
             self.updateTree.emit(w,b)
 
         self.disableInterface.emit(False)
