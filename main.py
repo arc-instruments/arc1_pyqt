@@ -370,7 +370,7 @@ class Arcontrol(QtGui.QMainWindow):
         reply = QtGui.QMessageBox.question(self, "Launch ArC Platform Manager",
                 "This will delete all saved data and proceed with a platform update.",
                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)
-        if reply==QtGui.QMessageBox.Yes:
+        if reply:
             directory=os.path.join(os.getcwd(),os.pardir,"ArC Platform Manager")
             os.chdir(directory)
             launcher_path=os.path.join(directory,"ArC Platform Manager.exe")# + g.local_version)
@@ -845,15 +845,17 @@ class Arcontrol(QtGui.QMainWindow):
             job="0"
             try:
                 #g.ser=virtualarc.virtualArC([])
-                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=3) # connect to the serial port
-                g.ser.write(job+"\n")                       # Send initial parameters
-                g.ser.write(str(g.readCycles)+"\n")         # readcycles and array size
-                g.ser.write(str(g.wline_nr)+"\n")           # send total nr of wordlines
-                g.ser.write(str(g.bline_nr)+"\n")           # send total nr of bitlines
+                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=5, parity=serial.PARITY_EVEN, \
+                                stopbits=serial.STOPBITS_ONE) # connect to the serial port
 
-                g.ser.write(str(int(g.readOption))+"\n")
-                g.ser.write(str(int(g.sessionMode))+"\n")        # send session mode
-                g.ser.write(str(int(g.sneakPathOption))+"\n")
+                g.ser.write(job+"\n")                       # Send initial parameters
+                g.ser.write(str(float(g.readCycles))+"\n")         # readcycles and array size
+                g.ser.write(str(float(g.wline_nr))+"\n")           # send total nr of wordlines
+                g.ser.write(str(float(g.bline_nr))+"\n")           # send total nr of bitlines
+
+                g.ser.write(str(float(g.readOption))+"\n")
+                g.ser.write(str(float(g.sessionMode))+"\n")        # send session mode
+                g.ser.write(str(float(g.sneakPathOption))+"\n")
 
                 g.ser.write(str(float(g.Vread))+"\n")
 
@@ -913,7 +915,7 @@ class Arcontrol(QtGui.QMainWindow):
                 s.close()
             except serial.SerialException:
                 pass
-        #available.append("VirtualArC")
+        available.append("VirtualArC")
         return available
 
     def updateComPort(self):
