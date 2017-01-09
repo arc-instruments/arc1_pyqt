@@ -4,6 +4,7 @@ import pickle
 import importlib
 import pickle
 import time
+import threading
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/Basic/'))
@@ -22,6 +23,7 @@ progPanelList_basic=[]
 progPanelList_basic_loops=[]
 
 mutex = QtCore.QMutex()
+
 
 def loadProgModules():
     files = [f for f in os.listdir('ProgPanels') if f.endswith(".py")]  # populate prog panel dropbox
@@ -106,7 +108,9 @@ class getData(QtCore.QObject):
                 mutex.lock()
                 self.execute.emit(module)
                 g.waitCondition.wait(mutex)
+                time.sleep(0.01)
                 mutex.unlock()
+
                 i+=1
 
     def checkLoopOrder(self, chain):
@@ -851,7 +855,7 @@ class SuperMode(QtGui.QWidget):
 
     def execute(self, index):
         print "###### EXECUTING ", index
-        time.sleep(0.001)
+        #time.sleep(0.001)
         self.mainChain[index].programOne()
 
     def makeDeviceList(self,isRange):

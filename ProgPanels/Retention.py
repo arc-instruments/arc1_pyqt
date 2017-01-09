@@ -368,7 +368,8 @@ class Retention(QtGui.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)        
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)        
 
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
