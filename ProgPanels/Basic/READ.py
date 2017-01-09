@@ -73,7 +73,7 @@ class getData(QtCore.QObject):
             # Update Read
             job='01'
             g.ser.write(job+"\n")
-            g.ser.write(str(g.readType)+"\n")
+            g.ser.write(str(g.readOption)+"\n")
             g.ser.write(str(g.Vread)+"\n") 
 
         self.disableInterface.emit(False)
