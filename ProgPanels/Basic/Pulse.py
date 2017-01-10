@@ -52,10 +52,11 @@ class getData(QtCore.QObject):
         ser.write(str(float(self.pw))+"\n")
 
         # Read the value of M after the pulse
-        currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
         
+        #currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+        Mnow=f.getFloats(1)
         tag='P'
-        self.sendData.emit(g.w,g.b,float(currentline),self.amplitude,self.pw,tag)
+        self.sendData.emit(g.w,g.b,Mnow,self.amplitude,self.pw,tag)
 
         #self.setM(g.w,g.b)
 
@@ -235,6 +236,7 @@ class Pulse(QtGui.QWidget):
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
         self.thread.start()
 

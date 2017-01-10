@@ -60,10 +60,10 @@ class getData(QtCore.QObject):
         except ValueError:
             currentline='%.10f' % 0.0
 
-        currentM=float(currentline)
+        Mnow=f.getFloats(1)
 
         tag='S R'+str(self.readType)+' V='+str(self.Vread)
-        self.sendData.emit(g.w,g.b,currentM,float(self.Vread),0,tag)
+        self.sendData.emit(g.w,g.b,Mnow,float(self.Vread),0,tag)
 
         self.displayData.emit()
         self.updateTree.emit(g.w,g.b)
@@ -73,8 +73,8 @@ class getData(QtCore.QObject):
             # Update Read
             job='01'
             g.ser.write(job+"\n")
-            g.ser.write(str(self.readType)+"\n")
-            g.ser.write(str(self.Vread)+"\n") 
+            g.ser.write(str(g.readOption+"\n")
+            g.ser.write(str(g.Vread)+"\n") 
 
         self.disableInterface.emit(False)
         
@@ -249,6 +249,7 @@ class READ(QtGui.QWidget):
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
         self.thread.start()
 
