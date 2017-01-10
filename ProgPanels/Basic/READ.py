@@ -55,10 +55,10 @@ class getData(QtCore.QObject):
         g.ser.write(str(g.w)+"\n")
         g.ser.write(str(g.b)+"\n")
 
-        try:
-            currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-        except ValueError:
-            currentline='%.10f' % 0.0
+        # try:
+        #     currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
+        # except ValueError:
+        #     currentline='%.10f' % 0.0
 
         Mnow=f.getFloats(1)
 

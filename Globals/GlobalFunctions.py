@@ -176,8 +176,13 @@ addressAntenna=addressAntenna()
 dataBuffer=[]
 
 def getFloats(n):
+	print "getting ", n, " floats - ", g.ser.inWaiting()
+	while g.ser.inWaiting()<n*4:
+		print g.ser.inWaiting(),
 	values=g.ser.read(size=n*4)	# read n * 4 bits of data (n floats) from the input serial
-	return np.frombuffer(buffer(values), dtype=np.float32)	# returns a list of these floats
+	extracted=np.frombuffer(buffer(values), dtype=np.float32)
+	print "\n########## ", values, extracted
+	return extracted	# returns a list of these floats
 
 
 

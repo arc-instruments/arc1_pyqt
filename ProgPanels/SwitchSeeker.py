@@ -10,6 +10,7 @@
 from PyQt4 import QtGui, QtCore
 import sys
 import os
+import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -298,7 +299,7 @@ class SwitchSeeker(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[5].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[8].text())/1000)+"\n")
         g.ser.write(str(float(self.leftEdits[9].text()))+"\n")
-
+        time.sleep(0.01)
         g.ser.write(str(int(self.leftEdits[0].text()))+"\n")
         g.ser.write(str(int(self.leftEdits[1].text()))+"\n")
         g.ser.write(str(int(self.leftEdits[6].text()))+"\n")

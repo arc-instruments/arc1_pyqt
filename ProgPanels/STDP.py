@@ -78,9 +78,8 @@ class getData(QtCore.QObject):
 
                 for i in range(len(total_time)):
                     g.ser.write(str(float(total_time[i]))+"\n")
-                    time.sleep(0.0001)
                     g.ser.write(str(float(total_voltage[i]))+"\n")
-                    time.sleep(0.0001)
+                    time.sleep(0.001)
 
                 valuesNew=f.getFloats(3)
                 # valuesNew.append(float(g.ser.readline().rstrip()))
@@ -153,10 +152,10 @@ class getData(QtCore.QObject):
         index_pre=1
         index_post=1
 
-        print "pre_voltage", pre_voltage
-        print "pre_time", pre_time
-        print "post_voltage", post_voltage
-        print "post_time", post_time
+        # print "pre_voltage", pre_voltage
+        # print "pre_time", pre_time
+        # print "post_voltage", post_voltage
+        # print "post_time", post_time
 
         pre_voltage=[x*gain for x in pre_voltage]
         post_voltage=[x*gain for x in post_voltage]
