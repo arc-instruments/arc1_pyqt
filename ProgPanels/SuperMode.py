@@ -854,7 +854,7 @@ class SuperMode(QtGui.QWidget):
         self.getData.execute.connect(self.execute)
 
     def execute(self, index):
-        print "###### EXECUTING ", index
+        #print "###### EXECUTING ", index
         #time.sleep(0.001)
         self.mainChain[index].programOne()
 
