@@ -367,10 +367,11 @@ class Arcontrol(QtGui.QMainWindow):
 
     def launch_manager(self):
         print "Launch platform manager"
+        self.check_for_updates()
         reply = QtGui.QMessageBox.question(self, "Launch ArC Platform Manager",
                 "This will delete all saved data and proceed with a platform update.",
                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)
-        if reply:
+        if reply==QtGui.QMessageBox.Yes:
             directory=os.path.join(os.getcwd(),os.pardir,"ArC Platform Manager")
             os.chdir(directory)
             launcher_path=os.path.join(directory,"ArC Platform Manager.exe")# + g.local_version)
