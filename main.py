@@ -915,7 +915,7 @@ class Arcontrol(QtGui.QMainWindow):
                 s.close()
             except serial.SerialException:
                 pass
-        available.append("VirtualArC")
+        #available.append("VirtualArC")
         return available
 
     def updateComPort(self):
