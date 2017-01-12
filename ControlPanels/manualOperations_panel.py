@@ -441,10 +441,10 @@ class manualOperations_panel(QtGui.QWidget):
         g.b=b
 
     def readSingle(self):
-        print "readSingle"
-        print g.ser.port
+        #print "readSingle"
+        #print g.ser.port
         if g.ser.port != None:
-            print "passed"
+            #print "passed"
             job="1"
             g.ser.write(job+"\n")
             g.ser.write(str(g.w)+"\n")

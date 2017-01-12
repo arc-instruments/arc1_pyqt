@@ -846,8 +846,12 @@ class Arcontrol(QtGui.QMainWindow):
             job="0"
             try:
                 #g.ser=virtualarc.virtualArC([])
-                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=5, parity=serial.PARITY_EVEN, \
+                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=7, parity=serial.PARITY_EVEN, \
                                 stopbits=serial.STOPBITS_ONE) # connect to the serial port
+
+                g.ser.write("00\n") # initial reset of the mBED
+
+                time.sleep(1)
 
                 g.ser.write(job+"\n")                       # Send initial parameters
                 g.ser.write(str(float(g.readCycles))+"\n")         # readcycles and array size
