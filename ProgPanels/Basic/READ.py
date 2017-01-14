@@ -47,8 +47,8 @@ class getData(QtCore.QObject):
             # Update Read
             job='01'
             g.ser.write(job+"\n")
-            g.ser.write(str(self.readType)+"\n")
-            g.ser.write(str(self.Vread)+"\n")       
+            g.ser.write(str(float(self.readType))+"\n")
+            g.ser.write(str(float(self.Vread))+"\n")       
 
         job="1"
         g.ser.write(job+"\n")
@@ -73,8 +73,8 @@ class getData(QtCore.QObject):
             # Update Read
             job='01'
             g.ser.write(job+"\n")
-            g.ser.write(str(g.readOption)+"\n")
-            g.ser.write(str(g.Vread)+"\n") 
+            g.ser.write(str(float(g.readOption))+"\n")
+            g.ser.write(str(float(g.Vread))+"\n") 
 
         self.disableInterface.emit(False)
         
