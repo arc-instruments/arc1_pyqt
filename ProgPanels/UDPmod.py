@@ -47,8 +47,8 @@ class getData(QtCore.QObject):
         self.preport = preport
         self.postip = postip
         self.postport = postport
-        self.preNeurdt = 256*[[- self.LTDwin - 1]] #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
-        self.postNeurdt = 4096*[[- self.LTPwin - 1]] #Matrix holding timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+        self.preNeurdt = 257*[[- self.LTDwin - 1]] #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
+        self.postNeurdt = 4097*[[- self.LTPwin - 1]] #Matrix holding timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
 
 
     def runUDP(self):
@@ -126,7 +126,8 @@ class getData(QtCore.QObject):
                 elif(id_res_in == g.partcode[1]):
                     print("(POST)")
 
-                if id_res_in == g.partcode[0] and (np.sum(g.ConnMat[id_in,:,0] > 0)): #Recognise input as presynaptic.  # PRE # ...and check it actually connects to something.
+                #if id_res_in == g.partcode[0] and (np.sum(g.ConnMat[id_in,:,0] > 0)): #Recognise input as presynaptic.  # PRE # ...and check it actually connects to something.
+                if (np.sum(g.ConnMat[id_in, :, 0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
 
                     #Absolute time clock.
                     tabs += tst_in #Update absolute time clock.
@@ -214,10 +215,11 @@ class getData(QtCore.QObject):
                         sock.sendto(pack_data, (self.postip, int(self.postport)))
                         sock.sendto(pack_data, (self.preip, int(self.preport)))
 
-                    ready = select.select([sock], [], [], maxlisten)
+                    #ready = select.select([sock], [], [], maxlisten)
 
-                elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
-
+                #elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
+                if (np.sum(g.ConnMat[:, id_in, 0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
+                    print('POST caught')
                     #Register arrival of post-spike and store new neur. specific abs. time firing time.
                     self.postNeurdt[id_in] = self.postNeurdt[id_in] + [tst_in]
 
@@ -282,9 +284,14 @@ class getData(QtCore.QObject):
                         result = float(result)
                         print('POST: ' + str(result)+', '+str(tst_in)+', '+str(id_out[elem])+', '+str(id_in)) #  RS | Abs. time | PRE ID | POST ID
 
-                    ready = select.select([sock], [], [], maxlisten)
-                else:
-                    ready = select.select([sock], [], [], maxlisten)
+                    #ready = select.select([sock], [], [], maxlisten)
+
+                print('Before socket listen')
+                ready = select.select([sock], [], [], maxlisten)
+                print('After socket listen')
+
+                #else:
+                    #ready = select.select([sock], [], [], maxlisten)
                     #print("Unrecognised partner or neuron ID out of range.")
 
         #self.disableInterface.emit(False)
@@ -362,10 +369,10 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)']
         g.opEdits=[]
 
-        #leftInit=  ['25.56.39.168', '10000']
-        #rightInit= ['25.23.99.180', '25002']
-        leftInit = ['152.78.67.67', '5005']
-        rightInit = ['10.9.167.3', '5005']
+        leftInit=  ['25.56.39.168', '10000']
+        rightInit= ['25.23.99.180', '25002']
+        #leftInit = ['152.78.67.67', '5005']
+        #rightInit = ['10.9.167.3', '5005']
         opInit=['1.5', '0.000001', '-1.5', '0.000001']
 
         # Setup the column 'length' ratios.
