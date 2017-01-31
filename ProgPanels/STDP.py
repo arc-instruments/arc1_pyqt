@@ -328,8 +328,8 @@ class STDP(QtGui.QWidget):
         pen_red.setColor(QtCore.Qt.red)   
         labeltotal_style = {'color': '#000000', 'font-size': '10pt'}
 
-        plot_height=80
-        plot_width=300
+        plot_height=80*g.scaling_factor
+        plot_width=300*g.scaling_factor
         ################################################################### PLOT TOTAL ####
         self.plot_total=view.addPlot()
         self.plot_total.setMouseEnabled(False,False)

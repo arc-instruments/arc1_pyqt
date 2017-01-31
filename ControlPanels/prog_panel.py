@@ -14,6 +14,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 
 import Globals.GlobalStyles as s
+import Globals.GlobalVars as g
 
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
 
@@ -34,7 +35,7 @@ class prog_panel(QtGui.QWidget):
 
         self.prog_panelList = QtGui.QComboBox()
         self.prog_panelList.setStyleSheet(s.comboStyle)
-        self.prog_panelList.setMinimumWidth(150)
+        self.prog_panelList.setMinimumWidth(150*g.scaling_factor)
 
         files = [f for f in os.listdir('ProgPanels') if f.endswith(".py")]  # populate prog panel dropbox
         for f in files:

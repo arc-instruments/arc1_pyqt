@@ -234,6 +234,8 @@ class dataDisplay_panel(QtGui.QWidget):
 
             pNrList=np.asarray(range(firstPoint,lastPoint))
 
+            #print "pNrList=", pNrList, "Mlist=", Mlist
+
             self.curveM.setData(pNrList,np.asarray(Mlist))
             self.curveP.setData(np.repeat(pNrList,3),np.asarray(PList))
             self.curvePW.setData(pNrList,np.asarray(PWList))
