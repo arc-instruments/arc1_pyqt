@@ -12,6 +12,7 @@ from PyQt4.QtCore import QObject, pyqtSignal
 from PyQt4 import QtGui
 from time import sleep
 import numpy as np
+import collections
 
 
 ###########################################
@@ -148,6 +149,8 @@ def writeDelimitedData(data, dest, delimiter="\t"):
     try:
         f = open(dest, 'w')
         for line in data:
+            if isinstance(line, str) or (not isinstance(line, collections.Iterable)):
+                line = [line]
             text = delimiter.join("{0:.5g}".format(x) for x in line)
             f.write(text+"\n")
         f.close()
