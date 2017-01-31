@@ -123,7 +123,7 @@ def updateHistory(w,b,m,a,pw,tag):
 
 def updateHistory_CT(w,b,m,a,pw,tag):
 	readTag='R2'
-	print "received: ", m, a
+	#print "received: ", m, a
 	
 	if g.sessionMode==1:
 		g.Mnow=m/2
