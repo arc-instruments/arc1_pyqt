@@ -67,10 +67,6 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
             self.voltages.append(line[1])
             self.pulses.append(line[2])
 
-        print(len(self.resistances))
-        print(len(self.voltages))
-        print(len(self.pulses))
-
         self.resistancePlot = self.plotWidget.plot(self.resistances, clear=True,
             pen=pyqtgraph.mkPen({'color': 'F00', 'width': 1}))
 
@@ -81,7 +77,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
     def exportClicked(self):
         saveCb = partial(f.writeDelimitedData, self.modelData)
-        print(self.modelData)
+        # print(self.modelData)
         f.saveFuncToFilename(saveCb, title="Save data to...", parent=self)
 
     def fitClicked(self):
@@ -141,9 +137,9 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
         # find all unique voltages
         posVOL = np.unique(V[V > 0])
-        print(posVOL)
+        # print(posVOL)
         negVOL = np.unique(V[V < 0])
-        print(negVOL)
+        # print(negVOL)
 
         # preallocate the pos/neg arrays: len(posVOL) x numPoints x 3
         positiveDATAarray = np.ndarray((len(posVOL), numPoints, 3))
@@ -286,6 +282,7 @@ class ThreadWrapper(QtCore.QObject):
         for i in range(numVoltages):
             voltages.append(vpos[i])
             voltages.append(vneg[i])
+        # print(voltages)
 
         for device in self.deviceList:
             w = device[0]
@@ -293,18 +290,18 @@ class ThreadWrapper(QtCore.QObject):
             self.highlight.emit(w, b)
 
             for (i, voltage) in enumerate(voltages):
+                # print("Running voltage %d (%d) from %d"  % (i, i+1, len(voltages)))
                 if i == 0:
                     startTag = "%s_s" % tag
                 else:
                     startTag = "%s_i" % tag
 
-                if (i+1) == len(voltages):
+                if i == (len(voltages)-1):
                     endTag = "%s_e" % tag
                 else:
                     endTag = "%s_i" % tag
 
-                #print(w, b, voltage, self.params["pulse_width"], self.params["interpulse"], self.params["pulses"], startTag, midTag, endTag)
-
+                # print("%d: %s %s %s" % (i, startTag, midTag, endTag))
                 self.formFinder(w, b, voltage, self.params["pulse_width"], self.params["interpulse"],
                         self.params["pulses"], startTag, midTag, endTag)
 
@@ -338,7 +335,7 @@ class ThreadWrapper(QtCore.QObject):
 
         end = False
 
-        data = []
+        #data = []
         buffer = []
         aTag = ""
 
@@ -350,8 +347,7 @@ class ThreadWrapper(QtCore.QObject):
             curValues.append(float(g.ser.readline().rstrip()))
 
             if (curValues[2] < 99e-9) and (curValues[0] > 0.0):
-                print("spurious read")
-                # initial read is useless
+                # print("spurious read")
                 continue
 
             if (int(curValues[0]) == 0) and (int(curValues[1]) == 0) and (int(curValues[2]) == 0):
@@ -359,23 +355,23 @@ class ThreadWrapper(QtCore.QObject):
                 aTag = endTag
 
             if (not end):
-                if len(buffer) == 0:
+                if len(buffer) == 0: # first point!
                     buffer = np.zeros(3)
+                    buffer[0] = curValues[0]
+                    buffer[1] = curValues[1]
+                    buffer[2] = curValues[2]
                     aTag = startTag
-                else:
-                    aTag = midTag
-            if not end:
-                data.append(buffer)
-                buffer[0] = curValues[0]
-                buffer[1] = curValues[1]
-                buffer[2] = curValues[2]
-                self.sendData.emit(w, b, buffer[0], buffer[1], buffer[2], aTag)
-                self.displayData.emit()
+                    continue
 
-        print("Got %d points for voltage %g" % (len(data), V))
-        print([x[1] for x in data])
-        # print(data)
-        #self.updateTree.emit(w, b)
+            #data.append(buffer)
+            #print(buffer[0], buffer[1], buffer[2], aTag)
+            # flush buffer values
+            self.sendData.emit(w, b, buffer[0], buffer[1], buffer[2], aTag)
+            buffer[0] = curValues[0]
+            buffer[1] = curValues[1]
+            buffer[2] = curValues[2]
+            aTag = midTag
+            self.displayData.emit()
 
 
 class ParameterFit(Ui_PFParent, QtGui.QWidget):
