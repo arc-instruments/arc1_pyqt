@@ -15,6 +15,7 @@ import os
 import time
 import numpy as np
 import scipy.stats as stat
+import scipy.version
 from scipy.optimize import curve_fit
 import pyqtgraph
 
@@ -28,6 +29,13 @@ from GeneratedUiElements.fitdialog import Ui_FitDialogParent
 
 tag="MPF"
 g.tagDict.update({tag:"Parameter Fit*"})
+
+def _curve_fit(func, x, y, **kwargs):
+    v = scipy.version.short_version.split('.')
+    if int(v[1]) <= 16:
+        if 'method' in kwargs.keys():
+            kwargs.pop('method')
+    return curve_fit(func, x, y, **kwargs)
 
 class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
@@ -181,7 +189,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         def funPOSinit(t,S,Rm):
             return (R0pos[POSlimitPOSITION]+S*(Rm**2)*t-S*Rm*R0pos[POSlimitPOSITION]*t)/(1+S*(Rm-R0pos[POSlimitPOSITION])*t)
 
-        params = curve_fit(funPOSinit, time, positiveDATAarray[POSlimitPOSITION][:,1], p0=(sgnPOS,Rmpos[POSlimitPOSITION]),method='lm')
+        params = _curve_fit(funPOSinit, time, positiveDATAarray[POSlimitPOSITION][:,1], p0=(sgnPOS,Rmpos[POSlimitPOSITION]),method='lm')
 
         Spos=params[0][0] #value for the Ap parameter in (2)
         Rmpos0=params[0][1]
@@ -189,7 +197,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         def funPOSnext(t,tp):
             return (R0pos[POSlimitPOSITION]+(Spos*(-1+np.exp(posVOL[POSlimitPOSITION]/tp)))*(Rmpos0**2)*t-(Spos*(-1+np.exp(posVOL[POSlimitPOSITION]/tp)))*Rmpos0*R0pos[POSlimitPOSITION]*t)/(1+(Spos*(-1+np.exp(posVOL[POSlimitPOSITION]/tp)))*(Rmpos0-R0pos[POSlimitPOSITION])*t)
 
-        params0=curve_fit(funPOSnext, time, positiveDATAarray[POSlimitPOSITION][:,1], p0=(1),method='lm')
+        params0=_curve_fit(funPOSnext, time, positiveDATAarray[POSlimitPOSITION][:,1], p0=(1),method='lm')
 
         tp=params0[0][0] # value for the tp parameter in (2)
 
@@ -199,7 +207,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         for i in range(len(posVOL[:(POSlimitPOSITION+1)])):
             def funPOSfinal(t,Rm):
                 return (R0pos[:(POSlimitPOSITION+1)][i]+(Spos*(-1+np.exp(posVOL[:(POSlimitPOSITION+1)][i]/tp)))*(Rm**2)*t-(Spos*(-1+np.exp(posVOL[:(POSlimitPOSITION+1)][i]/tp)))*Rm*R0pos[:(POSlimitPOSITION+1)][i]*t)/(1+(Spos*(-1+np.exp(posVOL[:(POSlimitPOSITION+1)][i]/tp)))*(Rm-R0pos[:(POSlimitPOSITION+1)][i])*t)
-            a=curve_fit(funPOSfinal, time, positiveDATAarray[:(POSlimitPOSITION+1)][i][:,1], p0=(Rmpos[i]),method='lm')
+            a=_curve_fit(funPOSfinal, time, positiveDATAarray[:(POSlimitPOSITION+1)][i][:,1], p0=(Rmpos[i]),method='lm')
             fit.append(a)
 
         RmaxSET=(np.asarray(fit))[:,0][:,0]
@@ -207,7 +215,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         def RmaxFIT(x,a,b):
             return a*x+b
 
-        params1=curve_fit(RmaxFIT, posVOL[:(POSlimitPOSITION+1)], RmaxSET, method='lm')
+        params1=_curve_fit(RmaxFIT, posVOL[:(POSlimitPOSITION+1)], RmaxSET, method='lm')
 
         a0p=params1[0][1] #value for the a0p parameter in (4)
         a1p=params1[0][0] #value for the a1p parameter in (4)
@@ -215,21 +223,21 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         def funNEGinit(t,S,Rm):
             return (R0neg[NEGlimitPOSITION]+S*(Rm**2)*t-S*Rm*R0neg[NEGlimitPOSITION]*t)/(1+S*(Rm-R0neg[NEGlimitPOSITION])*t)
 
-        paramsN = curve_fit(funNEGinit, time, negativeDATAarray[NEGlimitPOSITION][:,1], p0=(sgnNEG,Rmneg[NEGlimitPOSITION]),method='lm')
+        paramsN = _curve_fit(funNEGinit, time, negativeDATAarray[NEGlimitPOSITION][:,1], p0=(sgnNEG,Rmneg[NEGlimitPOSITION]),method='lm')
         Sneg=paramsN[0][0] #value for the An parameter in (2)
         Rmneg0=paramsN[0][1]
 
 
         def funNEGnext(t,tp):
             return (R0neg[NEGlimitPOSITION]+(Sneg*(-1+np.exp(-negVOL[NEGlimitPOSITION]/tp)))*(Rmneg0**2)*t-(Sneg*(-1+np.exp(-negVOL[NEGlimitPOSITION]/tp)))*Rmneg0*R0neg[NEGlimitPOSITION]*t)/(1+(Sneg*(-1+np.exp(-negVOL[NEGlimitPOSITION]/tp)))*(Rmneg0-R0neg[NEGlimitPOSITION])*t)
-        params0N=curve_fit(funNEGnext, time, negativeDATAarray[NEGlimitPOSITION][:,1], p0=(1),method='lm')
+        params0N=_curve_fit(funNEGnext, time, negativeDATAarray[NEGlimitPOSITION][:,1], p0=(1),method='lm')
         tn=params0N[0][0] #value for the tp parameter in (2)
 
         fitN=[]
         for i in range(len(negVOL[(NEGlimitPOSITION):])):
             def funNEGfinal(t,Rm):
                 return (R0neg[(NEGlimitPOSITION):][i]+(Sneg*(-1+np.exp(-negVOL[(NEGlimitPOSITION):][i]/tn)))*(Rm**2)*t-(Sneg*(-1+np.exp(-negVOL[(NEGlimitPOSITION):][i]/tn)))*Rm*R0neg[(NEGlimitPOSITION):][i]*t)/(1+(Sneg*(-1+np.exp(-negVOL[(NEGlimitPOSITION):][i]/tn)))*(Rm-R0neg[(NEGlimitPOSITION):][i])*t)
-            a=curve_fit(funNEGfinal, time, negativeDATAarray[(NEGlimitPOSITION):][i][:,1], p0=(Rmneg[(NEGlimitPOSITION):][i]),method='lm')
+            a=_curve_fit(funNEGfinal, time, negativeDATAarray[(NEGlimitPOSITION):][i][:,1], p0=(Rmneg[(NEGlimitPOSITION):][i]),method='lm')
             fitN.append(a)
 
         RminSET=(np.asarray(fitN))[:,0][:,0]
@@ -238,7 +246,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         def RminFIT(x,a,b):
             return a*x+b
 
-        params1N=curve_fit(RminFIT, negVOL[(NEGlimitPOSITION):], RminSET, method='lm')
+        params1N=_curve_fit(RminFIT, negVOL[(NEGlimitPOSITION):], RminSET, method='lm')
 
         a0n=params1N[0][1] #value for the a0n parameter in (4)
         a1n=params1N[0][0] #value for the a1n parameter in (4)
