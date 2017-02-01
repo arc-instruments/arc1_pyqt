@@ -301,6 +301,15 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>nrPulsesEdit</tabstop>
+  <tabstop>pulseWidthEdit</tabstop>
+  <tabstop>interpulseEdit</tabstop>
+  <tabstop>VStartPosEdit</tabstop>
+  <tabstop>VStepPosEdit</tabstop>
+  <tabstop>VStopPosEdit</tabstop>
+  <tabstop>VStartNegEdit</tabstop>
+  <tabstop>VStepNegEdit</tabstop>
+  <tabstop>VStopNegEdit</tabstop>
   <tabstop>applyOneButton</tabstop>
   <tabstop>applyRangeButton</tabstop>
   <tabstop>applyAllButton</tabstop>
