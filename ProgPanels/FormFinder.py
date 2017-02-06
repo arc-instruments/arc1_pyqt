@@ -10,6 +10,7 @@
 from PyQt4 import QtGui, QtCore
 import sys
 import os
+import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -288,23 +289,26 @@ class FormFinder(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[1].text())*polarity)+"\n")
         g.ser.write(str(float(self.leftEdits[2].text())*polarity)+"\n")
 
+        time.sleep(0.05)
+
         g.ser.write(str(float(self.leftEdits[3].text())/1000000)+"\n")
         g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
         g.ser.write(str(float(self.leftEdits[5].text())/1000000)+"\n")
 
         g.ser.write(str(float(self.leftEdits[6].text())/1000)+"\n")
-
-        g.ser.write(str(float(self.rightEdits[0].text()))+"\n")
+        time.sleep(0.05)
+        
         g.ser.write(str(float(self.rightEdits[1].text()))+"\n")
         #g.ser.write(str(float(self.rightEdits[2].text()))+"\n")
-
+        time.sleep(0.05)
         if self.checkRthr.isChecked():
             g.ser.write(str(float(self.rightEdits[2].text()))+"\n")
         else:
             g.ser.write(str(float(0))+"\n")
-
+        time.sleep(0.05)
         g.ser.write(str(int(self.rightEdits[3].text()))+"\n")
-
+        g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
+        time.sleep(0.05)
 
     def programOne(self):
         if g.ser.port != None:

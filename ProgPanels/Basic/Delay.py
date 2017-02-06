@@ -190,6 +190,7 @@ class Delay(QtGui.QWidget):
         self.getData.finished.connect(self.getData.deleteLater)
         self.thread.finished.connect(self.getData.deleteLater)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
         self.thread.start()
 

@@ -73,7 +73,7 @@ class interfaceAntenna(QObject):
 
 	def wakeUp(self):
 		g.waitCondition.wakeAll()
-		print " --> waitCondition wakedAll"
+		#print " --> waitCondition wakedAll"
 	def cast(self, value):
 		# if value==False:
 		# 	g.waitCondition.wakeAll()
@@ -123,6 +123,7 @@ def updateHistory(w,b,m,a,pw,tag):
 
 def updateHistory_CT(w,b,m,a,pw,tag):
 	readTag='R2'
+	#print "received: ", m, a
 	
 	if g.sessionMode==1:
 		g.Mnow=m/2
@@ -176,8 +177,11 @@ addressAntenna=addressAntenna()
 dataBuffer=[]
 
 def getFloats(n):
+	while g.ser.inWaiting()<n*4:
+		pass
 	values=g.ser.read(size=n*4)	# read n * 4 bits of data (n floats) from the input serial
-	return np.frombuffer(buffer(values), dtype=np.float32)	# returns a list of these floats
+	extracted=np.frombuffer(buffer(values), dtype=np.float32)
+	return extracted	# returns a list of these floats
 
 
 
