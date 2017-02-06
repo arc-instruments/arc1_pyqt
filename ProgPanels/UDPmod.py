@@ -11,13 +11,13 @@ import threading
 
 
 # Set up directory environment.
-sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
+#sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
+#sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
 
-import GlobalFonts as fonts
-import GlobalFunctions as f
-import GlobalVars as g
-import GlobalStyles as s
+import Globals.GlobalFonts as fonts
+import Globals.GlobalVars as g
+import Globals.GlobalFunctions as f
+import Globals.GlobalStyles as s
 
 tag="UDP" #Tag this module as... System will know how to handle it then.
 g.tagDict.update({tag:"UDPconn"})
@@ -36,8 +36,8 @@ class getData(QtCore.QObject):
 
     def __init__(self, deviceList, preip, preport, postip, postport):
         #Plasticity rule inits.
-        self.LTDwin = 500
-        self.LTPwin = 500
+        self.LTDwin = 750
+        self.LTPwin = 2000
         self.searchLim = 100 #How many elements in the past to check for 'missed plasticity opportunities'.
 
         #Other inits.
@@ -47,8 +47,9 @@ class getData(QtCore.QObject):
         self.preport = preport
         self.postip = postip
         self.postport = postport
-        self.preNeurdt = 257*[[- self.LTDwin - 1]] #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
-        self.postNeurdt = 4097*[[- self.LTPwin - 1]] #Matrix holding timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+        #self.preNeurdt = 257*[[- self.LTDwin - 1]] #Matrix holding abs. timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
+        #self.postNeurdt = 4097*[[- self.LTPwin - 1]] #Matrix holding abs. timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
+        self.Neurdt = 4097 * [[- self.LTPwin - 1]] #Matrix holding absolute times of spikes of any type. Mat(x,y): x-> Neuron ID. y-> =0: last absolute time of firing for neuron x.
 
 
     def runUDP(self):
@@ -57,8 +58,8 @@ class getData(QtCore.QObject):
 
         #Operational parameters.
         maxtime = 90 #Maximum time allowed for UDP operation before returning control (s).
-        Rmin = 1000.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
-        Rmax = 20000.0
+        Rmin = 3500.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
+        Rmax = 15000.0
         maxlisten = 20 #Maximum time to listen on socket for events.
 
         #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
@@ -87,7 +88,7 @@ class getData(QtCore.QObject):
             # Prepare to send response via UDP.
             id_res = 82  # Identify this packet as RDY (d82, ASCII 'R')
             id = 0
-            tst_res = 0
+            tst_res = 255
             tst = 0  # Send to post side absolute time when this neuron fires.
             # Preparation for packing.
             id_int = (((id_res & 0xff) << 24) | (id & (0x00fffff)))
@@ -96,9 +97,10 @@ class getData(QtCore.QObject):
             pack = (id_int, tst_int)
             pack_data = packer.pack(*pack)
 
-            sock.sendto(pack_data, (self.postip, int(self.postport)))
+            #HEADER PACKET SEND.
+            #sock.sendto(pack_data, (self.postip, int(self.postport)))
+            #sock.sendto(pack_data, (self.preip, int(self.preport)))
 
-            #sock.sendto("RDY", (self.postip, int(self.postport)))
 
             #LISTENING MODE.
             ready = select.select([sock], [], [], maxlisten) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
@@ -122,170 +124,355 @@ class getData(QtCore.QObject):
                 print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
 
                 if(id_res_in == g.partcode[0]):
-                    print("(PRE)")
+                    print("(P1)") #Partner 1
                 elif(id_res_in == g.partcode[1]):
-                    print("(POST)")
+                    print("(P2)") #Partner 2
 
                 #if id_res_in == g.partcode[0] and (np.sum(g.ConnMat[id_in,:,0] > 0)): #Recognise input as presynaptic.  # PRE # ...and check it actually connects to something.
-                if (np.sum(g.ConnMat[id_in, :, 0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
 
-                    #Absolute time clock.
-                    tabs += tst_in #Update absolute time clock.
-                    if tabs > 1000000000000: #Reset time counter if it gets too large.
+                ######################### P1 #####################
+
+                if id_res_in == g.partcode[0]: #Recognise input as coming from P1.
+
+                    # Absolute time clock.
+                    tabs += tst_in  # Update absolute time clock.
+                    if tabs > 1000000000000:  # Reset time counter if it gets too large.
                         tabs -= 1000000000000
 
-                    #Register arrival of pre-spike and store new neur. specific abs. time firing time.
-                    self.preNeurdt[id_in] = self.preNeurdt[id_in] + [tabs]
+                    # Register arrival of spike and store new neur. specific abs. time firing time.
+                    self.Neurdt[id_in] = self.Neurdt[id_in] + [tabs]
 
-                    #Decide which post-neurons to look at based on post neuron id.
-                    postNeurIdx = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
+                    ###### PRE ######
+                    if (np.sum(g.ConnMat[id_in, :, 0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
 
-                    postNeurLookup = [-1]
-                    for i in postNeurIdx:
-                        postNeurLookup = postNeurLookup + [self.postNeurdt[i]] #Generate sub-vector holding only post-neurons to be 'looked up'.
-                    postNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
+                        #Decide which post-neurons to look at based on post neuron id.
+                        postNeurIdx = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
 
-                    id_out = postNeurIdx
+                        postNeurLookup = [-1]
+                        for i in postNeurIdx:
+                            postNeurLookup = postNeurLookup + [self.Neurdt[i]] #Generate sub-vector holding only post-neurons to be 'looked up'.
+                        postNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
 
-                    #Determine whether plasticity should be triggered.
+                        id_out = postNeurIdx
 
-                    #Check for LTD.
-                    id_plast = [-1]
-                    for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
-                        #if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
-                        if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTDwin)]):
-                            id_plast = id_plast + [postNeurIdx[i]]
-                    id_plast = id_plast[1:]
+                        #Determine whether plasticity should be triggered.
 
-                    #Check for LTP.
-                    id_plast2 = [-1]
-                    for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
-                        if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTPwin)]):
-                            id_plast2 = id_plast2 + [postNeurIdx[i]]
-                    id_plast2 = id_plast2[1:]
+                        #Check for LTD.
+                        id_plast = [-1]
+                        for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
+                            #if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
+                            if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTDwin)]):
+                                id_plast = id_plast + [postNeurIdx[i]]
+                        id_plast = id_plast[1:]
+
+                        #Check for LTP.
+                        id_plast2 = [-1]
+                        for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
+                            if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTPwin)]):
+                                id_plast2 = id_plast2 + [postNeurIdx[i]]
+                        id_plast2 = id_plast2[1:]
 
 
-                    for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
+                        for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
 
-                        #Determine physical device that corresponds to affected synapse.
-                        w_tar = g.ConnMat[id_in, id_out[elem], 1] #Capture w-line & b-line.
-                        b_tar = g.ConnMat[id_in, id_out[elem], 2]
+                            #Determine physical device that corresponds to affected synapse.
+                            w_tar = g.ConnMat[id_in, id_out[elem], 1] #Capture w-line & b-line.
+                            b_tar = g.ConnMat[id_in, id_out[elem], 2]
 
-                        #Display updates.
-                        f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
-                        f.displayUpdate.updateSignal_short.emit()
+                            #Display updates.
+                            f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
+                            f.displayUpdate.updateSignal_short.emit()
 
-                        #Select active device.
-                        g.ser.write("02\n") #Select device operation.
-                        g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
-                        g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
-                        #Read it.
-                        g.ser.write("03\n") #Read operation.
-                        g.ser.write("k\n") #Calibrated read operation.
+                            #Select and read active device.
+                            g.ser.write("1\n")
+                            g.ser.write(str(int(w_tar))+"\n")
+                            g.ser.write(str(int(b_tar))+"\n")
 
-                        result = f.getFloats(1)[0]
+                            result = f.getFloats(1)[0]
 
-                        #If plasticity should be triggered carry it out.
-                        if id_out[elem] in id_plast and id_out[elem] not in id_plast2:
-                            self.plastfun(0)
-                            print('LTD')
-                        elif id_out[elem] in id_plast2 and id_out[elem] not in id_plast:
-                            self.plastfun(1)
-                            print('LTP')
+                            print('--')
 
-                        result = float(result)
+                            #If plasticity should be triggered carry it out.
+                            if id_out[elem] in id_plast and id_out[elem] not in id_plast2:
+                                self.plastfun(0, w_tar, b_tar)
+                                print('LTD')
+                            elif id_out[elem] in id_plast2 and id_out[elem] not in id_plast:
+                                self.plastfun(1, w_tar, b_tar)
+                                print('LTP')
 
-                        print('PRE: ' + str(result)+', '+str(tabs)+', '+str(id_in)+', '+str(id_out[elem])) #  RS | Abs. time | PRE ID | POST ID
+                            result = float(result)
 
-                        #Prepare to send response via UDP.
-                        id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
-                        id = int(id_out[elem])
-                        tst_res = int(np.round(np.clip((255.0/(Rmax-Rmin))*(result-Rmin), 0, 255))) #Clip & round - pretty self-explanatory.
-                        tst = tabs #Send to post side absolute time when this neuron fires.
-                        #Preparation for packing.
-                        id_int = (((id_res&0xff)<<24)|(id&(0x00fffff)))
-                        tst_int =(((tst_res&0xff)<<24)|(tst&(0x00fffff)))
+                            print('PRE: ' + str(result)+', '+str(tabs)+', '+str(id_in)+', '+str(id_out[elem])) #  RS | Abs. time | PRE ID | POST ID
+                            print('--')
 
-                        pack = (id_int, tst_int)
-                        pack_data = packer.pack(*pack)
+                            #Prepare to send response via UDP.
+                            id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
+                            id = int(id_out[elem])
+                            tst_res = int(np.round(np.clip((255.0/(Rmax-Rmin))*(result-Rmin), 0, 255))) #Clip & round - pretty self-explanatory.
+                            tst = tabs #Send to post side absolute time when this neuron fires.
+                            #Preparation for packing.
+                            id_int = (((id_res&0xff)<<24)|(id&(0x00fffff)))
+                            tst_int =(((tst_res&0xff)<<24)|(tst&(0x00fffff)))
 
-                        sock.sendto(pack_data, (self.postip, int(self.postport)))
-                        sock.sendto(pack_data, (self.preip, int(self.preport)))
+                            pack = (id_int, tst_int)
+                            pack_data = packer.pack(*pack)
 
-                    #ready = select.select([sock], [], [], maxlisten)
+                            sock.sendto(pack_data, (self.postip, int(self.postport)))
+                            #sock.sendto(pack_data, (self.preip, int(self.preport)))
 
-                #elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
-                if (np.sum(g.ConnMat[:, id_in, 0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
-                    print('POST caught')
-                    #Register arrival of post-spike and store new neur. specific abs. time firing time.
-                    self.postNeurdt[id_in] = self.postNeurdt[id_in] + [tst_in]
+                        #ready = select.select([sock], [], [], maxlisten)
 
-                    #Decide which pre-neurons to look at based on post neuron id.
+                    #elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
+
+                    ###### POST ######
+                    if (np.sum(g.ConnMat[:, id_in, 0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
+
+                        #Decide which pre-neurons to look at based on post neuron id.
+                        preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
+
+                        preNeurLookup = [-1]
+                        for i in preNeurIdx:
+                            preNeurLookup = preNeurLookup + [self.Neurdt[i]] #Generate sub-vector holding only pre-neurons to be 'looked up'.
+                        preNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
+
+                        id_out = preNeurIdx
+
+                        #Determine whether plasticity should be triggered.
+
+                        #Check for LTP.
+                        id_plast = [-1]
+                        for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
+                            #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTPwin)]):
+                                id_plast = id_plast + [preNeurIdx[i]]
+                        id_plast = id_plast[1:]
+
+                        #Check for LTD.
+                        id_plast2 = [-1]
+                        for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
+                            #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTDwin)]):
+                                id_plast2 = id_plast2 + [preNeurIdx[i]]
+                        id_plast2 = id_plast2[1:]
+
+                        for elem in range(len(id_out)):
+
+                            #Determine physical device that corresponds to affected synapse.
+                            w_tar = g.ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
+                            b_tar = g.ConnMat[id_out[elem], id_in, 2]
+
+                            #Display updates.
+                            f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
+                            f.displayUpdate.updateSignal_short.emit()
+
+                            #Select device to be 'plasticised'.
+                            g.ser.write("02\n") #Select device operation.
+                            g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
+                            g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+
+                            print('--')
+
+                            if id_out[elem] in id_plast and id_out[elem] not in  id_plast2:
+                                self.plastfun(1, w_tar, b_tar) #Carry out plasticity.
+                                print("LTP")
+                            elif id_out[elem] in id_plast2 and id_out[elem] not in  id_plast:
+                                self.plastfun(0, w_tar, b_tar) #Carry out plasticity.
+                                print("LTD")
+
+                            #Select and read active device.
+                            time.sleep(0.005)
+                            g.ser.write("1\n")
+                            g.ser.write(str(int(w_tar))+"\n")
+                            g.ser.write(str(int(b_tar))+"\n")
+                            time.sleep(0.005)
+                            result = f.getFloats(1)[0]
+
+                            result = float(result)
+                            print('POST: ' + str(result)+', '+str(tabs)+', '+str(id_out[elem])+', '+str(id_in)) #  RS | Abs. time | PRE ID | POST ID
+                            print('--')
+
+                ######################### P2 #####################
+
+                if id_res_in == g.partcode[1]:  # Recognise input as coming from P2.
+                    # Determine whether firing neuron is post-synaptic to anything.
                     preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
 
-                    preNeurLookup = [-1]
-                    for i in preNeurIdx:
-                        preNeurLookup = preNeurLookup + [self.preNeurdt[i]] #Generate sub-vector holding only pre-neurons to be 'looked up'.
-                    preNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
+                    if len(preNeurIdx) != 0: #If it is post-synaptic to something...
+                        lastspks = [] #Hold last spikes from each pre-synaptic neuyron in this list.
 
-                    id_out = preNeurIdx
+                        #...find out what it is post-synaptic to...
+                        preNeurLookup = [-1]
+                        for i in preNeurIdx:
+                            preNeurLookup = preNeurLookup + [self.Neurdt[i]]  # Generate sub-vector holding only pre-neurons to be 'looked up'.
+                            lastspks +=  [self.Neurdt[i][-1]] #Register last spikes from every pre-synaptic neuron.
+                        preNeurLookup.remove(-1)  # Clean up list of lists of its initial elements.
 
-                    #Determine whether plasticity should be triggered.
+                        tabs_in = np.max(lastspks) + tst_in #...and then relate it to the last spike it received from those neurons.
 
-                    #Check for LTP.
-                    id_plast = [-1]
-                    for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
-                        #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                        if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tst_in - e) <= self.LTPwin)]):
-                            id_plast = id_plast + [preNeurIdx[i]]
-                    id_plast = id_plast[1:]
+                    else: #If it is just a pre-cell...
+                        #...relate the new firing time to the cell's own previous firing time.
+                        tabs_in = self.Neurdt[id_in][-1] + tst_in  # Mark arrival on absoulte time axis WITHOUT updating absolute time clock.
 
-                    #Check for LTD.
-                    id_plast2 = [-1]
-                    for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
-                        #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                        if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tst_in - e) >= -self.LTDwin)]):
-                            id_plast2 = id_plast2 + [preNeurIdx[i]]
-                    id_plast2 = id_plast2[1:]
+                    #Reset time counter if it gets too large.
+                    if tabs_in > 1000000000000:
+                        tabs_in -= 1000000000000
 
-                    for elem in range(len(id_out)):
-                        #Determine physical device that corresponds to affected synapse.
-                        w_tar = g.ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
-                        b_tar = g.ConnMat[id_out[elem], id_in, 2]
+                    # Register arrival of pre-spike and store new neur. specific abs. time firing time.
+                    self.Neurdt[id_in] = self.Neurdt[id_in] + [tabs_in]
 
-                        #Display updates.
-                        f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
-                        f.displayUpdate.updateSignal_short.emit()
+                    ###### PRE ######
+                    if (np.sum(g.ConnMat[id_in, :,0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
 
-                        #Select device to be 'plasticised'.
-                        g.ser.write("02\n") #Select device operation.
-                        g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
-                        g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+                        # Decide which post-neurons to look at based on post neuron id.
+                        postNeurIdx = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
 
-                        if id_out[elem] in id_plast and id_out[elem] not in  id_plast2:
-                            self.plastfun(1) #Carry out plasticity.
-                            print("LTP")
-                        elif id_out[elem] in id_plast2 and id_out[elem] not in  id_plast:
-                            self.plastfun(0) #Carry out plasticity.
-                            print("LTD")
+                        postNeurLookup = [-1]
+                        for i in postNeurIdx:
+                            postNeurLookup = postNeurLookup + [self.Neurdt[i]]  # Generate sub-vector holding only post-neurons to be 'looked up'.
+                        postNeurLookup.remove(-1)  # Clean up list of lists of its initial elements.
 
-                        #Read results.
-                        g.ser.write("03\n") #Read operation.
-                        g.ser.write("k\n") #Calibrated read operation.
+                        id_out = postNeurIdx
 
-                        try:
-                            result='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-                        except ValueError:
-                            result='%.10f' % 0.001
+                        # Determine whether plasticity should be triggered.
 
-                        result = float(result)
-                        print('POST: ' + str(result)+', '+str(tst_in)+', '+str(id_out[elem])+', '+str(id_in)) #  RS | Abs. time | PRE ID | POST ID
+                        # Check for LTD.
+                        id_plast = [-1]
+                        for i in range(len(postNeurLookup)):  # For every look-upabble PRE neuron...
+                            # if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
+                            if any([True for e in postNeurLookup[i][-self.searchLim:] if
+                                    (0 < (tabs_in - e) <= self.LTDwin)]):
+                                id_plast = id_plast + [postNeurIdx[i]]
+                        id_plast = id_plast[1:]
 
-                    #ready = select.select([sock], [], [], maxlisten)
+                        # Check for LTP.
+                        id_plast2 = [-1]
+                        for i in range(len(postNeurLookup)):  # For every look-upabble PRE neuron...
+                            if any([True for e in postNeurLookup[i][-self.searchLim:] if
+                                    (0 > (tabs_in - e) >= -self.LTPwin)]):
+                                id_plast2 = id_plast2 + [postNeurIdx[i]]
+                        id_plast2 = id_plast2[1:]
 
-                print('Before socket listen')
+                        for elem in range(len(id_out)):  # For every synapse that the incoming pre-synaptic spike affects...
+
+                            # Determine physical device that corresponds to affected synapse.
+                            w_tar = g.ConnMat[id_in, id_out[elem], 1]  # Capture w-line & b-line.
+                            b_tar = g.ConnMat[id_in, id_out[elem], 2]
+
+                            # Display updates.
+                            f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))  # signal the crossbar antenna that this device has been selected
+                            f.displayUpdate.updateSignal_short.emit()
+
+                            # Select and read active device.
+                            g.ser.write("1\n")
+                            g.ser.write(str(int(w_tar)) + "\n")
+                            g.ser.write(str(int(b_tar)) + "\n")
+
+                            result = f.getFloats(1)[0]
+
+                            print('--')
+
+                            # If plasticity should be triggered carry it out.
+                            if id_out[elem] in id_plast and id_out[elem] not in id_plast2:
+                                self.plastfun(0, w_tar, b_tar)
+                                print('LTD')
+                            elif id_out[elem] in id_plast2 and id_out[elem] not in id_plast:
+                                self.plastfun(1, w_tar, b_tar)
+                                print('LTP')
+
+                            result = float(result)
+
+                            print('PRE: ' + str(result) + ', ' + str(tabs_in) + ', ' + str(id_in) + ', ' + str(id_out[elem]))  # RS | Abs. time | PRE ID | POST ID
+                            print('--')
+
+                            # Prepare to send response via UDP.
+                            id_res = g.partcode[2]  # Identify sender of this packet as SOTON (d83, ASCII 'S')
+                            id = int(id_out[elem])
+                            tst_res = int(np.round(np.clip((255.0 / (Rmax - Rmin)) * (result - Rmin), 0, 255)))  # Clip & round - pretty self-explanatory.
+                            tst = tabs  # Send to post side absolute time when this neuron fires.
+                            # Preparation for packing.
+                            id_int = (((id_res & 0xff) << 24) | (id & (0x00fffff)))
+                            tst_int = (((tst_res & 0xff) << 24) | (tst & (0x00fffff)))
+
+                            pack = (id_int, tst_int)
+                            pack_data = packer.pack(*pack)
+
+                            #sock.sendto(pack_data, (self.postip, int(self.postport)))
+                            sock.sendto(pack_data, (self.preip, int(self.preport)))
+
+                            # ready = select.select([sock], [], [], maxlisten)
+
+                    # elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
+
+                    ###### POST ######
+                    if (np.sum(g.ConnMat[:, id_in,0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
+
+                        # Decide which pre-neurons to look at based on post neuron id.
+                        preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
+
+                        preNeurLookup = [-1]
+                        for i in preNeurIdx:
+                            preNeurLookup = preNeurLookup + [self.Neurdt[i]]  # Generate sub-vector holding only pre-neurons to be 'looked up'.
+                        preNeurLookup.remove(-1)  # Clean up list of lists of its initial elements.
+
+                        id_out = preNeurIdx
+
+                        # Determine whether plasticity should be triggered.
+
+                        # Check for LTP.
+                        id_plast = [-1]
+                        for i in range(len(preNeurLookup)):  # For every look-upabble PRE neuron...
+                            # if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tabs_in - e) <= self.LTPwin)]):
+                                id_plast = id_plast + [preNeurIdx[i]]
+                        id_plast = id_plast[1:]
+
+                        # Check for LTD.
+                        id_plast2 = [-1]
+                        for i in range(len(preNeurLookup)):  # For every look-upabble PRE neuron...
+                            # if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tabs_in - e) >= -self.LTDwin)]):
+                                id_plast2 = id_plast2 + [preNeurIdx[i]]
+                        id_plast2 = id_plast2[1:]
+
+                        for elem in range(len(id_out)):
+
+                            # Determine physical device that corresponds to affected synapse.
+                            w_tar = g.ConnMat[id_out[elem], id_in, 1]  # Capture w-line & b-line.
+                            b_tar = g.ConnMat[id_out[elem], id_in, 2]
+
+                            # Display updates.
+                            f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))  # signal the crossbar antenna that this device has been selected
+                            f.displayUpdate.updateSignal_short.emit()
+
+                            # Select device to be 'plasticised'.
+                            g.ser.write("02\n")  # Select device operation.
+                            g.ser.write(str(int(w_tar)) + "\n")  # Send wordline address.
+                            g.ser.write(str(int(b_tar)) + "\n")  # Send bitline address.
+
+                            print('--')
+
+                            if id_out[elem] in id_plast and id_out[elem] not in id_plast2:
+                                self.plastfun(1, w_tar, b_tar)  # Carry out plasticity.
+                                print("LTP")
+                            elif id_out[elem] in id_plast2 and id_out[elem] not in id_plast:
+                                self.plastfun(0, w_tar, b_tar)  # Carry out plasticity.
+                                print("LTD")
+
+                            # Select and read active device.
+                            time.sleep(0.005)
+                            g.ser.write("1\n")
+                            g.ser.write(str(int(w_tar)) + "\n")
+                            g.ser.write(str(int(b_tar)) + "\n")
+                            time.sleep(0.005)
+                            result = f.getFloats(1)[0]
+
+                            result = float(result)
+                            print('POST: ' + str(result) + ', ' + str(tabs_in) + ', ' + str(id_out[elem]) + ', ' + str(id_in))  # RS | Abs. time | PRE ID | POST ID
+                            print('--')
+
+
+                #Read next packet.
                 ready = select.select([sock], [], [], maxlisten)
-                print('After socket listen')
 
                 #else:
                     #ready = select.select([sock], [], [], maxlisten)
@@ -303,7 +490,7 @@ class getData(QtCore.QObject):
 
         return 0
 
-    def plastfun(self, plastdir): #Plasticity function depends on pre-dt, post-dt and the direction of the plasticity (plastdir = 1 (LTP), = 0, (LTD)).
+    def plastfun(self, plastdir, w, b): #Plasticity function depends on pre-dt, post-dt and the direction of the plasticity (plastdir = 1 (LTP), = 0, (LTD)).
         #Plasticity parameters.
 
         if plastdir:
