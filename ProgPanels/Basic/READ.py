@@ -251,6 +251,7 @@ class READ(QtGui.QWidget):
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
+
         self.thread.start()
 
     def updateRead(self):
