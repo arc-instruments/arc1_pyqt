@@ -78,6 +78,8 @@ for i in range(color_tuple.N):
 
 qColorList=qColorList[::-1] # revert the list
 
+scaling_factor=1
+
 ####################################
 customArray=[]
 checkSA=False

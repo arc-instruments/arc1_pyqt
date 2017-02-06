@@ -40,13 +40,19 @@ elif sys.platform in ["linux", "linux2", "darwin"]:
 else:
     serialFormat = '%d'
 
-import ControlPanels
 import Globals
 
 import Globals.GlobalVars as g
 import Globals.GlobalFunctions as f
 import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
+
+from win32api import GetSystemMetrics
+monitor_width=GetSystemMetrics(0)
+monitor_height=GetSystemMetrics(1)
+g.scaling_factor=float(monitor_height)/1200
+
+import ControlPanels
 
 class Arcontrol(QtGui.QMainWindow):
     
@@ -56,6 +62,8 @@ class Arcontrol(QtGui.QMainWindow):
         self.initUI()
         
     def initUI(self): 
+
+
         ##########################
         # SPLASH SCREEN #
         pixmap = QtGui.QPixmap(os.getcwd()+"/Graphics/"+'splash2.png')
@@ -234,7 +242,7 @@ class Arcontrol(QtGui.QMainWindow):
         self.toolbar.addWidget(spacer)
 
         self.arcStatusLabel=QtGui.QLabel()
-        self.arcStatusLabel.setMinimumWidth(200)
+        self.arcStatusLabel.setMinimumWidth(200*g.scaling_factor)
         self.arcStatusLabel.setStyleSheet(s.arcStatus_disc)
         self.arcStatusLabel.setText('Disconnected')
         self.arcStatusLabel.setFont(fonts.font1)
@@ -294,12 +302,12 @@ class Arcontrol(QtGui.QMainWindow):
 
         # Setup size constraints for each compartment of the UI
         #splitter.setContentsMargins(0,0,0,0)
-        hp.setMinimumWidth(150)
-        hp.setMaximumWidth(300)
-        hp.setMinimumHeight(700)
+        hp.setMinimumWidth(150*g.scaling_factor)
+        hp.setMaximumWidth(300*g.scaling_factor)
+        hp.setMinimumHeight(700*g.scaling_factor)
 
-        self.mo.setFixedWidth(300)
-        dd.setMinimumWidth(650)
+        self.mo.setFixedWidth(300*g.scaling_factor)
+        dd.setMinimumWidth(650*g.scaling_factor)
 
         layoutRight.setStretchFactor(layoutTop, 5)	# define how scaling the window scales the two sections
         layoutRight.setStretchFactor(self.layoutBot, 6)
@@ -307,8 +315,8 @@ class Arcontrol(QtGui.QMainWindow):
         self.layoutBot.setStretchFactor(self.pp, 6)			# define how scaling the window scales the two sections
         self.layoutBot.setStretchFactor(self.cp, 6)
 
-        self.pp.setMinimumWidth(700)
-        self.cp.setMinimumWidth(600)
+        self.pp.setMinimumWidth(700*g.scaling_factor)
+        self.cp.setMinimumWidth(600*g.scaling_factor)
 
         layoutTop.setSpacing(0)
         self.layoutBot.setSpacing(0)
@@ -330,7 +338,7 @@ class Arcontrol(QtGui.QMainWindow):
         f.cbAntenna.recolor.connect(self.updateSaveButton)
         
     	# Setup main window geometry
-    	self.setGeometry(100, 100, 1500, 800)
+    	self.setGeometry(100, 100, g.scaling_factor*1500, g.scaling_factor*800)
     	self.setWindowTitle('ArC One - Control Panel')  
     	self.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png')) 
 
@@ -542,7 +550,7 @@ class Arcontrol(QtGui.QMainWindow):
         from ControlPanels import new_Session
         self.newSesh=new_Session.new_Session()
         self.newSesh.setFixedWidth(500)
-        self.newSesh.setFixedHeight(850)
+        self.newSesh.setMaximumHeight(850*g.scaling_factor)
 
 
         frameGm = self.newSesh.frameGeometry()
@@ -723,6 +731,7 @@ class Arcontrol(QtGui.QMainWindow):
             print "Yes"
             #clear mhistory
             self.deleteAllData()
+            g.saveFileName=[]
             #clear data display
             #clear crossbar
         elif reply == QtGui.QMessageBox.No:

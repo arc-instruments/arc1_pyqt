@@ -233,7 +233,7 @@ class history_panel(QtGui.QWidget):
 
                 # setup display
                 self.resultWindow.append(QtGui.QWidget())
-                self.resultWindow[-1].setGeometry(100,100,1000,400)
+                self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,400)
                 self.resultWindow[-1].setWindowTitle("Curve Tracer: W="+ str(w) + " | B=" + str(b))
                 self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
                 self.resultWindow[-1].show()
@@ -393,7 +393,7 @@ class history_panel(QtGui.QWidget):
 
                 # setup display
                 self.resultWindow.append(QtGui.QWidget())
-                self.resultWindow[-1].setGeometry(100,100,1000,500)
+                self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,500)
                 self.resultWindow[-1].setWindowTitle("SwitchSeeker: W="+ str(w) + " | B=" + str(b))
                 self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
                 self.resultWindow[-1].show()
@@ -478,7 +478,7 @@ class history_panel(QtGui.QWidget):
                 resLayout.setContentsMargins(0,0,0,0)
 
                 self.resultWindow.append(QtGui.QWidget())
-                self.resultWindow[-1].setGeometry(100,100,1000,400)
+                self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,400)
                 self.resultWindow[-1].setWindowTitle("Retention: W="+ str(w) + " | B=" + str(b))
                 self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
                 self.resultWindow[-1].show()

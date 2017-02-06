@@ -243,6 +243,7 @@ class new_Session(QtGui.QWidget):
 
         self.setContentsMargins(0,0,0,0)    # spacing of the full Layout to accomodate line numbers and colorbar on the right  
         self.setLayout(mainLayout)
+        #self.setGeometry()
         self.redrawCB()
 
     def selectWDir(self):
@@ -304,7 +305,7 @@ class new_Session(QtGui.QWidget):
             for b in range(1,bmax+1):
                 aCell=c.cell()
                 aCell.setMinimumWidth(15)
-                aCell.setMinimumHeight(15)
+                aCell.setMaximumHeight(20*g.scaling_factor)
                 layout.addWidget(aCell,w,b)
         aCell=[]
 
@@ -334,20 +335,20 @@ class new_Session(QtGui.QWidget):
 
         g.readCycles=int(self.readCyclesEntry.text())
         g.sneakPathOption=self.sneakCombo.currentIndex()
-        print "Sneak option: ", g.sneakPathOption
+        #print "Sneak option: ", g.sneakPathOption
         g.sessionMode=self.wModeCombo.currentIndex()
         g.sessionName=self.wNameEntry.text()
 
         # Browse label and browse button
         #wDirBrowse=QtGui.
 
-        print g.wline_nr
-        print g.bline_nr
-        print g.workingDirectory
-        print g.readCycles
-        print g.sneakPathOption
-        print g.sessionMode
-        print g.sessionName
+        #print g.wline_nr
+        #print g.bline_nr
+        #print g.workingDirectory
+        #print g.readCycles
+        #print g.sneakPathOption
+        #print g.sessionMode
+        #print g.sessionName
 
         f.interfaceAntenna.reformat.emit()
 
