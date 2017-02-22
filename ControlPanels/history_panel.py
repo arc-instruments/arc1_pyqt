@@ -495,6 +495,7 @@ class history_panel(QtGui.QWidget):
 
             if tagKey=='VOL':
                 #print "VolatilityRead"
+                pass
 
             if tagKey=='stdp':
 
