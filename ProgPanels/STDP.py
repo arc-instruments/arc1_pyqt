@@ -711,7 +711,7 @@ class STDP(QtGui.QWidget):
                 timeSteps.append(i*timeStep)
                 timeSteps.append(i*timeStep*-1)
                 i+=1
-            print " =========> Timesteps", timeSteps
+            #print " =========> Timesteps", timeSteps
         return timeSteps
 
     def programOne(self):
