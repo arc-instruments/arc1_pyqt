@@ -186,20 +186,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="VNegRefEdit">
-        <property name="text">
-         <string>-2.0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="VPosRefEdit">
-        <property name="text">
-         <string>2.0</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -258,6 +244,12 @@ border: 2px solid transparent;</string>
         </property>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="refPosCombo"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="refNegCombo"/>
+      </item>
      </layout>
     </widget>
    </item>
@@ -310,8 +302,6 @@ border: 2px solid transparent;</string>
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>VPosRefEdit</tabstop>
-  <tabstop>VNegRefEdit</tabstop>
   <tabstop>numPulsesEdit</tabstop>
   <tabstop>fitButton</tabstop>
   <tabstop>exportModelDataButton</tabstop>

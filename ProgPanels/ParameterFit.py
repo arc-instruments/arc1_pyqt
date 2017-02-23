@@ -172,8 +172,6 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         self.setWindowTitle("Parameter fit for W=%d | B=%d" % (w, b))
         self.setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png'))
 
-        self.VPosRefEdit.setValidator(QtGui.QDoubleValidator())
-        self.VNegRefEdit.setValidator(QtGui.QDoubleValidator())
         self.numPulsesEdit.setValidator(QtGui.QIntValidator())
 
         self.fitButton.clicked.connect(self.fitClicked)
@@ -186,9 +184,16 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         self.modelData[:] = []
         self.modelParams = {}
 
+        unique_pos_voltages = set()
+        unique_neg_voltages = set()
+
         for line in raw_data:
             self.resistances.append(line[0])
             self.voltages.append(line[1])
+            if line[1] >= 0:
+                unique_pos_voltages.add(line[1])
+            else:
+                unique_neg_voltages.add(line[1])
             self.pulses.append(line[2])
 
         self.resistancePlot = self.plotWidget.plot(self.resistances, clear=True,
@@ -198,6 +203,11 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
         self.plotWidget.setLabel('left', 'Resistance', units=u"Ω")
         self.plotWidget.setLabel('bottom', 'Pulse')
+
+        for v in sorted(unique_pos_voltages):
+            self.refPosCombo.addItem(str(v), v)
+        for v in sorted(unique_neg_voltages, reverse=True):
+            self.refNegCombo.addItem(str(v), v)
 
     def exportClicked(self):
         saveCb = partial(f.writeDelimitedData, self.modelData)
@@ -224,8 +234,8 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
     def fitClicked(self):
         numPoints = int(self.numPulsesEdit.text())
-        posRef = float(self.VPosRefEdit.text())
-        negRef = float(self.VNegRefEdit.text())
+        posRef = float(self.refPosCombo.itemData(self.refPosCombo.currentIndex()).toFloat()[0])
+        negRef = float(self.refNegCombo.itemData(self.refNegCombo.currentIndex()).toFloat()[0])
 
         (Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw) = self.fit(posRef, negRef, numPoints)
         (Rinit, result) = self.response(Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw)
