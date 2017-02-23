@@ -290,6 +290,13 @@ border: 2px solid transparent;</string>
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="exportVerilogButton">
+       <property name="text">
+        <string>Export Verilog-A Model</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

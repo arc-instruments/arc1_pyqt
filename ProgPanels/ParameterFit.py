@@ -18,6 +18,7 @@ import scipy.stats as stat
 import scipy.version
 from scipy.optimize import curve_fit
 import pyqtgraph
+import copy
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -26,6 +27,127 @@ import Globals.GlobalStyles as s
 
 from GeneratedUiElements.pf import Ui_PFParent
 from GeneratedUiElements.fitdialog import Ui_FitDialogParent
+
+MODEL_TMPL="""//////////////////////////////////////////////////
+// VerilogA model for the
+//
+// Compact TiO2 ReRAM model
+//
+// Department of Physics, Aristotle University of Thessaloniki
+// Nano Research Group, Electronics and Computer Science Department,
+// University of Southampton
+//
+// November 2016
+//
+//////////////////////////////////////////////////
+
+
+`include "disciplines.vams"
+`include "constants.h"
+
+module memSQUARE(p, n, rs);
+	inout p, n, rs;
+
+electrical p, n, rs, x;
+
+//'Switching sensitivity' parameters for v>0
+parameter real Ap = %e;
+parameter real tp = %e;
+
+//'Switching sensitivity' parameters for v<0
+parameter real An = %e;
+parameter real tn = %e;
+
+//'Absolute threshold' parameters for v>0
+parameter real a0p = %e;
+parameter real a1p = %e;
+
+//'Absolute threshold' parameters for v<0
+parameter real a0n = %e;
+parameter real a1n = %e;
+
+//Initial memristance
+parameter real Rinit = %e;
+
+//Stp function parameters
+parameter real c1=1e-3;
+parameter real c2=1;
+
+//reset direction under positive stimulation s=1 for DR(v>0)>0 else s=-1
+parameter real s=%d;
+
+real Rmp; 		// 'Absolute threshold' function for v>0
+real Rmn; 		// 'Absolute threshold' function for v<0
+real stpPOSv; 	// step function for v>0
+real stpNEGv; 	// step function for v<0
+real stpWFpos; 	// step function for R<Rmax
+real stpWFneg; 	// step function for R>Rmin
+real swSENpos; 	// 'Switching sensitivity' function for v>0
+real swSENneg; 	// 'Switching sensitivity' function for v>0
+real WFpos; 	// 'Window function' for v>0
+real WFneg; 	// 'Window function' for v<0
+real dRdtpos; 	// Switching rate function for v>0
+real dRdtneg; 	// Switching rate function for v<0
+real dRdt; 		// Switching rate function
+real res; 		// Helping parameter that captures device RS evolution
+real vin; 		// Input voltage parameter
+
+
+//Switching sensitivity function definition
+analog function real sense_fun;
+input A,t,in;
+real A,t,in;
+begin
+sense_fun=A*(-1+exp(abs(in)/t));
+end
+endfunction
+
+
+analog begin
+
+//input voltage applied on device terminals assigned on parameter vin
+vin=V(p,n);
+
+//Absolute threshold functions
+Rmp=a0p+a1p*vin; //for v>0
+Rmn=a0n+a1n*vin; //for v<0
+
+// 'limexp' is used instead of 'exp' to prevent numerical overflows
+// imposed by the stp functions
+stpPOSv=1/(1+limexp(-vin/c1)); //implementation of smoothed step function step(vin)
+stpNEGv=1/(1+limexp(vin/c1)); //implementation of smoothed step function step(-vin)
+
+stpWFpos=1/(1+limexp(-s*(Rmp-V(x))/c2)); //implementation of smoothed step function step(Rmp-V(x))
+stpWFneg=1/(1+limexp(-(-s)*(Rmn-V(x))/c2)); //implementation of smoothed step function step(Rmp-V(x))
+
+//Switching sensitivity functions
+swSENpos=sense_fun(Ap,tp,vin);
+swSENneg=sense_fun(An,tn,vin);
+
+//Implementation of switching rate "dRdt" function
+WFpos=pow(Rmp-V(x),2)*stpWFpos;
+WFneg=pow(Rmn-V(x),2)*stpWFneg;
+
+dRdtpos=swSENpos*WFpos;
+dRdtneg=swSENneg*WFneg;
+
+dRdt=dRdtpos*stpPOSv+dRdtneg*stpNEGv;
+
+//Integration of "dRdt" function
+V(x) <+ idt(dRdt,Rinit);
+
+// device RS is assigned on an internal voltage node 'x',
+// this is done to perform recursive integration of internal state variable (RS)
+res=V(x);
+
+V(rs)<+res;
+
+I(p, n)<+ V(p, n)/res; // Ohms law
+
+
+end
+
+endmodule"""
 
 tag="MPF"
 g.tagDict.update({tag:"Parameter Fit*"})
@@ -56,11 +178,13 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
         self.fitButton.clicked.connect(self.fitClicked)
         self.exportModelDataButton.clicked.connect(self.exportClicked)
+        self.exportVerilogButton.clicked.connect(self.exportVerilogClicked)
 
         self.resistances[:] = []
         self.voltages[:] = []
         self.pulses[:] = []
         self.modelData[:] = []
+        self.modelParams = {}
 
         for line in raw_data:
             self.resistances.append(line[0])
@@ -80,14 +204,43 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         # print(self.modelData)
         f.saveFuncToFilename(saveCb, title="Save data to...", parent=self)
 
+    def exportVerilogClicked(self):
+        aPos = self.modelParams["aPos"]
+        aNeg = self.modelParams["aNeg"]
+        a0p = self.modelParams["a0p"]
+        a0n = self.modelParams["a0n"]
+        a1p = self.modelParams["a1p"]
+        a1n = self.modelParams["a1n"]
+        txp = self.modelParams["txp"]
+        txn = self.modelParams["txn"]
+        s = self.modelParams["sgnPOS"]
+        R = self.modelParams["R0"]
+
+        model = (MODEL_TMPL % (aPos, txp, aNeg, txn, a0p, a1p, a0n, a1n, R, s))
+        def saveModel(fname):
+            with open(fname, 'w') as f:
+                f.write(model)
+        f.saveFuncToFilename(saveModel, title="Save Verilog-A model to...", parent=self)
+
     def fitClicked(self):
         numPoints = int(self.numPulsesEdit.text())
         posRef = float(self.VPosRefEdit.text())
         negRef = float(self.VNegRefEdit.text())
 
         (Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw) = self.fit(posRef, negRef, numPoints)
-        result = self.response(Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw)
+        (Rinit, result) = self.response(Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw)
 
+        self.modelParams["aPos"] = Spos
+        self.modelParams["aNeg"] = Sneg
+        self.modelParams["txp"] = tp
+        self.modelParams["txn"] = tn
+        self.modelParams["a0p"] = a0p
+        self.modelParams["a1p"] = a1p
+        self.modelParams["a0n"] = a0n
+        self.modelParams["a1n"] = a1n
+        self.modelParams["sgnPOS"] = sgnPOS
+        self.modelParams["sgnNEG"] = sgnNEG
+        self.modelParams["R0"] = Rinit
         self.modelData = result
 
         if self.fitPlot is None:
@@ -114,6 +267,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         R = np.array(self.resistances[1:])
 
         R0 = R[0]
+        Rinit = copy.copy(R0)
 
         for (i, v) in enumerate(V):
             if v < 0:
@@ -122,7 +276,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
                 R0 = self.analytical(tw, R0, Spos, tp, a0p, a1p, v, sgnPOS)
             RSSIMresponse.append(R0)
 
-        return RSSIMresponse
+        return (Rinit, RSSIMresponse)
 
     def fit(self, POSlimit, NEGlimit, numPoints=500):
         #R = np.array(self.resistances[1:])
