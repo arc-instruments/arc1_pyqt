@@ -183,26 +183,45 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         self.pulses[:] = []
         self.modelData[:] = []
         self.modelParams = {}
+        self.IVs = []
 
         unique_pos_voltages = set()
         unique_neg_voltages = set()
 
-        for line in raw_data:
-            self.resistances.append(line[0])
-            self.voltages.append(line[1])
-            if line[1] >= 0:
-                unique_pos_voltages.add(line[1])
-            else:
-                unique_neg_voltages.add(line[1])
-            self.pulses.append(line[2])
+        in_ff = True
+        currentIV = [[],[]]
 
-        self.resistancePlot = self.plotWidget.plot(self.resistances, clear=True,
+        for line in raw_data:
+            if str(line[3]).split("_")[1] == 'FF':
+                #if not in_ff:
+                #    self.IVs.append(currentIV)
+                in_ff = True
+                self.resistances.append(line[0])
+                self.voltages.append(line[1])
+                if line[1] >= 0:
+                    unique_pos_voltages.add(line[1])
+                else:
+                    unique_neg_voltages.add(line[1])
+                self.pulses.append(line[2])
+            else:
+                if in_ff:
+                    if len(currentIV[0]) > 0 and len(currentIV[1]) > 0:
+                        self.IVs.append(currentIV)
+                    currentIV = [[],[]]
+                in_ff = False
+
+                voltage = float(line[5])
+                current = float(line[5])/float(line[0])
+                currentIV[0].append(voltage)
+                currentIV[1].append(current)
+
+        self.resistancePlot = self.responsePlotWidget.plot(self.resistances, clear=True,
             pen=pyqtgraph.mkPen({'color': 'F00', 'width': 1}))
 
         self.fitPlot = None
 
-        self.plotWidget.setLabel('left', 'Resistance', units=u"Ω")
-        self.plotWidget.setLabel('bottom', 'Pulse')
+        self.responsePlotWidget.setLabel('left', 'Resistance', units=u"Ω")
+        self.responsePlotWidget.setLabel('bottom', 'Pulse')
 
         for v in sorted(unique_pos_voltages):
             self.refPosCombo.addItem(str(v), v)
@@ -254,7 +273,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         self.modelData = result
 
         if self.fitPlot is None:
-            self.fitPlot = self.plotWidget.plot(self.modelData,pen=pyqtgraph.mkPen({'color': '00F', 'width': 1}))
+            self.fitPlot = self.responsePlotWidget.plot(self.modelData,pen=pyqtgraph.mkPen({'color': '00F', 'width': 1}))
         else:
             self.fitPlot.setData(self.modelData)
 
@@ -301,9 +320,7 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
         # find all unique voltages
         posVOL = np.unique(V[V > 0])
-        # print(posVOL)
         negVOL = np.unique(V[V < 0])
-        # print(negVOL)
 
         # preallocate the pos/neg arrays: len(posVOL) x numPoints x 3
         positiveDATAarray = np.ndarray((len(posVOL), numPoints, 3))
@@ -339,8 +356,8 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         stepPOS = np.absolute(posVOL[1] - posVOL[0])
         stepNEG = np.absolute(negVOL[1] - negVOL[0])
 
-        NEGlimitPOSITION = np.where(negVOL == NEGlimit)[0][0]
-        POSlimitPOSITION = np.where(posVOL == POSlimit)[0][0]
+        NEGlimitPOSITION = np.where(np.abs(negVOL-NEGlimit) < 1e-6)[0][0]
+        POSlimitPOSITION = np.where(np.abs(posVOL-POSlimit) < 1e-6)[0][0]
 
         sgnPOS = np.sign(Rmpos[-1] - R0pos[-1])
         sgnNEG = np.sign(Rmneg[0] - R0neg[0])
@@ -417,6 +434,7 @@ class ThreadWrapper(QtCore.QObject):
 
     finished = QtCore.pyqtSignal()
     sendData = QtCore.pyqtSignal(int, int, float, float, float, str)
+    sendDataCT = QtCore.pyqtSignal(int, int, float, float, float, str)
     highlight = QtCore.pyqtSignal(int,int)
     displayData = QtCore.pyqtSignal()
     updateTree = QtCore.pyqtSignal(int, int)
@@ -431,7 +449,7 @@ class ThreadWrapper(QtCore.QObject):
     def run(self):
 
         global tag
-        midTag = "%s_i" % tag
+        midTag = "%s_%%s_i" % tag
 
         self.disableInterface.emit(True)
 
@@ -456,24 +474,86 @@ class ThreadWrapper(QtCore.QObject):
             for (i, voltage) in enumerate(voltages):
                 # print("Running voltage %d (%d) from %d"  % (i, i+1, len(voltages)))
                 if i == 0:
-                    startTag = "%s_s" % tag
+                    startTag = "%s_%%s_s" % tag
                 else:
-                    startTag = "%s_i" % tag
+                    startTag = "%s_%%s_i" % tag
 
                 if i == (len(voltages)-1):
-                    endTag = "%s_e" % tag
+                    endTag = "%s_%%s_e" % tag
                 else:
-                    endTag = "%s_i" % tag
+                    endTag = "%s_%%s_i" % tag
 
                 # print("%d: %s %s %s" % (i, startTag, midTag, endTag))
-                self.formFinder(w, b, voltage, self.params["pulse_width"], self.params["interpulse"],
-                        self.params["pulses"], startTag, midTag, endTag)
+                if self.params["run_iv"]:
+                    self.formFinder(w, b, voltage, self.params["pulse_width"], self.params["interpulse"],
+                            self.params["pulses"], startTag % "FF", midTag % "FF", midTag % "FF")
+                    self.curveTracer(w, b, self.params["ivstop_pos"], self.params["ivstop_neg"],
+                            self.params["ivstart"], self.params["ivstep"],
+                            self.params["iv_interpulse"], self.params["ivpw"], self.params["ivtype"],
+                            midTag % "CT", midTag % "CT", endTag % "CT")
+                else:
+                    self.formFinder(w, b, voltage, self.params["pulse_width"], self.params["interpulse"],
+                            self.params["pulses"], startTag % "FF", midTag % "FF", endTag % "FF")
 
             self.updateTree.emit(w, b)
 
         self.disableInterface.emit(False)
 
         self.finished.emit()
+
+    def curveTracer(self, w, b, vPos, vNeg, vStart, vStep, interpulse, pwstep, ctType, startTag, midTag, endTag):
+        g.ser.write(str(20) + "\n")
+
+        g.ser.write(str(vPos) + "\n")
+        g.ser.write(str(vNeg) + "\n")
+        g.ser.write(str(vStart) + "\n")
+        g.ser.write(str(vStep) + "\n")
+        g.ser.write(str(pwstep) + "\n")
+        g.ser.write(str(interpulse) + "\n")
+        g.ser.write(str(1) + "\n") # single cycle
+        g.ser.write(str(ctType) + "\n") # staircase or pulsed
+        g.ser.write(str(0) + "\n") # towards V+ always
+        g.ser.write(str(1) + "\n") # single device always
+        g.ser.write(str(int(w)) + "\n") # word line
+        g.ser.write(str(int(b)) + "\n") # bit line
+
+        end = False
+
+        buffer = []
+        aTag = ""
+        readTag='R'+str(g.readOption)+' V='+str(g.Vread)
+
+        while(not end):
+            curValues = []
+
+            curValues.append(float(g.ser.readline().rstrip()))
+            curValues.append(float(g.ser.readline().rstrip()))
+            curValues.append(float(g.ser.readline().rstrip()))
+            if curValues[0] > 10e9:
+                continue
+
+            if (int(curValues[0]) == 0) and (int(curValues[1]) == 0) and (int(curValues[2]) == 0):
+                end = True
+                aTag = endTag
+
+            if (not end):
+                if len(buffer) == 0: # first point!
+                    buffer = np.zeros(3)
+                    buffer[0] = curValues[0]
+                    buffer[1] = curValues[1]
+                    buffer[2] = curValues[2]
+                    aTag = startTag
+                    continue
+
+            #data.append(buffer)
+            #print(buffer[0], buffer[1], buffer[2], aTag)
+            # flush buffer values
+            self.sendDataCT.emit(w, b, buffer[0], buffer[1], buffer[2], aTag)
+            buffer[0] = curValues[0]
+            buffer[1] = curValues[1]
+            buffer[2] = curValues[2]
+            aTag = midTag
+            self.displayData.emit()
 
     def formFinder(self, w, b, V, pw, interpulse, nrPulses, startTag, midTag, endTag):
 
@@ -561,6 +641,18 @@ class ParameterFit(Ui_PFParent, QtGui.QWidget):
         self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
         self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
         self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
+        self.noIVCheckBox.stateChanged.connect(self.noIVChecked)
+
+    def noIVChecked(self, state):
+        checked = self.noIVCheckBox.isChecked()
+
+        self.IVStartEdit.setEnabled(not checked)
+        self.IVStepEdit.setEnabled(not checked)
+        self.IVTypeCombo.setEnabled(not checked)
+        self.IVPwEdit.setEnabled(not checked)
+        self.IVInterpulseEdit.setEnabled(not checked)
+        self.IVStopPosEdit.setEnabled(not checked)
+        self.IVStopNegEdit.setEnabled(not checked)
 
     def applyValidators(self):
         floatValidator = QtGui.QDoubleValidator()
@@ -570,12 +662,21 @@ class ParameterFit(Ui_PFParent, QtGui.QWidget):
 
         self.pulseWidthEdit.setValidator(floatValidator)
         self.interpulseEdit.setValidator(floatValidator)
+        self.IVInterpulseEdit.setValidator(floatValidator)
         self.VStartPosEdit.setValidator(floatValidator)
         self.VStepPosEdit.setValidator(floatValidator)
         self.VStopPosEdit.setValidator(floatValidator)
         self.VStartNegEdit.setValidator(floatValidator)
         self.VStepNegEdit.setValidator(floatValidator)
         self.VStopNegEdit.setValidator(floatValidator)
+        self.IVStartEdit.setValidator(floatValidator)
+        self.IVStepEdit.setValidator(floatValidator)
+        self.IVStopPosEdit.setValidator(floatValidator)
+        self.IVStopNegEdit.setValidator(floatValidator)
+        self.IVPwEdit.setValidator(floatValidator)
+
+        self.IVTypeCombo.addItem("Staircase", 0)
+        self.IVTypeCombo.addItem("Pulsed", 1)
 
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.Resize:
@@ -594,6 +695,14 @@ class ParameterFit(Ui_PFParent, QtGui.QWidget):
         result["vstart_neg"] = np.abs(float(self.VStartNegEdit.text()))*(-1.0)
         result["vstep_neg"] = np.abs(float(self.VStepNegEdit.text()))*(-1.0)
         result["vstop_neg"] = np.abs(float(self.VStopNegEdit.text()))*(-1.0)
+        result["ivstart"] = np.abs(float(self.IVStartEdit.text()))
+        result["ivstep"] = np.abs(float(self.IVStepEdit.text()))
+        result["ivstop_pos"] = np.abs(float(self.IVStopPosEdit.text()))
+        result["ivstop_neg"] = np.abs(float(self.IVStopNegEdit.text()))
+        result["iv_interpulse"] = np.abs(float(self.IVInterpulseEdit.text()))/1000.0
+        result["run_iv"] = (not self.noIVCheckBox.isChecked())
+        result["ivpw"] = np.abs(float(self.IVPwEdit.text()))/1000.0
+        result["ivtype"] = self.IVTypeCombo.itemData(self.IVTypeCombo.currentIndex()).toInt()[0]
 
         return result
 
@@ -619,6 +728,7 @@ class ParameterFit(Ui_PFParent, QtGui.QWidget):
         self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
         self.thread.finished.connect(self.threadWrapper.deleteLater)
         self.threadWrapper.sendData.connect(f.updateHistory)
+        self.threadWrapper.sendDataCT.connect(f.updateHistory_CT)
         self.threadWrapper.highlight.connect(f.cbAntenna.cast)
         self.threadWrapper.displayData.connect(f.displayUpdate.cast)
         self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
