@@ -536,7 +536,19 @@ class history_panel(QtGui.QWidget):
                 indexList[1]=len(g.Mhistory[w][b])-1
                 try:
                     # find index of the start of the run
-                    indexList[0]=indexList[1]-tagList.index(currentTagKey+'_s')
+                    lastIndex = None
+                    for (i, text) in enumerate(tagList):
+                        if text.startswith(currentTagKey) and text.endswith('_s'):
+                            lastIndex = i
+                            break
+
+                    # This should not happen but in case it does drop back to the
+                    # legacy behaviour
+                    if lastIndex is None:
+                        print("index is NONE!!!")
+                        lastIndex = tagList.index(currentTagKey+'_s')
+
+                    indexList[0] = indexList[1] - lastIndex
                 except ValueError:
                     pass
 
