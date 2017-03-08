@@ -638,7 +638,10 @@ class Arcontrol(QtGui.QMainWindow):
         for fls in files:
             #prog_panelList.append(f[:-3])
             #moduleName=str(self.prog_panelList.currentText())   # format module name from drop down
-            importlib.import_module(fls[:-3])     # import the module
+            try:
+                importlib.import_module(fls[:-3])     # import the module
+            except:
+                print "WARNING - Could not load libraries related to module:", fls[:-3]
 
         path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open file', "*.csv"))
 
