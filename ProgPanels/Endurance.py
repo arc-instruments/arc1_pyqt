@@ -309,17 +309,17 @@ class Endurance(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
         g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
         g.ser.write(str(float(self.leftEdits[2].text())/1000000)+"\n")      # send positive cut-off (A)
-        time.sleep(0.001)
+        #time.sleep(0.001)
         g.ser.write(str(float(self.rightEdits[0].text())*-1)+"\n")          # send negative amplitude
         g.ser.write(str(float(self.rightEdits[1].text())/1000000)+"\n")     # send negative pw
         g.ser.write(str(float(self.rightEdits[2].text())/1000000)+"\n")     # send negative cut-off (A)
-        time.sleep(0.001)
+        #time.sleep(0.001)
         g.ser.write(str(float(self.leftEdits[5].text()))+"\n")              # send interpulse (ms)
 
         g.ser.write(str(int(self.leftEdits[3].text()))+"\n")              # send positive nr of pulses
         g.ser.write(str(int(self.rightEdits[3].text()))+"\n")             # send negative nr of pulses
         g.ser.write(str(int(self.leftEdits[4].text()))+"\n")              # send cycles
-        time.sleep(0.001)
+        #time.sleep(0.001)
 
 
     def programOne(self):
