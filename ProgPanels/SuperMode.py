@@ -30,6 +30,7 @@ def loadProgModules():
     for f in files:
         progPanelList.append(f[:-3])
     progPanelList.remove("SuperMode")
+    progPanelList.remove("CT_LIVE")
     #print progPanelList
 loadProgModules()
 

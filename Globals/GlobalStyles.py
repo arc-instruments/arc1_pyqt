@@ -79,6 +79,23 @@ QPushButton:pressed{\
 	margin: 3px; \
 	}"""
 
+btnLive="""\
+QPushButton {\
+	background-color: rgb(255,255,255); \
+	border:1px solid rgb(255,0,0); \
+	color: rgb(255,0,0); \
+	height: 25px; \
+	margin: 0px; \
+	font: bold; \
+	} \
+QPushButton:hover{\
+	background-color: rgb(255,0,0); \
+	color: rgb(255, 255, 255); \
+	} \
+QPushButton:pressed{\
+	margin: 3px; \
+	}"""
+
 btnStyle2="""\
 QPushButton {\
 	background-color: rgb(255,255,255); \
