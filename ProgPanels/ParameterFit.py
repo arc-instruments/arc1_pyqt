@@ -16,7 +16,7 @@ import time
 import numpy as np
 import scipy.stats as stat
 import scipy.version
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, leastsq, least_squares
 import pyqtgraph
 import copy
 
@@ -159,12 +159,50 @@ def _curve_fit(func, x, y, **kwargs):
             kwargs.pop('method')
     return curve_fit(func, x, y, **kwargs)
 
+class ModelWidget(QtGui.QWidget):
+
+    def __init__(self, parameters, func, expression="", parent=None):
+        super(ModelWidget, self).__init__(parent=parent)
+        self.expressionLabel = QtGui.QLabel("Model expression: %s" % expression)
+        self.parameterTable = QtGui.QTableWidget(len(parameters), 2, parent=self)
+        self.parameterTable.horizontalHeader().setVisible(True)
+        self.parameterTable.setVerticalHeaderLabels(parameters)
+        self.parameterTable.setHorizontalHeaderLabels(["> 0 branch","< 0 branch"])
+        self.parameterTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.parameterTable.setSelectionMode(QtGui.QTableWidget.NoSelection)
+
+        self.func = func
+
+        container = QtGui.QVBoxLayout()
+        container.setContentsMargins(0, 0, 0, 0)
+        container.addWidget(self.expressionLabel)
+        container.addWidget(self.parameterTable)
+
+        self.setLayout(container)
+
+        for (i, p) in enumerate(parameters):
+            pos = QtGui.QTableWidgetItem("1.0")
+            neg = QtGui.QTableWidgetItem("1.0")
+            self.parameterTable.setItem(i, 0, pos)
+            self.parameterTable.setItem(i, 1, neg)
+
+
+    def updateValues(self, pPos, pNeg):
+        for (i, val) in enumerate(pPos):
+            self.parameterTable.setItem(i, 0, QtGui.QTableWidgetItem(str(val)))
+        for (i, val) in enumerate(pNeg):
+            self.parameterTable.setItem(i, 1, QtGui.QTableWidgetItem(str(val)))
+
+    def modelFunc(self):
+        return self.func
+
 class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
     resistances = []
     voltages = []
     pulses = []
     modelData = []
+    mechanismParams = {'pos': None, 'neg': None}
 
     def __init__(self, w, b, raw_data, parent=None):
         super(FitDialog, self).__init__(parent=parent)
@@ -177,6 +215,8 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         self.fitButton.clicked.connect(self.fitClicked)
         self.exportModelDataButton.clicked.connect(self.exportClicked)
         self.exportVerilogButton.clicked.connect(self.exportVerilogClicked)
+        self.fitMechanismModelButton.clicked.connect(self.fitMechanismClicked)
+        self.mechanismModelCombo.currentIndexChanged.connect(self.mechanismModelComboIndexChanged)
 
         self.resistances[:] = []
         self.voltages[:] = []
@@ -189,12 +229,10 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         unique_neg_voltages = set()
 
         in_ff = True
-        currentIV = [[],[]]
+        currentIV = { "R0": -1.0, "data": [[],[]] }
 
         for line in raw_data:
             if str(line[3]).split("_")[1] == 'FF':
-                #if not in_ff:
-                #    self.IVs.append(currentIV)
                 in_ff = True
                 self.resistances.append(line[0])
                 self.voltages.append(line[1])
@@ -205,15 +243,15 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
                 self.pulses.append(line[2])
             else:
                 if in_ff:
-                    if len(currentIV[0]) > 0 and len(currentIV[1]) > 0:
+                    if len(currentIV["data"][0]) > 0 and len(currentIV["data"][1]) > 0:
                         self.IVs.append(currentIV)
-                    currentIV = [[],[]]
+                    currentIV = { "R0": self.resistances[-1], "data": [[],[]] }
                 in_ff = False
 
                 voltage = float(line[5])
                 current = float(line[5])/float(line[0])
-                currentIV[0].append(voltage)
-                currentIV[1].append(current)
+                currentIV["data"][0].append(voltage)
+                currentIV["data"][1].append(current)
 
         self.resistancePlot = self.responsePlotWidget.plot(self.resistances, clear=True,
             pen=pyqtgraph.mkPen({'color': 'F00', 'width': 1}))
@@ -222,16 +260,54 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
         self.responsePlotWidget.setLabel('left', 'Resistance', units=u"Ω")
         self.responsePlotWidget.setLabel('bottom', 'Pulse')
+        self.mechanismPlotWidget.setLabel('left', 'Current', units="A")
+        self.mechanismPlotWidget.setLabel('bottom', 'Voltage', units="V")
+
+        self.curveSelectionSpinBox.setMinimum(1)
+        self.curveSelectionSpinBox.setMaximum(len(self.IVs))
+        self.curveSelectionSpinBox.valueChanged.connect(self.IVSpinBoxValueChanged)
+        self.IVSpinBoxValueChanged(1)
 
         for v in sorted(unique_pos_voltages):
             self.refPosCombo.addItem(str(v), v)
         for v in sorted(unique_neg_voltages, reverse=True):
             self.refNegCombo.addItem(str(v), v)
 
+        self.modelWidgets = {}
+
+        self.modelWidgets["sinh"] = ModelWidget(["a","b"],
+                lambda p, x: p[0]*np.sinh(p[1]*x), "y = a*sinh(b*x)")
+
+        self.modelWidgets["linear"] = ModelWidget(["a"],
+                lambda p, x: p[0]*x, "y=a*x")
+
+        for (k, v) in self.modelWidgets.items():
+            self.modelStackedWidget.addWidget(v)
+            self.mechanismModelCombo.addItem(k, v)
+
     def exportClicked(self):
         saveCb = partial(f.writeDelimitedData, self.modelData)
-        # print(self.modelData)
         f.saveFuncToFilename(saveCb, title="Save data to...", parent=self)
+
+    def IVSpinBoxValueChanged(self, value):
+
+        R0 = self.IVs[value-1]["R0"]
+        x = np.array(self.IVs[value-1]["data"][0])
+        y = np.array(self.IVs[value-1]["data"][1])
+
+        self.mechanismPlotWidget.plot(x,y, clear=True, pen=None, symbol='o', symbolSize=5)
+
+        if self.mechanismParams['pos'] is not None:
+            p0 = self.mechanismParams['pos'][0]
+            p1 = self.mechanismParams['pos'][1]
+            lxPos = np.linspace(np.min(x[x > 0]), np.max(x[x > 0]))
+            self.mechanismPlotWidget.plot(lxPos, p0*np.sinh(lxPos*p1)/R0)
+
+        if self.mechanismParams['neg'] is not None:
+            p0 = self.mechanismParams['neg'][0]
+            p1 = self.mechanismParams['neg'][1]
+            lxNeg = np.linspace(np.min(x[x < 0]), np.max(x[x < 0]))
+            self.mechanismPlotWidget.plot(lxNeg, p0*np.sinh(lxNeg*p1)/R0)
 
     def exportVerilogClicked(self):
         aPos = self.modelParams["aPos"]
@@ -250,6 +326,48 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
             with open(fname, 'w') as f:
                 f.write(model)
         f.saveFuncToFilename(saveModel, title="Save Verilog-A model to...", parent=self)
+
+    def mechanismModelComboIndexChanged(self, index):
+        self.modelStackedWidget.setCurrentIndex(index)
+
+    def fitMechanismClicked(self):
+        # all IVs are in self.IVs
+        # self.IVs is a list of lists containing the I-V data
+        # for example self.IVs[0] is the first I-V obtained
+        # the x-data is self.IVs[0][0] and the y-data is self.IVs[0][1]
+        # For the second IV the data are x: self.IVs[1][0] y: self.IVs[1][1]
+        # For the third IV the data are x: self.IVs[2][0] y: self.IVs[2][1]
+        # etc.
+
+        xPos = []
+        yPos = []
+        xNeg = []
+        yNeg = []
+
+        for (id, curve) in enumerate(self.IVs):
+            R0 = curve["R0"]
+            ndata = np.array(curve["data"]).transpose()
+            posData = ndata[np.where(ndata[:,0] > 0)].transpose()
+            xPos.extend(posData[0])
+            yPos.extend(posData[1]*R0)
+
+            negData = ndata[np.where(ndata[:,0] < 0)].transpose()
+            xNeg.extend(negData[0])
+            yNeg.extend(negData[1]*R0)
+
+        idx = self.mechanismModelCombo.currentIndex()
+        widget = self.mechanismModelCombo.itemData(idx).toPyObject()
+        func = widget.modelFunc()
+        errFunc = lambda p, x, y: y - func(p, x)
+
+        resPos = least_squares(errFunc, (1.0, 1.0), method='lm', args=(np.array(xPos), np.array(yPos)))
+        resNeg = least_squares(errFunc, (1.0, 1.0), method='lm', args=(np.array(xNeg), np.array(yNeg)))
+
+        self.mechanismParams['pos'] = resPos.x
+        self.mechanismParams['neg'] = resNeg.x
+
+        self.IVSpinBoxValueChanged(self.curveSelectionSpinBox.value())
+        widget.updateValues(resPos.x, resNeg.x)
 
     def fitClicked(self):
         numPoints = int(self.numPulsesEdit.text())
