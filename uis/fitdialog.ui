@@ -46,12 +46,8 @@
           <string>Parameter Fit</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="1" column="0">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Reference Positive Voltage (V)</string>
-            </property>
-           </widget>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="refNegCombo"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_3">
@@ -60,21 +56,14 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="numPulsesEdit">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label">
             <property name="text">
-             <string>500</string>
+             <string>Reference Positive Voltage (V)</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Refence Negative Voltage (V)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <widget class="QLineEdit" name="lineEdit_9">
             <property name="mouseTracking">
              <bool>false</bool>
@@ -101,21 +90,33 @@ border: 2px solid transparent;</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="label_10">
-            <property name="styleSheet">
-             <string notr="true">visibility: none;</string>
-            </property>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_2">
             <property name="text">
-             <string/>
+             <string>Refence Negative Voltage (V)</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QComboBox" name="refPosCombo"/>
           </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="refNegCombo"/>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="numPulsesEdit">
+            <property name="text">
+             <string>500</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2">
+           <widget class="QLabel" name="parameterResultLabel">
+            <property name="styleSheet">
+             <string notr="true">color: red;
+font-weight: bold;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -437,7 +438,6 @@ border: 2px solid transparent;</string>
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>numPulsesEdit</tabstop>
   <tabstop>fitButton</tabstop>
   <tabstop>exportModelDataButton</tabstop>
  </tabstops>
