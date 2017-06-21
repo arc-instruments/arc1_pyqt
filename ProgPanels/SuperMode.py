@@ -31,6 +31,7 @@ def loadProgModules():
         progPanelList.append(f[:-3])
     progPanelList.remove("SuperMode")
     progPanelList.remove("CT_LIVE")
+    progPanelList.remove("MultiBias")
     #print progPanelList
 loadProgModules()
 
