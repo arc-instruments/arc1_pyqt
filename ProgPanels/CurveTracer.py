@@ -10,6 +10,7 @@
 from PyQt4 import QtGui, QtCore
 import sys
 import os
+import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -392,7 +393,7 @@ class CurveTracer(QtGui.QWidget):
         g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
         g.ser.write(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
         g.ser.write(str(float(self.rightEdits[1].text())/1000)+"\n")
-
+        time.sleep(0.01)
         CSp=float(self.rightEdits[2].text())
         CSn=float(self.rightEdits[3].text())
 

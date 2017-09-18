@@ -108,7 +108,7 @@ class getData(QtCore.QObject):
                 mutex.lock()
                 self.execute.emit(module)
                 g.waitCondition.wait(mutex)
-                time.sleep(0.01)
+                #time.sleep(0.01)
                 mutex.unlock()
 
                 i+=1
@@ -377,8 +377,8 @@ class dropZone(QtGui.QWidget):
             self.vbox.insertWidget(index, newWidget)
             self.setMinimumHeight(placed_module_height*self.count)
 
-            print "INDEX: ", index
-            print self.count, self.height()
+            #print "INDEX: ", index
+            #print self.count, self.height()
             event.accept()
             
         elif event.mimeData().hasFormat("application/x-module-placed"):
@@ -409,8 +409,8 @@ class dropZone(QtGui.QWidget):
             self.vbox.insertWidget(index, newWidget)
             #self.setMinimumHeight(30*self.count)
 
-            print "INDEX: ", index
-            print self.count, self.height()
+            #print "INDEX: ", index
+            #print self.count, self.height()
             event.accept()      
 
     def decrement_and_resize(self):
@@ -689,7 +689,7 @@ class SuperMode(QtGui.QWidget):
                 panel_class = getattr(thisPanel, moduleName)        # get it's main class 
                 moduleHandle = panel_class(short=True) 
                 moduleHandle.setPanelParameters(layoutWidgets)    
-                print moduleName
+                #print moduleName
 
                 if moduleName not in ['Loop','End']:
                     newBtn=draggableButtonPlaced(moduleName, moduleHandle)
@@ -801,10 +801,10 @@ class SuperMode(QtGui.QWidget):
             mainChain_indexes = self.extractModuleChain()
 
             if mainChain_indexes==False:
-                print "Problem with the Loops"
+                #print "Problem with the Loops"
                 self.throw_wrong_loops_dialogue()
             else:
-                print "Starting..."
+                #print "Starting..."
                 self.thread=QtCore.QThread()
                 self.getData=getData(mainChain_indexes, [[g.w,g.b]])
                 self.finalise_thread_initialisation()
@@ -812,15 +812,15 @@ class SuperMode(QtGui.QWidget):
 
     def programRange(self):
         if g.ser.port != None:
-            print "Apply to Range"
+            #print "Apply to Range"
             rangeDev=self.makeDeviceList(True)
             mainChain_indexes = self.extractModuleChain()
 
             if mainChain_indexes==False:
-                print "Problem with the Loops"
+                #print "Problem with the Loops"
                 self.throw_wrong_loops_dialogue(self)
             else:
-                print "Starting..."
+                #print "Starting..."
                 self.thread=QtCore.QThread()
                 self.getData=getData(mainChain_indexes, rangeDev)
                 self.finalise_thread_initialisation()
@@ -828,15 +828,15 @@ class SuperMode(QtGui.QWidget):
 
     def programAll(self):
         if g.ser.port != None:
-            print "Apply to All"
+            #print "Apply to All"
             rangeDev=self.makeDeviceList(False)
             mainChain_indexes = self.extractModuleChain()
 
             if mainChain_indexes==False:
-                print "Problem with the Loops"
+                #print "Problem with the Loops"
                 self.throw_wrong_loops_dialogue()
             else:
-                print "Starting..."
+                #print "Starting..."
                 self.thread=QtCore.QThread()
                 self.getData=getData(mainChain_indexes, rangeDev)
                 self.finalise_thread_initialisation()
@@ -854,7 +854,7 @@ class SuperMode(QtGui.QWidget):
         self.getData.execute.connect(self.execute)
 
     def execute(self, index):
-        print "###### EXECUTING ", index
+        #print "###### EXECUTING ", index
         #time.sleep(0.001)
         self.mainChain[index].programOne()
 

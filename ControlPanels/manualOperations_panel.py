@@ -44,7 +44,7 @@ class readAllWorker(QtCore.QObject):
             for word in range(1,g.wline_nr+1):    # perform standard read All
                 for bit in range(1,g.bline_nr+1):      
                     #Mnow=float(g.ser.readline().rstrip())         # read the value
-                    Mnow=f.getFloats(1)
+                    Mnow=float(f.getFloats(1))
 
                     #g.Mhistory[word][bit].append([g.Mnow,0,0,0])    # store it
 
@@ -66,7 +66,7 @@ class readAllWorker(QtCore.QObject):
                 g.ser.write(str(bit)+"\n")  # send bitline
 
                 #Mnow=float(g.ser.readline().rstrip())         # read the value
-                Mnow=f.getFloats(1)
+                Mnow=float(f.getFloats(1))
 
                 #g.Mhistory[word][bit].append([g.Mnow,0,0,0])    # store it
 
@@ -441,10 +441,10 @@ class manualOperations_panel(QtGui.QWidget):
         g.b=b
 
     def readSingle(self):
-        print "readSingle"
-        print g.ser.port
+        #print "readSingle"
+        #print g.ser.port
         if g.ser.port != None:
-            print "passed"
+            #print "passed"
             job="1"
             g.ser.write(job+"\n")
             g.ser.write(str(g.w)+"\n")
@@ -456,7 +456,7 @@ class manualOperations_panel(QtGui.QWidget):
             #     currentline='%.10f' % 0.0
 
             # currentM=float(currentline)
-            currentM=f.getFloats(1)
+            currentM=float(f.getFloats(1))
 
             g.Mnow=currentM       # conver to float
             tag='S R'+str(g.readOption)+' V='+str(g.Vread)
@@ -571,7 +571,7 @@ class manualOperations_panel(QtGui.QWidget):
 
             # Read the value of M after the pulse
             # currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-            g.Mnow=f.getFloats(1)
+            g.Mnow=float(f.getFloats(1))
 
             tag='P'
             f.updateHistory(g.w,g.b,g.Mnow,self.amplitude,self.pw,tag)
