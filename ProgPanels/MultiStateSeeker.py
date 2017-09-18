@@ -406,6 +406,11 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
         self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
 
+        self.monotonicityComboBox.addItem(u"Ignore", 0)
+        self.monotonicityComboBox.addItem(u"Stop on reversal", 1)
+        self.monotonicityComboBox.addItem(u"Move to next step", 2)
+        self.monotonicityComboBox.setCurrentIndex(1)
+
         self.updateInputWidgets()
 
     def applyValidators(self):
@@ -493,7 +498,8 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
         result["state_retention"] = (float(self.stateRetentionEdit.text()) * retention_mult) / 1000.0
         result["state_stdev"] = int(self.stateStdevSpinBox.value())
-        result["state_monotonic"] = int(self.monotonicCheckBox.isChecked())
+        monotonicIndex = self.monotonicityComboBox.currentIndex()
+        result["state_monotonic"] = self.monotonicityComboBox.itemData(monotonicIndex).toInt()[0]
         result["state_counter_reset"] = int(self.resetCounterCheckBox.isChecked())
 
         result["single_phase_run"] = bool(self.singlePhaseRunCheckBox.isChecked())
@@ -504,6 +510,8 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
             result["single_phase_run_phase"] = phase
         else:
             result["single_phase_run_phase"] = None
+
+        print(result)
 
         return result
 
