@@ -10,6 +10,7 @@
 from PyQt4 import QtGui, QtCore
 import sys
 import os
+import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -104,21 +105,31 @@ class Endurance(QtGui.QWidget):
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
 
-        leftLabels=['Positive pulse amplitude (V)', \
-                    'Negative pulse amplitude (V)', \
-                    'Pulse width (us)', \
-                    'No. of pulses in train', \
-                    'Cycles', \
-                    'Interpulse (ms)']
+        leftLabels=['Positive pulse amplitude (V)',\
+                    'Positive pulse width (us)', \
+                    'Positive current cut-off (uA)', \
+                    'No. of positive pulses',\
+                    'Cycles',\
+                    'Interpulse time (ms)']
+
+        rightLabels=['Negative pulse amplitude (V)',\
+                    'Negative pulse width (us)', \
+                    'Negative current cut-off (uA)', \
+                    'No. of negative pulses']
+
         leftInit=  ['1',\
-                    '1', \
-                    '100',\
+                    '100', \
+                    '0',\
                     '1',\
                     '10',\
+                    '0']
+
+        rightInit=  ['1',\
+                    '100',\
+                    '0',\
                     '1']
 
         self.leftEdits=[]
-        rightLabels=[]
         self.rightEdits=[]
 
         gridLayout=QtGui.QGridLayout()
@@ -174,9 +185,18 @@ class Endurance(QtGui.QWidget):
             gridLayout.addWidget(lineLabel, i,4)
 
             lineEdit=QtGui.QLineEdit()
+            lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
+
+        self.leftEdits[2].editingFinished.connect(self.imposeLimitsOnCS_p)
+        self.rightEdits[2].editingFinished.connect(self.imposeLimitsOnCS_n)
+        self.leftEdits[1].editingFinished.connect(self.imposeLimitsOnPW_p)
+        self.rightEdits[1].editingFinished.connect(self.imposeLimitsOnPW_n)
+
+        # verticalLine.setFrameStyle(QFrame.VLine)
+        # verticalLine.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Expanding)
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -221,6 +241,37 @@ class Endurance(QtGui.QWidget):
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
 
+    def imposeLimitsOnPW_p(self):   # if pw is set to below 30us and current cut-off is activated, increase pulse width to 30us
+        if float(self.leftEdits[2].text())!=0 and float(self.leftEdits[1].text())<30:
+            self.leftEdits[1].setText("30")
+
+    def imposeLimitsOnPW_n(self): # if pw is set to below 30us and current cut-off is activated, increase pulse width to 30us
+        if float(self.rightEdits[2].text())!=0 and float(self.rightEdits[1].text())<30:
+            self.rightEdits[1].setText("30")
+
+
+    def imposeLimitsOnCS_p(self):   # if current cut-off is set, make sure values are between 10 and 1000 uA. Also, increase pw to a minimum of 30 us.
+        currentText=float(self.leftEdits[2].text())
+        if currentText!=0:
+            if currentText<10:
+                self.leftEdits[2].setText("10")
+            if currentText>1000:
+                self.leftEdits[2].setText("1000")
+            if float(self.leftEdits[1].text())<30:
+                self.leftEdits[1].setText("30")
+
+
+    def imposeLimitsOnCS_n(self,): # if current cut-off is set, make sure values are between 10 and 1000 uA. Also, increase pw to a minimum of 30 us.
+        currentText=float(self.rightEdits[2].text())
+        if currentText!=0:
+            if currentText<10:
+                self.rightEdits[2].setText("10")
+            if currentText>1000:
+                self.rightEdits[2].setText("1000")
+            if float(self.leftEdits[1].text())<30:
+                self.rightEdits[1].setText("30")
+
+
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
         
@@ -235,7 +286,6 @@ class Endurance(QtGui.QWidget):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
-        #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
@@ -256,21 +306,25 @@ class Endurance(QtGui.QWidget):
         return False
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text())*-1)+"\n")
-        g.ser.write(str(float(self.leftEdits[2].text())/1000000)+"\n")
-        g.ser.write(str(float(self.leftEdits[5].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[4].text()))+"\n")
+        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
+        g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
+        g.ser.write(str(float(self.leftEdits[2].text())/1000000)+"\n")      # send positive cut-off (A)
+        #time.sleep(0.001)
+        g.ser.write(str(float(self.rightEdits[0].text())*-1)+"\n")          # send negative amplitude
+        g.ser.write(str(float(self.rightEdits[1].text())/1000000)+"\n")     # send negative pw
+        g.ser.write(str(float(self.rightEdits[2].text())/1000000)+"\n")     # send negative cut-off (A)
+        #time.sleep(0.001)
+        g.ser.write(str(float(self.leftEdits[5].text()))+"\n")              # send interpulse (ms)
 
-        # for i in range(len(self.leftEdits)):
-        #     print self.leftEdits[i].text()
-
+        g.ser.write(str(int(self.leftEdits[3].text()))+"\n")              # send positive nr of pulses
+        g.ser.write(str(int(self.rightEdits[3].text()))+"\n")             # send negative nr of pulses
+        g.ser.write(str(int(self.leftEdits[4].text()))+"\n")              # send cycles
+        #time.sleep(0.001)
 
 
     def programOne(self):
         if g.ser.port != None:
-            job="19"
+            job="191"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
@@ -293,7 +347,7 @@ class Endurance(QtGui.QWidget):
             rangeDev=self.makeDeviceList(True)
 
 
-            job="19"
+            job="191"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()
@@ -309,7 +363,7 @@ class Endurance(QtGui.QWidget):
         if g.ser.port != None:
             rangeDev=self.makeDeviceList(False)
 
-            job="19"
+            job="191"
             g.ser.write(job+"\n")   # sends the job
 
             self.sendParams()

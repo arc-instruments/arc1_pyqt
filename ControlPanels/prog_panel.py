@@ -39,7 +39,8 @@ class prog_panel(QtGui.QWidget):
 
         files = [f for f in os.listdir('ProgPanels') if f.endswith(".py")]  # populate prog panel dropbox
         for f in files:
-            self.prog_panelList.addItem(f[:-3])
+            if (f[:-3]!="CT_LIVE"):
+                self.prog_panelList.addItem(f[:-3])
 
         boldFont=QtGui.QFont("FontFamily")
         boldFont.setBold(True)

@@ -11,6 +11,7 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 import time
+import importlib
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -266,10 +267,6 @@ class CurveTracer(QtGui.QWidget):
 
         self.scrlArea.installEventFilter(self)
 
-        #dummyEvent=QtGui.QResizeEvent()
-        #size=QtCore.QSize(200,200)
-        #self.scrlArea.resizeEvent(dummyEvent)
-
         vbox1.addWidget(self.scrlArea)
         vbox1.addStretch()
 
@@ -296,19 +293,21 @@ class CurveTracer(QtGui.QWidget):
 
             vbox1.addLayout(self.hboxProg)
 
-        self.setLayout(vbox1)
-        #width=self.width()
-        #self.setFixedWidth(width)
-        self.vW.setFixedWidth(self.size().width())
-        #print '-------'
-        #print self.vW.size().width()
-        #print self.scrlArea.size().width()
-        #print '-------'
-        #self.vW.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        #self.scrlArea.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+            push_live=QtGui.QPushButton("LIVE")
+            push_live.setStyleSheet("background-color: red")
+            push_live.clicked.connect(self.goLive)
+            gridLayout.addWidget(push_live,len(self.leftEdits),0)
 
-        #self.vW.setFixedWidth(self.sizeHint().width())
+        self.setLayout(vbox1)
+        self.vW.setFixedWidth(self.size().width())
         self.gridLayout=gridLayout
+
+    def goLive(self):
+        print "Going Live!"
+        moduleName="CT_LIVE"   # format module name from drop down
+        thisPanel = importlib.import_module(moduleName)     # import the module
+        panel_class = getattr(thisPanel, moduleName)        # get it's main class    
+        self.widg=panel_class(short=True)              
 
     def imposeLimitsOnStepWidth(self):
         currentText=float(self.leftEdits[4].text())

@@ -160,9 +160,9 @@ class history_panel(QtGui.QWidget):
             endPoint=int(item.whatsThis(4))
             tagKey=item.whatsThis(5)
 
-            print "#########"
-            print startPoint
-            print endPoint
+            #print "#########"
+            #print startPoint
+            #print endPoint
 
             raw=g.Mhistory[w][b][startPoint:endPoint+1]
             #print raw
@@ -339,7 +339,7 @@ class history_panel(QtGui.QWidget):
 
                 # Find the pulse amplitudes and the resistance (averaged over the read sequence) after each pulse train
                 index=0
-                print "entered here"
+                #print "entered here"
                 #print "last run and len", lastRun, len(lastRun)
                 #for i, r in enumerate(lastRun):
                 #    print i, r
@@ -494,13 +494,14 @@ class history_panel(QtGui.QWidget):
                 self.resultWindow[-1].update()
 
             if tagKey=='VOL':
-                print "VolatilityRead"
+                #print "VolatilityRead"
+                pass
 
             if tagKey=='stdp':
 
                 reg=re.compile(r'-?[0-9\.]+')
-                for line in raw:
-                    print line
+                # for line in raw:
+                #     print line
 
                 i=0
                 list_dt=[]
