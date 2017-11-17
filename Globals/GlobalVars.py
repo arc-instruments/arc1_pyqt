@@ -55,6 +55,9 @@ maxB=1
 tagDict={	'S R':'Read',\
 		 	'P':'Pulse'}
 
+# Data display callbacks
+DispCallbacks = {}
+
 dispPoints=100
 
 maxM=100000000						# Value of resistance for top edge color

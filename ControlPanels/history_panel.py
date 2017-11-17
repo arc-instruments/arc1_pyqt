@@ -11,6 +11,7 @@ import sys
 import os
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+from functools import partial
 
 import pyqtgraph as pg
 import numpy as np
@@ -158,7 +159,7 @@ class history_panel(QtGui.QWidget):
             tag=item.whatsThis(1)
             startPoint=int(item.whatsThis(3))
             endPoint=int(item.whatsThis(4))
-            tagKey=item.whatsThis(5)
+            tagKey=str(item.whatsThis(5))
 
             #print "#########"
             #print startPoint
@@ -494,7 +495,7 @@ class history_panel(QtGui.QWidget):
                 self.resultWindow[-1].update()
 
             if tagKey=='VOL':
-                #print "VolatilityRead"
+                print "VolatilityRead"
                 pass
 
             if tagKey=='stdp':
@@ -551,10 +552,12 @@ class history_panel(QtGui.QWidget):
 
                 self.resultWindow[-1].update()
 
-
-
-
-
+            # Only phase 3 has exploitable results
+            if str(tagKey) in g.DispCallbacks:
+                widget = g.DispCallbacks[tagKey](w, b, raw, self)
+                self.resultWindow.append(widget)
+                widget.show()
+                widget.update()
         pass
 
     def min_without_inf(self, lst, exclude):
@@ -600,7 +603,7 @@ class history_panel(QtGui.QWidget):
         tagString=g.Mhistory[w][b][-1][3]
         currentTagKey=[]
         for tagKey in g.tagDict.keys():
-            if tagKey in tagString:
+            if str(tagString).startswith(tagKey):
                 tag.append(g.tagDict[tagKey])
                 currentTagKey=tagKey
 
@@ -625,7 +628,19 @@ class history_panel(QtGui.QWidget):
                 indexList[1]=len(g.Mhistory[w][b])-1
                 try:
                     # find index of the start of the run
-                    indexList[0]=indexList[1]-tagList.index(currentTagKey+'_s')
+                    lastIndex = None
+                    for (i, text) in enumerate(tagList):
+                        if text.startswith(currentTagKey) and text.endswith('_s'):
+                            lastIndex = i
+                            break
+
+                    # This should not happen but in case it does drop back to the
+                    # legacy behaviour
+                    if lastIndex is None:
+                        print("index is NONE!!!")
+                        lastIndex = tagList.index(currentTagKey+'_s')
+
+                    indexList[0] = indexList[1] - lastIndex
                 except ValueError:
                     pass
 

@@ -12,6 +12,7 @@ from PyQt4.QtCore import QObject, pyqtSignal
 from PyQt4 import QtGui
 from time import sleep
 import numpy as np
+import collections
 
 
 ###########################################
@@ -151,6 +152,25 @@ def updateHistory_short(m,a,pw,tag):
 	#g.PMarkerList[g.w][g.b]=np.append(g.PMarkerList[g.w][g.b],a)
 	#g.PWList[g.w][g.b]=np.append(g.PWList[g.w][g.b],pw)
 	cbAntenna.recolor.emit(m,g.w,g.b)
+
+
+def writeDelimitedData(data, dest, delimiter="\t"):
+    try:
+        f = open(dest, 'w')
+        for line in data:
+            if isinstance(line, str) or (not isinstance(line, collections.Iterable)):
+                line = [line]
+            text = delimiter.join("{0:.5g}".format(x) for x in line)
+            f.write(text+"\n")
+        f.close()
+    except Exception as exc:
+        print(exc)
+
+def saveFuncToFilename(func, title="", parent=None):
+    fname = QtGui.QFileDialog.getSaveFileName(parent, title)
+
+    if fname:
+        func(fname)
 
 ###########################################
 # UUpdate Hover panel

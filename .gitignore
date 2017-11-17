@@ -21,3 +21,5 @@ MANIFEST
 tags
 *.egg-info
 deps/*
+GeneratedUiElements/*.py
+!GeneratedUiElements/__init__.py
