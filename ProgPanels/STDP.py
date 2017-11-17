@@ -276,8 +276,6 @@ class STDP(QtGui.QWidget):
         gridLayout.addWidget(self.post_filename,2,1)
         gridLayout.addWidget(self.push_load_post,2,0)
 
-
-
         for i in range(len(leftLabels)):
             lineLabel=QtGui.QLabel()
             #lineLabel.setFixedHeight(50)
@@ -711,7 +709,7 @@ class STDP(QtGui.QWidget):
                 timeSteps.append(i*timeStep)
                 timeSteps.append(i*timeStep*-1)
                 i+=1
-            print " =========> Timesteps", timeSteps
+            #print " =========> Timesteps", timeSteps
         return timeSteps
 
     def programOne(self):

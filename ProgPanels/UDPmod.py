@@ -35,10 +35,20 @@ class getData(QtCore.QObject):
     changeArcStatus=QtCore.pyqtSignal(str)
 
     def __init__(self, deviceList, preip, preport, postip, postport):
+        #General inits.
+        self.tstep = 0.00005 #Time step (s) Default: 50us.
+
         #Plasticity rule inits.
+
+        #STDP related rules.
         self.LTDwin = 750
         self.LTPwin = 2000
         self.searchLim = 100 #How many elements in the past to check for 'missed plasticity opportunities'.
+
+        #SRDP related rules.
+        self.searchWin = 20000.0 #Window where avg. spike rate for SRDP calculated - in time ticks.
+        self.LTPfTh =  20.0/(self.searchWin*self.tstep) #Frequency bounds above/below which LTP/LTD is triggered - in spikes/searchWin time ticks.
+        self.LTDfTh = 5.0 / (self.searchWin*self.tstep)
 
         #Other inits.
         super(getData,self).__init__()
@@ -47,14 +57,10 @@ class getData(QtCore.QObject):
         self.preport = preport
         self.postip = postip
         self.postport = postport
-<<<<<<< HEAD
-        self.preNeurdt = 257*[[- self.LTDwin - 1]] #Matrix holding timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
-        self.postNeurdt = 4097*[[- self.LTPwin - 1]] #Matrix holding timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
-=======
+        #self.secpostport = 3000
         #self.preNeurdt = 257*[[- self.LTDwin - 1]] #Matrix holding abs. timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
         #self.postNeurdt = 4097*[[- self.LTPwin - 1]] #Matrix holding abs. timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
         self.Neurdt = 4097 * [[- self.LTPwin - 1]] #Matrix holding absolute times of spikes of any type. Mat(x,y): x-> Neuron ID. y-> =0: last absolute time of firing for neuron x.
->>>>>>> remotes/Upstream/master
 
 
     def runUDP(self):
@@ -62,9 +68,9 @@ class getData(QtCore.QObject):
         g.UDPampel = 1
 
         #Operational parameters.
-        maxtime = 90 #Maximum time allowed for UDP operation before returning control (s).
-        Rmin = 3500.0 #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
-        Rmax = 15000.0
+        maxtime = 110 #Maximum time allowed for UDP operation before returning control (s).
+        Rmin = float(g.opEdits[5].text()) #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
+        Rmax = float(g.opEdits[4].text())
         maxlisten = 20 #Maximum time to listen on socket for events.
 
         #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
@@ -122,7 +128,7 @@ class getData(QtCore.QObject):
 
                 id_res_in = (unpacked_data[0]>>24)&0xff #Sender ID.
                 id_in = unpacked_data[0]&0xffffff #PRE neuron ID.
-                tst_res_in = (unpacked_data[1]>>24)&0xff #Unused.
+                tst_res_in = (unpacked_data[1]>>24)&0xff #From Padova: shows type of event: 0 -> PSP, 1 -> stimulated AP, 2 -> spontaneous AP.
                 tst_in = unpacked_data[1]&0xffffff #Timestamp in. General relative time (time between events regardless of origin).
 
                 print "---------------------------------------------------------------"
@@ -134,10 +140,6 @@ class getData(QtCore.QObject):
                     print("(P2)") #Partner 2
 
                 #if id_res_in == g.partcode[0] and (np.sum(g.ConnMat[id_in,:,0] > 0)): #Recognise input as presynaptic.  # PRE # ...and check it actually connects to something.
-<<<<<<< HEAD
-                if (np.sum(g.ConnMat[id_in, :, 0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
-=======
->>>>>>> remotes/Upstream/master
 
                 ######################### P1 #####################
 
@@ -164,20 +166,38 @@ class getData(QtCore.QObject):
 
                         id_out = postNeurIdx
 
-                        #Determine whether plasticity should be triggered.
+                        #Determine whether plasticity should be triggered based on activity of CURR neuron as PRE.
 
                         #Check for LTD.
                         id_plast = [-1]
                         for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
+
+                            ### LTD RULES ###
+
+                            #Simple, last-spike STDP.
                             #if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
-                            if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTDwin)]):
+
+                            #Complex a posteriori-calculated STDP.
+                            #if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTDwin)]):
+
+                            #SRDP.
+                            if 0: #Presynaptic activity never triggers plasticity in SRDP.
+
                                 id_plast = id_plast + [postNeurIdx[i]]
                         id_plast = id_plast[1:]
 
                         #Check for LTP.
                         id_plast2 = [-1]
                         for i in range(len(postNeurLookup)): #For every look-upabble PRE neuron...
-                            if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTPwin)]):
+
+                            ### LTP RULES ###
+
+                            #Complex a posteriori-calculated STDP.
+                            #if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTPwin)]):
+
+                            # SRDP.
+                            if 0:  # Presynaptic activity never triggers plasticity in SRDP.
+
                                 id_plast2 = id_plast2 + [postNeurIdx[i]]
                         id_plast2 = id_plast2[1:]
 
@@ -227,6 +247,7 @@ class getData(QtCore.QObject):
                             pack_data = packer.pack(*pack)
 
                             sock.sendto(pack_data, (self.postip, int(self.postport)))
+                            #sock.sendto(pack_data, (self.postip, int(self.secpostport)))
                             #sock.sendto(pack_data, (self.preip, int(self.preport)))
 
                         #ready = select.select([sock], [], [], maxlisten)
@@ -246,35 +267,43 @@ class getData(QtCore.QObject):
 
                         id_out = preNeurIdx
 
-                        #Determine whether plasticity should be triggered.
+                        #Determine whether plasticity should be triggered based on activity of CURR as POST.
 
                         #Check for LTP.
                         id_plast = [-1]
-                        for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
+                        for i in range(len(preNeurLookup)): #For every look-uppable PRE neuron...
+
+                            ### LTP RULES ###
+
+                            #Simple, last-spike STDP.
                             #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTPwin)]):
+
+                            #Complex, a posteriori-calculated STDP.
+                            #if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= self.LTPwin)]):
+
+                            #SRDP
+                            if len([True for e in preNeurLookup[i][-self.searchLim:] if 0 <= (tabs - e) <= self.searchWin]) > self.LTPfTh:
+
                                 id_plast = id_plast + [preNeurIdx[i]]
                         id_plast = id_plast[1:]
 
                         #Check for LTD.
                         id_plast2 = [-1]
                         for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
-                            #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTDwin)]):
-                                id_plast2 = id_plast2 + [preNeurIdx[i]]
+
+                            ### LTD RULES ###
+
+                            #Complex, a posteriori-calculated STDP.
+                            #if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -self.LTDwin)]):
+
+                            #SRDP.
+                            if len([True for e in preNeurLookup[i][-self.searchLim:] if 0 <= (tabs - e) <= self.searchWin]) < self.LTDfTh:
+
+                                id_plast2 = id_plast2 + [preNeurIdx[i]] #Result of detecting conditions for plasticity met: put neuron in list of neurons 'to be plasticised'.
                         id_plast2 = id_plast2[1:]
 
                         for elem in range(len(id_out)):
 
-<<<<<<< HEAD
-                    #ready = select.select([sock], [], [], maxlisten)
-
-                #elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
-                if (np.sum(g.ConnMat[:, id_in, 0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
-                    print('POST caught')
-                    #Register arrival of post-spike and store new neur. specific abs. time firing time.
-                    self.postNeurdt[id_in] = self.postNeurdt[id_in] + [tst_in]
-=======
                             #Determine physical device that corresponds to affected synapse.
                             w_tar = g.ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
                             b_tar = g.ConnMat[id_out[elem], id_in, 2]
@@ -287,7 +316,6 @@ class getData(QtCore.QObject):
                             g.ser.write("02\n") #Select device operation.
                             g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
                             g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
->>>>>>> remotes/Upstream/master
 
                             print('--')
 
@@ -316,71 +344,6 @@ class getData(QtCore.QObject):
                     # Determine whether firing neuron is post-synaptic to anything.
                     preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
 
-<<<<<<< HEAD
-                    preNeurLookup = [-1]
-                    for i in preNeurIdx:
-                        preNeurLookup = preNeurLookup + [self.preNeurdt[i]] #Generate sub-vector holding only pre-neurons to be 'looked up'.
-                    preNeurLookup.remove(-1) #Clean up list of lists of its initial elements.
-
-                    id_out = preNeurIdx
-
-                    #Determine whether plasticity should be triggered.
-
-                    #Check for LTP.
-                    id_plast = [-1]
-                    for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
-                        #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                        if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tst_in - e) <= self.LTPwin)]):
-                            id_plast = id_plast + [preNeurIdx[i]]
-                    id_plast = id_plast[1:]
-
-                    #Check for LTD.
-                    id_plast2 = [-1]
-                    for i in range(len(preNeurLookup)): #For every look-upabble PRE neuron...
-                        #if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                        if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tst_in - e) >= -self.LTDwin)]):
-                            id_plast2 = id_plast2 + [preNeurIdx[i]]
-                    id_plast2 = id_plast2[1:]
-
-                    for elem in range(len(id_out)):
-                        #Determine physical device that corresponds to affected synapse.
-                        w_tar = g.ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
-                        b_tar = g.ConnMat[id_out[elem], id_in, 2]
-
-                        #Display updates.
-                        f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
-                        f.displayUpdate.updateSignal_short.emit()
-
-                        #Select device to be 'plasticised'.
-                        g.ser.write("02\n") #Select device operation.
-                        g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
-                        g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
-
-                        if id_out[elem] in id_plast and id_out[elem] not in  id_plast2:
-                            self.plastfun(1) #Carry out plasticity.
-                            print("LTP")
-                        elif id_out[elem] in id_plast2 and id_out[elem] not in  id_plast:
-                            self.plastfun(0) #Carry out plasticity.
-                            print("LTD")
-
-                        #Read results.
-                        g.ser.write("03\n") #Read operation.
-                        g.ser.write("k\n") #Calibrated read operation.
-
-                        try:
-                            result='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-                        except ValueError:
-                            result='%.10f' % 0.001
-
-                        result = float(result)
-                        print('POST: ' + str(result)+', '+str(tst_in)+', '+str(id_out[elem])+', '+str(id_in)) #  RS | Abs. time | PRE ID | POST ID
-
-                    #ready = select.select([sock], [], [], maxlisten)
-
-                print('Before socket listen')
-                ready = select.select([sock], [], [], maxlisten)
-                print('After socket listen')
-=======
                     if len(preNeurIdx) != 0: #If it is post-synaptic to something...
                         lastspks = [] #Hold last spikes from each pre-synaptic neuyron in this list.
 
@@ -402,7 +365,8 @@ class getData(QtCore.QObject):
                         tabs_in -= 1000000000000
 
                     # Register arrival of pre-spike and store new neur. specific abs. time firing time.
-                    self.Neurdt[id_in] = self.Neurdt[id_in] + [tabs_in]
+                    if tst_res_in == 1 or tst_res_in == 2:  # Check that this is an AP event (spontaneous or stimulated AP).
+                        self.Neurdt[id_in] = self.Neurdt[id_in] + [tabs_in]
 
                     ###### PRE ######
                     if (np.sum(g.ConnMat[id_in, :,0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
@@ -419,22 +383,39 @@ class getData(QtCore.QObject):
 
                         # Determine whether plasticity should be triggered.
 
-                        # Check for LTD.
+                        # Check for LTP.
                         id_plast = [-1]
                         for i in range(len(postNeurLookup)):  # For every look-upabble PRE neuron...
-                            # if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
-                            if any([True for e in postNeurLookup[i][-self.searchLim:] if
-                                    (0 < (tabs_in - e) <= self.LTDwin)]):
+
+                            ### LTP RULES ###
+
+                            # Complex a posteriori-calculated STDP.
+                            # if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 > (tabs_in - e) >= -self.LTPwin)]):
+
+                            # SRDP.
+                            if 0:  # Presynaptic activity never triggers plasticity in SRDP.
+
                                 id_plast = id_plast + [postNeurIdx[i]]
                         id_plast = id_plast[1:]
 
-                        # Check for LTP.
+                        # Check for LTD.
                         id_plast2 = [-1]
                         for i in range(len(postNeurLookup)):  # For every look-upabble PRE neuron...
-                            if any([True for e in postNeurLookup[i][-self.searchLim:] if
-                                    (0 > (tabs_in - e) >= -self.LTPwin)]):
+
+                            ### LTD RULES ###
+
+                            # Simple, last-spike STDP.
+                            # if postNeurLookup[i][-1] > (tabs - self.LTDwin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
+
+                            # Complex a posteriori-calculated STDP.
+                            # if any([True for e in postNeurLookup[i][-self.searchLim:] if (0 < (tabs_in - e) <= self.LTDwin)]):
+
+                            # SRDP.
+                            if 0:  # Presynaptic activity never triggers plasticity in SRDP.
+
                                 id_plast2 = id_plast2 + [postNeurIdx[i]]
                         id_plast2 = id_plast2[1:]
+
 
                         for elem in range(len(id_out)):  # For every synapse that the incoming pre-synaptic spike affects...
 
@@ -481,7 +462,8 @@ class getData(QtCore.QObject):
                             pack_data = packer.pack(*pack)
 
                             #sock.sendto(pack_data, (self.postip, int(self.postport)))
-                            sock.sendto(pack_data, (self.preip, int(self.preport)))
+                            if tst_res_in == 1 or tst_res_in == 2: #Check that this is an AP event (spontaneous or stimulated AP).
+                                sock.sendto(pack_data, (self.preip, int(self.preport)))
 
                             # ready = select.select([sock], [], [], maxlisten)
 
@@ -505,18 +487,41 @@ class getData(QtCore.QObject):
                         # Check for LTP.
                         id_plast = [-1]
                         for i in range(len(preNeurLookup)):  # For every look-upabble PRE neuron...
+
+                            ### LTP RULES ###
+
+                            # Simple, last-spike STDP.
                             # if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tabs_in - e) <= self.LTPwin)]):
-                                id_plast = id_plast + [preNeurIdx[i]]
+
+                            #Complex, a posteriori-calculated STDP.
+                            #if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 < (tabs_in - e) <= self.LTPwin)]):
+
+                            # SRDP
+                            if tst_res_in == 0 or tst_res_in == 2: #Check that this is a plasticity triggering event (PSP or spontaneous AP).
+                                if len([True for e in preNeurLookup[i][-self.searchLim:] if 0 <= (tabs_in - e) <= self.searchWin]) > self.LTPfTh:
+
+                                    id_plast = id_plast + [preNeurIdx[i]]
                         id_plast = id_plast[1:]
 
                         # Check for LTD.
                         id_plast2 = [-1]
                         for i in range(len(preNeurLookup)):  # For every look-upabble PRE neuron...
+
+                            ### LTD RULES ###
+
+                            # Simple, last-spike STDP.
                             # if preNeurLookup[i][-1] > (tst_in - self.LTPwin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
-                            if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tabs_in - e) >= -self.LTDwin)]):
-                                id_plast2 = id_plast2 + [preNeurIdx[i]]
+
+                            # Complex, a posteriori-calculated STDP.
+                            #if any([True for e in preNeurLookup[i][-self.searchLim:] if (0 > (tabs_in - e) >= -self.LTDwin)]):
+
+                            # SRDP.
+                            if tst_res_in == 0 or tst_res_in == 2: #Check that this is a plasticity triggering event (PSP or spontaneous AP).
+                                if len([True for e in preNeurLookup[i][-self.searchLim:] if 0 <= (tabs_in - e) <= self.searchWin]) < self.LTDfTh:
+
+                                    id_plast2 = id_plast2 + [preNeurIdx[i]]
                         id_plast2 = id_plast2[1:]
+
 
                         for elem in range(len(id_out)):
 
@@ -557,7 +562,6 @@ class getData(QtCore.QObject):
 
                 #Read next packet.
                 ready = select.select([sock], [], [], maxlisten)
->>>>>>> remotes/Upstream/master
 
                 #else:
                     #ready = select.select([sock], [], [], maxlisten)
@@ -572,6 +576,7 @@ class getData(QtCore.QObject):
         print('Total runtime: ' + str(time.clock() - tstart)) #Display time elapsed during UDP run.
         print('Average packet rate: ' + str(packnum/(time.clock() - tstart))) #Display packets/second.
         print('Bias parameters: '+ str(float(g.opEdits[0].text())) + '    ' + str(float(g.opEdits[1].text())) + '    ' + str(float(g.opEdits[2].text())) + '    ' + str(float(g.opEdits[3].text())))
+        print('RS-weight mapping (min,max): ' + str(float(g.opEdits[5].text())) + '    ' + str(float(g.opEdits[4].text())))
 
         return 0
 
@@ -597,6 +602,44 @@ class getData(QtCore.QObject):
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
 
+    def plastdec(self, tabs, NeurLookup, NeurIdx, plastWin, plastfTh): ### UNDER CONSTRUCTION ###
+        # Check for LTP.
+        id_plast = [-1]
+        for i in range(len(NeurLookup)):  # For every look-upabble PRE neuron...
+
+            ### LTP RULES ###
+
+            # Simple, last-spike STDP.
+            # if NeurLookup[i][-1] > (tabs - self.plastWin): #...check if LAST PRE spike is within the LTD window of current PRE arrival.
+
+            # Complex a posteriori-calculated STDP.
+            if any([True for e in NeurLookup[i][-self.searchLim:] if (0 < (tabs - e) <= plastWin)]):
+
+            #SRDP
+            #if len([True for e in NeurLookup[i][-self.searchLim:] if 0 <= (tabs - e) <= self.searchWin]) > plastfTh:
+
+                id_plast = id_plast + [NeurIdx[i]]
+        id_plast = id_plast[1:]
+
+        # Check for LTD.
+        id_plast2 = [-1]
+        for i in range(len(NeurLookup)):  # For every look-upabble PRE neuron...
+
+            ### LTD RULES ###
+
+            #Simple, last-spike STDP.
+            # if NeurLookup[i][-1] > (tabs - plastWin): #...check if LAST PRE spike is within the LTP window of current POST arrival.
+
+            # Complex a posteriori-calculated STDP.
+            if any([True for e in NeurLookup[i][-self.searchLim:] if (0 > (tabs - e) >= -plastWin)]):
+
+            #SRDP.
+            #if len([True for e in NeurLookup[i][-self.searchLim:] if 0 <= (tabs - e) <= self.searchWin]) < self.plastfTh:
+
+                id_plast2 = id_plast2 + [NeurIdx[i]]
+        id_plast2 = id_plast2[1:]
+
+        return id_plast, id_plast2
 
 class UDPstopper(QtCore.QObject):
     #Define signals to be used throughout module.
@@ -635,14 +678,14 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         btmLabels=['Postsynaptic partner IP', 'Postsynaptic partner port']
         self.btmEdits=[]
 
-        opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)']
+        opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)', 'Rmax (Ohms)', 'Rmin Ohms']
         g.opEdits=[]
 
         leftInit=  ['25.56.39.168', '10000']
-        rightInit= ['25.23.99.180', '25002']
+        rightInit= ['25.31.209.234', '25003']
         #leftInit = ['152.78.67.67', '5005']
         #rightInit = ['10.9.167.3', '5005']
-        opInit=['1.5', '0.000001', '-1.5', '0.000001']
+        opInit=['4.0', '0.0001', '-4.0', '0.0001', '9000.0', '4000.0']
 
         # Setup the column 'length' ratios.
         gridLayout=QtGui.QGridLayout()
