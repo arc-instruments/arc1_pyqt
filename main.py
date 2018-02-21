@@ -34,8 +34,10 @@ myappid = 'ArC ONE Control' # arbitrary string
 if sys.platform == "win32":
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     serialFormat = 'COM%d'
-elif sys.platform in ["linux", "linux2", "darwin"]:
-    serialFormat = '/dev/ttyUSB%d'
+elif sys.platform in ["linux", "linux2"]:
+    serialFormat = '/dev/ttyACM%d'
+elif sys.platform in ["darwin"]:
+    serialFormat = '/dev/tty.usbmodem%d'
 else:
     serialFormat = '%d'
 
