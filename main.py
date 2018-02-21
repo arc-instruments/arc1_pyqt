@@ -22,6 +22,8 @@ import time
 import FileDialog
 import requests
 import subprocess
+import gzip
+from functools import partial
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4 import QtWebKit
@@ -103,12 +105,12 @@ class Arcontrol(QtGui.QMainWindow):
         self.saveAction = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'save.png'),'Save', self)
         self.saveAction.setShortcut('Ctrl+S')
         self.saveAction.setStatusTip('Save session')
-        self.saveAction.triggered.connect(self.saveSession)
+        self.saveAction.triggered.connect(partial(self.saveSession, new=False))
 
         self.saveAsAction = QtGui.QAction('Save as...', self)
         self.saveAsAction.setShortcut('Ctrl+S')
         self.saveAsAction.setStatusTip('Save session as...')
-        self.saveAsAction.triggered.connect(self.saveAsSession)
+        self.saveAsAction.triggered.connect(partial(self.saveSession, new=True))
 
         #exportEPSAction = QtGui.QAction('As EPS', self)
         #exportEPSAction.setStatusTip('Save current figure as EPS')
@@ -643,7 +645,7 @@ class Arcontrol(QtGui.QMainWindow):
             except:
                 print "WARNING - Could not load libraries related to module:", fls[:-3]
 
-        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open file', "*.csv"))
+        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open file','', g.OPEN_FI_PATTERN))
 
         customArray=[]
         name=path.fileName()
@@ -651,8 +653,12 @@ class Arcontrol(QtGui.QMainWindow):
         file=QtCore.QFile(path.filePath())
 
         error=0
+        if str(path.filePath().toUtf8()).endswith('.csv.gz'):
+            opener = gzip.open
+        else:
+            opener = open
 
-        with open(path.filePath(), 'rb') as csvfile:
+        with opener(path.filePath(), 'rb') as csvfile:
             rdr = csv.reader(csvfile)
     
             counter=1
@@ -743,32 +749,37 @@ class Arcontrol(QtGui.QMainWindow):
             print "Cancel"
     	pass
 
-    def saveSession(self):
+    def saveSession(self, new=False):
     	print "Save Session pressed"
 
         if g.workingDirectory:
-            if g.saveFileName:
+            if (not new) and g.saveFileName:
                 path=g.workingDirectory
             else:
-                path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, 'Save File', g.workingDirectory, 'CSV(*.csv)'))
+                path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, \
+                    'Save File', g.workingDirectory, g.SAVE_FI_PATTERN))
                 path=path_.filePath()
                 g.saveFileName=path_.fileName()
                 g.workingDirectory=path_.filePath()
         else:
-            path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, 'Save File', '', 'CSV(*.csv)'))
+            path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, \
+                'Save File', '', g.SAVE_FI_PATTERN))
             path=path_.filePath()
             g.saveFileName=path_.fileName()
             g.workingDirectory=path_.filePath()
-        
 
         if not path.isEmpty():
-            with open(unicode(path), 'wb') as stream:
+            if str(path.toUtf8()).endswith('csv.gz'):
+                opener = gzip.open
+            else:
+                opener = open
+
+            with opener(str(path.toUtf8()), 'wb') as stream:
                 writer = csv.writer(stream)
                 ######################
                 writer.writerow([g.sessionName])
                 writer.writerow([time.strftime("%c")])
                 ########################
-
 
                 writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag', 'ReadTag','ReadVoltage'])
                 for w in range(1,g.wline_nr+1):
@@ -783,36 +794,6 @@ class Arcontrol(QtGui.QMainWindow):
                             writer.writerow(rowdata)
             self.saveAction.setEnabled(False)
     	pass
-
-    def saveAsSession(self):
-    	print "Save as pressed"
-        if g.workingDirectory:
-            path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, 'Save File', g.workingDirectory, 'CSV(*.csv)'))
-            path=path_.filePath()
-            g.saveFileName=path_.fileName()
-            g.workingDirectory=path_.filePath()
-        else:
-            path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, 'Save File', '', 'CSV(*.csv)'))
-            path=path_.filePath()
-            g.saveFileName=path_.fileName()
-            g.workingDirectory=path_.filePath()
-
-        if not path.isEmpty():
-            with open(unicode(path), 'wb') as stream:
-                writer = csv.writer(stream)
-                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag', 'ReadTag','ReadVoltage'])
-                for w in range(1,g.wline_nr+1):
-                    for b in range(1,g.bline_nr+1):
-                        for row in range(len(g.Mhistory[w][b])):
-                            rowdata = [w,b]
-                            for item in g.Mhistory[w][b][row]:
-                                if item is not None:
-                                    rowdata.append(item)
-                                else:
-                                    rowdata.append('')
-                            writer.writerow(rowdata)
-        self.saveAction.setEnabled(False)
-        pass
 
     #def exportSession(self):
    # 	print "New Session pressed"
