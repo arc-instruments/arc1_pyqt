@@ -49,11 +49,6 @@ import Globals.GlobalFunctions as f
 import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
 
-from win32api import GetSystemMetrics
-monitor_width=GetSystemMetrics(0)
-monitor_height=GetSystemMetrics(1)
-g.scaling_factor=float(monitor_height)/1200
-
 import ControlPanels
 
 class Arcontrol(QtGui.QMainWindow):
@@ -926,6 +921,19 @@ class Arcontrol(QtGui.QMainWindow):
 def main():
     
     app = QtGui.QApplication(sys.argv)
+
+    # Determine the scaling factor
+    if sys.platform == "win32":
+        from win32api import GetSystemMetrics
+        monitor_width = GetSystemMetrics(0)
+        monitor_height = GetSystemMetrics(1)
+    else:
+        monitor = app.desktop().screenGeometry()
+        monitor_width = monitor.width()
+        monitor_height = monitor.height()
+
+    g.scaling_factor=float(monitor_height)/1200
+
     ex = Arcontrol()
     sys.exit(app.exec_())
 
