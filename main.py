@@ -26,9 +26,6 @@ import gzip
 from functools import partial
 from PyQt4 import QtGui
 from PyQt4 import QtCore
-from PyQt4 import QtWebKit
-from PyQt4.QtWebKit import QWebView
-from PyQt4.QtCore import QUrl
 from virtualArC import virtualarc
 import ctypes
 myappid = 'ArC ONE Control' # arbitrary string
