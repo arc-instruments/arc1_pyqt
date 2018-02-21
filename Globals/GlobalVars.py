@@ -88,10 +88,14 @@ customArray=[]
 checkSA=False
 
 ####################################
-# Global variables for data saving
+# Global variables for data handling
 
 workingDirectory=[]
 saveFileName=[]
+
+# File patterns for file dialogs
+SAVE_FI_PATTERN = 'Session file (*.csv);;Compressed Session file (*.csv.gz)'
+OPEN_FI_PATTERN = 'Session files (*.csv *.csv.gz)'
 
 ####################################
 # ArC One mode variables
@@ -115,3 +119,4 @@ ConnMat = np.zeros((1,1,1)) #ConnMat(x,y,z): x-> input neuron, y-> output neuron
 opEdits = [] #LTP/LTD parameter list.
 partcode = (65, 68, 83) #Holds decimanl values of ASCII characters 'a' (axon), 'd' (dendrite) and 's' (synapse).
 UDPampel = 0 #Flag showing whether the UDP module should continue processing packets or simply exit.
+
