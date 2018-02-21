@@ -35,7 +35,7 @@ class virtualArC(object):
             self.crossbar[w].append(0)
             for b in range(32):
                 #mx=memristor(Ap=11.483, An=-0.17658, tp=1.731, tn=1.298, a0p=5055, a0n=7586, a1p=-139, a1n=4027)
-                mx=memristor(Ap=11.483, An=-11.483, tp=1.731, tn=1.731, a0p=5000, a0n=5000, a1p=139, a1n=139)
+                mx=memristor(Ap=11.483, An=-11.483, tp=1.731, tn=1.731, a0p=9000, a0n=5000, a1p=500, a1n=500)
                 #mx.initialise(mx.Ron+5e5+(1-2*np.random.rand())*5e5)
                 mx.initialise(5e3+(1-1.25*np.random.rand())*3e3)
                 self.crossbar[w].append(mx)
