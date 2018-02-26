@@ -351,25 +351,47 @@ class Arcontrol(QtGui.QMainWindow):
         self.newSessionStart()
 
     def check_for_updates(self):
+        # Version comparison
+        # If `target` is newer than `orig` -> 1
+        # If `target` is older than `orig` -> -1
+        # If `target` is same version as `orig` -> 0
+        def vercmp(orig, target):
+            old = [int(x) for x in orig.split(".")]
+            # if version has less than 3 parts, pad with zeros
+            if len(old) < 3:
+                old.extend([0] * (3 - len(old)))
+
+            new = [int(x) for x in target.split(".")]
+            # if version has less than 3 parts, pad with zeros
+            if len(new) < 3:
+                new.extend([0] * (3 - len(new)))
+
+            for i in range(3):
+                if new[i] > old[i]:
+                    return 1
+                if new[i] < old[i]:
+                    return -1
+            return 0
+
         # check local version:
         with open(os.path.join("source","version.txt"), "r") as f:
-            g.local_version=f.read().split("\n")[1]
+            g.local_version=str(f.read().split("\n")[1])
 
         connection=False
         # check remote version:
         version_url="http://arc-instruments.com/files/release/version.txt"
         try:
             response = requests.get(version_url, stream=True, timeout=2)
-            g.remote_version=response.text.split("\n")[1]
+            g.remote_version=str(response.text.split("\n")[1])
             connection=True
         except:
             pass
 
         if connection: # if there is an internet connection and the remote version has been retrieved
-            if g.local_version != g.remote_version:
+            status = vercmp(g.local_version, g.remote_version)
+            if status > 0:
                 self.updateAction.setEnabled(True)
         
-
     def launch_manager(self):
         print "Launch platform manager"
         self.check_for_updates()
@@ -391,7 +413,6 @@ class Arcontrol(QtGui.QMainWindow):
         self.cfgHW.setFixedWidth(500)
         self.cfgHW.setFixedHeight(150)
 
-
         frameGm = self.cfgHW.frameGeometry()
         centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
@@ -401,18 +422,12 @@ class Arcontrol(QtGui.QMainWindow):
         self.cfgHW.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png'))
         self.cfgHW.show()
 
-
-
     def updateHW(self):
         if g.ser.port != None:  # only connect if it's disconnected
             job="011"
             g.ser.write(job+"\n")                       # Send initial parameters
             g.ser.write(str(int(g.readCycles))+"\n")         # readcycles and array size
             g.ser.write(str(int(g.sneakPathOption))+"\n")           # send total nr of wordlines
-
-
-
-
 
     def showAbout(self):
         from ControlPanels import aboutSection
