@@ -491,7 +491,10 @@ class manualOperations_panel(QtGui.QWidget):
         if g.ser.port != None:
             job='01'
             g.ser.write(job+"\n")
-            g.ser.write(str(g.readOption)+"\n")
+            if g.Vread < 0 and g.readOption == 2:
+                g.ser.write(str(3)+"\n") # use correct option for Vread < 0
+            else:
+                g.ser.write(str(g.readOption)+"\n")
             
             g.ser.write(str(g.Vread)+"\n")
 
@@ -501,7 +504,10 @@ class manualOperations_panel(QtGui.QWidget):
         if g.ser.port != None:
             job='01'
             g.ser.write(job+"\n")
-            g.ser.write(str(g.readOption)+"\n")
+            if g.Vread < 0 and g.readOption == 2:
+                g.ser.write(str(3)+"\n") # use correct option for Vread < 0
+            else:
+                g.ser.write(str(g.readOption)+"\n")
             
             g.ser.write(str(g.Vread)+"\n")
 
