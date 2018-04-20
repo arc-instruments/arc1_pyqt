@@ -89,7 +89,6 @@ class history_panel(QtGui.QWidget):
                 newItem=QtGui.QTreeWidgetItem(newTree)
                 newItem.setWhatsThis(0,str(w)+','+str(b))
 
-                
                 newItem.setWhatsThis(1,newTag[0])
                 newItem.setWhatsThis(2,newTag[1])
                 newItem.setWhatsThis(3,newTag[2])
@@ -106,7 +105,6 @@ class history_panel(QtGui.QWidget):
             self.deunderline()
             existingItem[0].setFont(0,fonts.history_top_underline)
             newTag=self.formatItemText(w,b)
-            #print newTag
             if newTag:
 
                 if existingItem[0].child(0):            # if a child exists in the stack (which is always true, this function might be unecessary)
@@ -602,10 +600,21 @@ class history_panel(QtGui.QWidget):
         tag=[]
         tagString=g.Mhistory[w][b][-1][3]
         currentTagKey=[]
+        tagPartsUnder = str(tagString).split("_") # underscore delimited tags
         for tagKey in g.tagDict.keys():
-            if str(tagString).startswith(tagKey):
+            # As the program stands we have two sets of tags
+            # either the regular XYZ_s, XYZ_i, XYZ_e for most
+            # modules, or space delimited for reads and stdp
+            # so first check the most standard case
+            if len(tagPartsUnder) > 1 and tagPartsUnder[0] == tagKey:
                 tag.append(g.tagDict[tagKey])
                 currentTagKey=tagKey
+                break
+            # and the just revert to the old behaviour
+            elif str(tagString).startswith(tagKey):
+                tag.append(g.tagDict[tagKey])
+                currentTagKey=tagKey
+                break
 
 
         # if the operation is a custom pulsing script (such as SS or CT or FF or STDP or Endurance),
@@ -619,7 +628,6 @@ class history_panel(QtGui.QWidget):
         for point in auxArr:
             tagList.append(str(point[3]))
 
-        #print tag
 
         if tag: # error catch
 
