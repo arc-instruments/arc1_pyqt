@@ -117,6 +117,7 @@ class FormFinder(QtGui.QWidget):
                     'Pulse width step (%)', \
                     'Pulse width max (us)', \
                     'Interpulse time (ms)']
+        self.leftLabels = []
         self.leftEdits=[]
         leftInit=  ['0.25',\
                     '0.25',\
@@ -177,6 +178,7 @@ class FormFinder(QtGui.QWidget):
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
+            self.leftLabels.append(lineLabel)
             gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
@@ -191,13 +193,32 @@ class FormFinder(QtGui.QWidget):
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
 
+        gridLayout.addWidget(QtGui.QLabel("Pulse width progression"), 4, 4)
+        self.pulsingModeCombo = QtGui.QComboBox()
+        # you might wonder why we have different job numbers here. 14 is
+        # the original formfinder which allowed only for geometric progression
+        # of pulse widths. 141 is the newer version that also allows linear
+        # pwsteps. Since FormFinder is a general use module the original
+        # behaviour of the FormFinder module has been preserved in the
+        # firmware. In order to maintain backwards compatibility with previous
+        # firmwares (that only allow geometric pwsteps) the job number for this
+        # option is set to the old one. Checks for 14 have also been made when
+        # writing the experiment data to the uC. The core of the routine is
+        # the same for both but for compatibility reasons we need to maintain
+        # the old interface.
+        self.pulsingModeCombo.addItem("Multiplicative", {"job": 14, "mode": 0})
+        self.pulsingModeCombo.addItem("Linear", {"job": 141, "mode": 1})
+        self.pulsingModeCombo.setCurrentIndex(0)
+        self.pulsingModeCombo.currentIndexChanged.connect(self.pulsingModeComboIndexChanged)
+        gridLayout.addWidget(self.pulsingModeCombo, 4, 5)
+
         self.checkNeg=QtGui.QCheckBox(self)
         self.checkNeg.setText("Negative amplitude?")
-        gridLayout.addWidget(self.checkNeg,4,4)
+        gridLayout.addWidget(self.checkNeg,5,4)
 
         self.checkRthr=QtGui.QCheckBox(self)
         self.checkRthr.setText("Use Rthr (%)")
-        gridLayout.addWidget(self.checkRthr,5,4)
+        gridLayout.addWidget(self.checkRthr,6,4)
 
         self.vW=QtGui.QWidget()
         self.vW.setLayout(gridLayout)
@@ -211,7 +232,6 @@ class FormFinder(QtGui.QWidget):
         scrlArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
 
         scrlArea.installEventFilter(self)
-    
 
         vbox1.addWidget(scrlArea)
         vbox1.addStretch()
@@ -241,6 +261,15 @@ class FormFinder(QtGui.QWidget):
 
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
+
+    def pulsingModeComboIndexChanged(self, idx):
+        data = self.pulsingModeCombo.itemData(idx).toPyObject()
+        mode = data[QtCore.QString("mode")]
+
+        if int(mode) == 1:
+            self.leftLabels[4].setText("Pulse width step (us)")
+        else:
+            self.leftLabels[4].setText("Pulse width step (%)")
 
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
@@ -279,11 +308,16 @@ class FormFinder(QtGui.QWidget):
     def resizeWidget(self,event):
         pass
 
-
-    def sendParams(self):
+    def sendParams(self, job):
         polarity=1
         if (self.checkNeg.isChecked()):
             polarity=-1
+
+        g.ser.write(job+"\n")   # sends the job
+
+        pmodeIdx = self.pulsingModeCombo.currentIndex()
+        pmode = self.pulsingModeCombo.itemData(pmodeIdx).toPyObject()[\
+            QtCore.QString("mode")]
 
         g.ser.write(str(float(self.leftEdits[0].text())*polarity)+"\n")
         g.ser.write(str(float(self.leftEdits[1].text())*polarity)+"\n")
@@ -292,7 +326,18 @@ class FormFinder(QtGui.QWidget):
         time.sleep(0.05)
 
         g.ser.write(str(float(self.leftEdits[3].text())/1000000)+"\n")
-        g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
+
+        # Determine the step
+        if job != "14": # modal formfinder
+            if pmode == 1:
+                # if step is time make it into seconds
+                g.ser.write(str(float(self.leftEdits[4].text())/1000000)+"\n")
+            else:
+                # else it is percentage, leave it as is
+                g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
+        else: # legacy behaviour
+            g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
+
         g.ser.write(str(float(self.leftEdits[5].text())/1000000)+"\n")
 
         g.ser.write(str(float(self.leftEdits[6].text())/1000)+"\n")
@@ -306,16 +351,20 @@ class FormFinder(QtGui.QWidget):
         else:
             g.ser.write(str(float(0))+"\n")
         time.sleep(0.05)
+
+        if job != "14": # newer version of formfinder
+            g.ser.write(str(int(pmode))+"\n")
+
         g.ser.write(str(int(self.rightEdits[3].text()))+"\n")
         g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
         time.sleep(0.05)
 
     def programOne(self):
         if g.ser.port != None:
-            job="14"
-            g.ser.write(job+"\n")   # sends the job
-
-            self.sendParams()
+            idx = self.pulsingModeCombo.currentIndex()
+            job = self.pulsingModeCombo.itemData(idx).toPyObject()[\
+                QtCore.QString("job")]
+            self.sendParams(str(job))
 
             self.thread=QtCore.QThread()
             self.getData=getData([[g.w,g.b]])
@@ -334,11 +383,10 @@ class FormFinder(QtGui.QWidget):
 
             rangeDev=self.makeDeviceList(True)
 
-
-            job="14"
-            g.ser.write(job+"\n")   # sends the job
-
-            self.sendParams()
+            idx = self.pulsingModeCombo.currentIndex()
+            job = self.pulsingModeCombo.itemData(idx).toPyObject()[\
+                QtCore.QString("job")]
+            self.sendParams(str(job))
 
             self.thread=QtCore.QThread()
             self.getData=getData(rangeDev)
@@ -351,11 +399,10 @@ class FormFinder(QtGui.QWidget):
         if g.ser.port != None:
             rangeDev=self.makeDeviceList(False)
 
-
-            job="14"
-            g.ser.write(job+"\n")   # sends the job
-
-            self.sendParams()
+            idx = self.pulsingModeCombo.currentIndex()
+            job = self.pulsingModeCombo.itemData(idx).toPyObject()[\
+                QtCore.QString("job")]
+            self.sendParams(str(job))
 
             self.thread=QtCore.QThread()
             self.getData=getData(rangeDev)
