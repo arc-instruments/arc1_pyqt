@@ -95,19 +95,23 @@ class device(QtGui.QWidget):
 
 
     def recolor(self,M):
-        index=0
+
         if M>0:
             try:
-                index=int((np.log10(M)-g.minMlog)*255/(g.normMlog)) # get the log index out of 255 max values
+                # get the log index out of 255 max values
+                idx = int((np.log10(M)-g.minMlog)*255/(g.normMlog))
+                color = g.qColorList[idx]
             except OverflowError:
-                index=0
+                # Inf
+                color = QtGui.QColor(125, 125, 125)
             except ValueError:
-                index=0
+                # Inf
+                color = QtGui.QColor(125, 125, 125)
+            except IndexError:
+                # Above 100M but still measurable
+                color = g.qColorList[-1]
 
-            if index>255:
-                index=255
-
-        self.brush.setColor(g.qColorList[index])
+        self.brush.setColor(color)
         self.update()
 
     def enterEvent(self, event):
