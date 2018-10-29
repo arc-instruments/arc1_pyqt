@@ -177,14 +177,3 @@ class End(QtGui.QWidget):
                 print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
-
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = End()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

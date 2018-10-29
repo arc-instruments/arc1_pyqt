@@ -266,13 +266,3 @@ class dataDisplay_panel(QtGui.QWidget):
 
         return maxim
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = dataDisplay_panel()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()  

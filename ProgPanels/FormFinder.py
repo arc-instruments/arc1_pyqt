@@ -453,13 +453,4 @@ class FormFinder(QtGui.QWidget):
                             rangeDev.append(cell)
 
         return rangeDev
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = FormFinder()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

@@ -1004,13 +1004,4 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
             #print(g.ConnMat)
             return True
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = UDPmod()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

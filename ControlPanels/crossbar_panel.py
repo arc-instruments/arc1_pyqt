@@ -211,13 +211,3 @@ class crossbar_panel(QtGui.QWidget):
     def hideHover(self):
         self.hoverPanel.hide()
 
-
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = crossbar_panel()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

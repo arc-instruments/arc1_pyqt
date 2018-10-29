@@ -214,12 +214,3 @@ class cbContainer(QtGui.QWidget):
     def leaveEvent(self, event):
         f.hoverAntenna.hideHoverPanel.emit()
 
-
-def main():
-    app = QtGui.QApplication(sys.argv)
-    ex = cbContainer()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

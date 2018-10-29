@@ -658,14 +658,4 @@ class history_panel(QtGui.QWidget):
             tag.append(str(currentTagKey))
 
         return tag
-     
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = history_panel()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main()  

@@ -185,13 +185,3 @@ class Loop(QtGui.QWidget):
     def loopTimes(self):
         return int(self.leftEdits[0].text())
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = Loop()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

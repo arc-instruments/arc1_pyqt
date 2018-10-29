@@ -256,13 +256,3 @@ class Pulse(QtGui.QWidget):
             self.pw_DropDown.setCurrentIndex(0)
             self.pw=10
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = Pulse()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

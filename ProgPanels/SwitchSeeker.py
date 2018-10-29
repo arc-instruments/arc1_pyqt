@@ -417,15 +417,5 @@ class SwitchSeeker(QtGui.QWidget):
         
     def getJobCode(self):
         job=self.modeSelectionCombo.itemData(self.modeSelectionCombo.currentIndex())
-        return job.toInt()[0]
+        return job
 
-
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = SwitchSeeker()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

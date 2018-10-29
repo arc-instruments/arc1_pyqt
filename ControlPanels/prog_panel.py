@@ -97,13 +97,4 @@ class prog_panel(QtGui.QWidget):
 
     def populatePanels(self):
         pass
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = prog_panel()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main()  

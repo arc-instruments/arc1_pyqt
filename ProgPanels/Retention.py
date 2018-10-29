@@ -402,13 +402,3 @@ class Retention(QtGui.QWidget):
 
         return rangeDev
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = Retention()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

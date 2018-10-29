@@ -494,13 +494,4 @@ class VolatilityRead(QtGui.QWidget):
                             rangeDev.append(cell)
 
         return rangeDev
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = VolatilityRead()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

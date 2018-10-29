@@ -661,13 +661,4 @@ class CT_LIVE(QtGui.QWidget):
             self.c_n=float(value)
         except:
             pass
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = CT_LIVE()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

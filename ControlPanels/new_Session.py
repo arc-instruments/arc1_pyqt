@@ -359,13 +359,4 @@ class new_Session(QtGui.QWidget):
     def cancelNewSession(self):
         self.close()
         pass
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = new_Session()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

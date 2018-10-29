@@ -89,12 +89,3 @@ class aboutSection(QtGui.QWidget):
 
         self.setLayout(mainLayout)
 
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = aboutSection()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

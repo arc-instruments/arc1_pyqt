@@ -209,13 +209,3 @@ class Delay(QtGui.QWidget):
             self.delay_DropDown.setCurrentIndex(0)
             self.delay=10
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = Delay()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

@@ -136,13 +136,4 @@ class configHardware(QtGui.QWidget):
     def cancelUpdateHW(self):
         self.close()
         pass
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = configHardware()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

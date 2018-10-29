@@ -328,13 +328,3 @@ class MultiBias(QtGui.QWidget):
             QtGui.QMessageBox.Ok)
         event.ignore()
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = MultiBias()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 
