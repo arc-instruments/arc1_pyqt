@@ -7,9 +7,9 @@
 
 ####################################
 
-import GlobalVars as g
-from PyQt4.QtCore import QObject, pyqtSignal
-from PyQt4 import QtGui
+from . import GlobalVars as g
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5 import QtGui, QtWidgets
 from time import sleep
 import numpy as np
 import collections
@@ -168,7 +168,7 @@ def writeDelimitedData(data, dest, delimiter="\t"):
         print(exc)
 
 def saveFuncToFilename(func, title="", parent=None):
-    fname = QtGui.QFileDialog.getSaveFileName(parent, title)
+    fname = QtWidgets.QFileDialog.getSaveFileName(parent, title)
 
     if fname:
         func(fname)

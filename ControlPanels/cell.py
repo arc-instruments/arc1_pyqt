@@ -7,10 +7,10 @@
 
 ####################################
 
-from PyQt4 import QtGui
+from PyQt5 import QtGui, QtWidgets
 
 
-class cell(QtGui.QWidget):
+class cell(QtWidgets.QWidget):
     
     def __init__(self):
         super(cell, self).__init__()

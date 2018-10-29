@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import pyqtgraph as pg
@@ -20,6 +20,7 @@ import Globals.GlobalStyles as s
 
 tag="stdp"
 g.tagDict.update({tag:"STDP*"})
+
 
 class getData(QtCore.QObject):
 
@@ -208,9 +209,7 @@ class getData(QtCore.QObject):
         return total_time, total_voltage
 
 
-
-
-class STDP(QtGui.QWidget):
+class STDP(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(STDP, self).__init__()
@@ -219,11 +218,11 @@ class STDP(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        #titleLabel = QtGui.QLabel('STDP')
+        #titleLabel = QtWidgets.QLabel('STDP')
         #titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Spike-Timing Dependent Plasticity protocol.')
+        descriptionLabel = QtWidgets.QLabel('Spike-Timing Dependent Plasticity protocol.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -241,7 +240,7 @@ class STDP(QtGui.QWidget):
         rightLabels=[]
         self.rightEdits=[]
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
 
@@ -249,26 +248,26 @@ class STDP(QtGui.QWidget):
             gridLayout.setColumnStretch(7,2)
 
         #setup a line separator
-        # lineLeft=QtGui.QFrame()
-        # lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        # lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        # lineLeft=QtWidgets.QFrame()
+        # lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        # lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         # lineLeft.setLineWidth(1)
 
         # gridLayout.addWidget(lineLeft, 0, 2, 6, 1)
 
-        self.push_load_pre=QtGui.QPushButton("Load Pre Spike")
+        self.push_load_pre=QtWidgets.QPushButton("Load Pre Spike")
         self.push_load_pre.clicked.connect(self.load_pre)
 
-        self.check_identical=QtGui.QCheckBox("Identical Spikes")
+        self.check_identical=QtWidgets.QCheckBox("Identical Spikes")
         self.check_identical.setChecked(True)
         self.check_identical.stateChanged.connect(self.handleCheckIdentical)
 
-        self.push_load_post=QtGui.QPushButton("Load Post Spike")
+        self.push_load_post=QtWidgets.QPushButton("Load Post Spike")
         self.push_load_post.setEnabled(False)
         self.push_load_post.clicked.connect(self.load_post)
 
-        self.pre_filename=QtGui.QLabel("Filename")
-        self.post_filename=QtGui.QLabel("Filename")
+        self.pre_filename=QtWidgets.QLabel("Filename")
+        self.post_filename=QtWidgets.QLabel("Filename")
 
         gridLayout.addWidget(self.push_load_pre,0,0)
         gridLayout.addWidget(self.pre_filename,0,1)
@@ -277,12 +276,12 @@ class STDP(QtGui.QWidget):
         gridLayout.addWidget(self.push_load_post,2,0)
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i+3,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
@@ -291,10 +290,10 @@ class STDP(QtGui.QWidget):
         self.leftEdits[0].textChanged.connect(self.scale_voltage)
         self.leftEdits[1].textChanged.connect(self.warp_time)
 
-        #self.check_return=QtGui.QCheckBox("Return to G0")
+        #self.check_return=QtWidgets.QCheckBox("Return to G0")
         #gridLayout.addWidget(self.check_return,7,0)
 
-        self.check_single=QtGui.QCheckBox("Only single event ->")
+        self.check_single=QtWidgets.QCheckBox("Only single event ->")
         gridLayout.addWidget(self.check_single, 8,0)
 
 
@@ -304,15 +303,15 @@ class STDP(QtGui.QWidget):
         #vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        hbox=QtGui.QHBoxLayout()
+        hbox=QtWidgets.QHBoxLayout()
 
-        vbox_left=QtGui.QVBoxLayout()
+        vbox_left=QtWidgets.QVBoxLayout()
         vbox_left.addLayout(gridLayout)
         vbox_left.addStretch()
 
         hbox.addLayout(vbox_left)
 
-        vbox_spikes=QtGui.QVBoxLayout()
+        vbox_spikes=QtWidgets.QVBoxLayout()
 
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
@@ -357,12 +356,12 @@ class STDP(QtGui.QWidget):
 
         vbox_spikes.addWidget(view)
 
-        spike_desc_lay=QtGui.QHBoxLayout()
-        self.spikes_dt_text=QtGui.QLabel("dt=10ms | ")
-        self.spikes_order_text=QtGui.QLabel("before")
-        self.pre_text=QtGui.QLabel("Pre")
+        spike_desc_lay=QtWidgets.QHBoxLayout()
+        self.spikes_dt_text=QtWidgets.QLabel("dt=10ms | ")
+        self.spikes_order_text=QtWidgets.QLabel("before")
+        self.pre_text=QtWidgets.QLabel("Pre")
         self.pre_text.setStyleSheet("color: red")
-        self.post_text=QtGui.QLabel("Post")
+        self.post_text=QtWidgets.QLabel("Post")
         self.post_text.setStyleSheet("color: green")
         spike_desc_lay.addStretch()
         spike_desc_lay.addWidget(self.spikes_dt_text)
@@ -373,7 +372,7 @@ class STDP(QtGui.QWidget):
 
         vbox_spikes.addLayout(spike_desc_lay)
 
-        self.slider=QtGui.QSlider(QtCore.Qt.Horizontal, parent=self)
+        self.slider=QtWidgets.QSlider(QtCore.Qt.Horizontal, parent=self)
         self.slider.setValue(50)
         self.slider.valueChanged.connect(self.updateSpikes)
         #self.slider.valueChanged.connect(self.updateDescription)
@@ -382,13 +381,13 @@ class STDP(QtGui.QWidget):
 
         hbox.addLayout(vbox_spikes)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(hbox)
         self.vW.setContentsMargins(0,0,0,0)
         self.vW.setMaximumHeight(320)
         #self.vW.setMinimumWidth(700)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -402,11 +401,11 @@ class STDP(QtGui.QWidget):
 
         if self.short==False:
 
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -444,9 +443,9 @@ class STDP(QtGui.QWidget):
 
     def load_post(self):
         pass
-        print "Loading spike..."
+        print("Loading spike...")
 
-        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open spike file', "*.txt"))
+        path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open spike file', "*.txt"))
         #path=fname.getOpenFileName()
 
         voltage=[]
@@ -481,19 +480,19 @@ class STDP(QtGui.QWidget):
             self.post_filename.setText(path.fileName()) 
 
         else:
-            errMessage = QtGui.QMessageBox()
+            errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Invalid spike file! Possible problem with voltage-time series syntax.")
-            errMessage.setIcon(QtGui.QMessageBox.Critical)
+            errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
 
-        print "done"
+        print("done")
 
     def load_pre(self):
         pass
-        print "Loading spike..."
+        print("Loading spike...")
 
-        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open spike file', "*.txt"))
+        path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open spike file', "*.txt"))
         #path=fname.getOpenFileName()
 
         voltage=[]
@@ -535,13 +534,13 @@ class STDP(QtGui.QWidget):
 
 
         else:
-            errMessage = QtGui.QMessageBox()
+            errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Invalid spike file! Possible problem with voltage-time series syntax.")
-            errMessage.setIcon(QtGui.QMessageBox.Critical)
+            errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
 
-        print "done"
+        print("done")
 
     def scale_voltage(self, value):
         self.gain=float(value)
@@ -661,11 +660,11 @@ class STDP(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
@@ -675,13 +674,10 @@ class STDP(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):

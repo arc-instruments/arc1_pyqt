@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
@@ -66,7 +66,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class MultiBias(QtGui.QWidget):
+class MultiBias(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(MultiBias, self).__init__()
@@ -75,11 +75,11 @@ class MultiBias(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('MultiBias')
+        titleLabel = QtWidgets.QLabel('MultiBias')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Apply WRITE or READ pulses to multiple active wordlines. Read from one bitline.')
+        descriptionLabel = QtWidgets.QLabel('Apply WRITE or READ pulses to multiple active wordlines. Read from one bitline.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -101,7 +101,7 @@ class MultiBias(QtGui.QWidget):
         self.leftEdits=[]
         self.rightEdits=[]
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,3)
         gridLayout.setColumnStretch(3,5)
@@ -111,26 +111,26 @@ class MultiBias(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 6, 1)
 
-        label_wlines=QtGui.QLabel("Active Wordlines")
-        self.edit_wlines=QtGui.QLineEdit("1 2")
+        label_wlines=QtWidgets.QLabel("Active Wordlines")
+        self.edit_wlines=QtWidgets.QLineEdit("1 2")
 
-        label_blines=QtGui.QLabel("Active Bitline")
-        self.edit_blines=QtGui.QSpinBox()
+        label_blines=QtWidgets.QLabel("Active Bitline")
+        self.edit_blines=QtWidgets.QSpinBox()
         self.edit_blines.setRange(1,32)
         self.edit_blines.setSingleStep(1)
         self.edit_blines.setValue(1)
 
-        label_current=QtGui.QLabel("Current on Active Bitline:")
-        label_suffix=QtGui.QLabel("uA")
+        label_current=QtWidgets.QLabel("Current on Active Bitline:")
+        label_suffix=QtWidgets.QLabel("uA")
 
-        self.edit_current=QtGui.QLineEdit("0")
+        self.edit_current=QtWidgets.QLineEdit("0")
         self.edit_current.setReadOnly(True)
 
         gridLayout.addWidget(label_wlines,0,0)
@@ -144,24 +144,24 @@ class MultiBias(QtGui.QWidget):
 
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i+2,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i+2,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i+2,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
@@ -173,11 +173,11 @@ class MultiBias(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -190,10 +190,10 @@ class MultiBias(QtGui.QWidget):
 
         if self.short==False:
 
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_write=QtGui.QPushButton('WRITE')
-            push_read=QtGui.QPushButton('READ')
+            push_write=QtWidgets.QPushButton('WRITE')
+            push_read=QtWidgets.QPushButton('READ')
 
             push_write.setStyleSheet(s.btnStyle)
             push_read.setStyleSheet(s.btnStyle)
@@ -264,34 +264,28 @@ class MultiBias(QtGui.QWidget):
     def updateCurrentRead(self, value):
         self.edit_current.setText(str(value*1000000))
 
-
-
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
         
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):
@@ -323,8 +317,8 @@ class MultiBias(QtGui.QWidget):
 
 
     def throwError(self):
-        reply = QtGui.QMessageBox.question(self, "Error",
+        reply = QtWidgets.QMessageBox.question(self, "Error",
             "Formatting of active worlines input box is wrong. Check for double spaces, trailing spaces, and addresses larger than 32 or smaller than 1.",
-            QtGui.QMessageBox.Ok)
+            QtWidgets.QMessageBox.Ok)
         event.ignore()
 

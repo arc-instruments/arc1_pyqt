@@ -8,7 +8,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
 import sys
 import os
@@ -159,21 +159,21 @@ def _curve_fit(func, x, y, **kwargs):
             kwargs.pop('method')
     return curve_fit(func, x, y, **kwargs)
 
-class ModelWidget(QtGui.QWidget):
+class ModelWidget(QtWidgets.QWidget):
 
     def __init__(self, parameters, func, expression="", parent=None):
         super(ModelWidget, self).__init__(parent=parent)
-        self.expressionLabel = QtGui.QLabel("Model expression: %s" % expression)
-        self.parameterTable = QtGui.QTableWidget(len(parameters), 2, parent=self)
+        self.expressionLabel = QtWidgets.QLabel("Model expression: %s" % expression)
+        self.parameterTable = QtWidgets.QTableWidget(len(parameters), 2, parent=self)
         self.parameterTable.horizontalHeader().setVisible(True)
         self.parameterTable.setVerticalHeaderLabels(parameters)
         self.parameterTable.setHorizontalHeaderLabels(["> 0 branch","< 0 branch"])
-        self.parameterTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.parameterTable.setSelectionMode(QtGui.QTableWidget.NoSelection)
+        self.parameterTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.parameterTable.setSelectionMode(QtWidgets.QTableWidget.NoSelection)
 
         self.func = func
 
-        container = QtGui.QVBoxLayout()
+        container = QtWidgets.QVBoxLayout()
         container.setContentsMargins(0, 0, 0, 0)
         container.addWidget(self.expressionLabel)
         container.addWidget(self.parameterTable)
@@ -181,22 +181,22 @@ class ModelWidget(QtGui.QWidget):
         self.setLayout(container)
 
         for (i, p) in enumerate(parameters):
-            pos = QtGui.QTableWidgetItem("1.0")
-            neg = QtGui.QTableWidgetItem("1.0")
+            pos = QtWidgets.QTableWidgetItem("1.0")
+            neg = QtWidgets.QTableWidgetItem("1.0")
             self.parameterTable.setItem(i, 0, pos)
             self.parameterTable.setItem(i, 1, neg)
 
 
     def updateValues(self, pPos, pNeg):
         for (i, val) in enumerate(pPos):
-            self.parameterTable.setItem(i, 0, QtGui.QTableWidgetItem(str(val)))
+            self.parameterTable.setItem(i, 0, QtWidgets.QTableWidgetItem(str(val)))
         for (i, val) in enumerate(pNeg):
-            self.parameterTable.setItem(i, 1, QtGui.QTableWidgetItem(str(val)))
+            self.parameterTable.setItem(i, 1, QtWidgets.QTableWidgetItem(str(val)))
 
     def modelFunc(self):
         return self.func
 
-class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
+class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
 
     resistances = []
     voltages = []
@@ -764,7 +764,7 @@ class ThreadWrapper(QtCore.QObject):
             self.displayData.emit()
 
 
-class ParameterFit(Ui_PFParent, QtGui.QWidget):
+class ParameterFit(Ui_PFParent, QtWidgets.QWidget):
 
     PROGRAM_ONE = 0x1;
     PROGRAM_RANGE = 0x2;
@@ -848,7 +848,7 @@ class ParameterFit(Ui_PFParent, QtGui.QWidget):
         result["iv_interpulse"] = np.abs(float(self.IVInterpulseEdit.text()))/1000.0
         result["run_iv"] = (not self.noIVCheckBox.isChecked())
         result["ivpw"] = np.abs(float(self.IVPwEdit.text()))/1000.0
-        result["ivtype"] = self.IVTypeCombo.itemData(self.IVTypeCombo.currentIndex()).toInt()[0]
+        result["ivtype"] = int(self.IVTypeCombo.itemData(self.IVTypeCombo.currentIndex()))
 
         return result
 

@@ -8,13 +8,13 @@
 ####################################
 
 import sys
-from PyQt4 import QtGui
-from PyQt4.QtCore import Qt
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import Qt
 
 #import Globals
 import Globals.GlobalFunctions as f
 
-class hoverPanel(QtGui.QWidget):
+class hoverPanel(QtWidgets.QWidget):
     
     def __init__(self):
         super(hoverPanel, self).__init__()
@@ -30,7 +30,6 @@ class hoverPanel(QtGui.QWidget):
         self.move(x,y)
         self.show()
 
-        print x, y
         pass 
 
     def paintEvent(self, e):    # this is called whenever the Widget is resized
@@ -43,4 +42,5 @@ class hoverPanel(QtGui.QWidget):
         size=self.size()        # get the size of this Widget (which by default fills the parent (Layout box))
         qp.setPen(self.pen)     # set the pen
         qp.setBrush(self.brush) # set the brush
-        qp.drawRect(0,0,100,50)     # Draw the new 
+        qp.drawRect(0,0,100,50)     # Draw the new
+

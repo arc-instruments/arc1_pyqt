@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 
@@ -17,7 +17,7 @@ import Globals.GlobalStyles as s
 import Globals.GlobalFunctions as f
 
 
-class aboutSection(QtGui.QWidget):
+class aboutSection(QtWidgets.QWidget):
     
     def __init__(self):
         super(aboutSection, self).__init__()
@@ -30,18 +30,18 @@ class aboutSection(QtGui.QWidget):
         p.setColor(self.backgroundRole(), QtCore.Qt.white)
         self.setPalette(p)      
 
-        mainLayout=QtGui.QVBoxLayout()  # Set main vertical layout
+        mainLayout=QtWidgets.QVBoxLayout()  # Set main vertical layout
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
 
-        logoTop=QtGui.QLabel()
+        logoTop=QtWidgets.QLabel()
         logoTop.setPixmap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'aboutSection.png'))
         mainLayout.addWidget(logoTop)
 
-        botHLay=QtGui.QHBoxLayout()
+        botHLay=QtWidgets.QHBoxLayout()
         botHLay.setContentsMargins(0,0,0,0)
 
-        spacerWidget=QtGui.QWidget()
+        spacerWidget=QtWidgets.QWidget()
         spacerWidget.setFixedWidth(172)
         spacerWidget.setFixedHeight(120)
 
@@ -52,17 +52,17 @@ class aboutSection(QtGui.QWidget):
         botHLay.addWidget(spacerWidget)
         botHLay.setSpacing(0)
 
-        infoLay=QtGui.QVBoxLayout()
+        infoLay=QtWidgets.QVBoxLayout()
         infoLay.setContentsMargins(0,0,0,0)
         infoLay.setSpacing(0)
 
-        line1=QtGui.QLabel()
-        line2=QtGui.QLabel()
-        line3=QtGui.QLabel()
-        line4=QtGui.QLabel()
-        line5=QtGui.QLabel()
-        line6=QtGui.QLabel()
-        line7=QtGui.QLabel()
+        line1=QtWidgets.QLabel()
+        line2=QtWidgets.QLabel()
+        line3=QtWidgets.QLabel()
+        line4=QtWidgets.QLabel()
+        line5=QtWidgets.QLabel()
+        line6=QtWidgets.QLabel()
+        line7=QtWidgets.QLabel()
 
         line1.setText('75 Sirocco, 33 Channel Way')
         line2.setText('Ocean Village')

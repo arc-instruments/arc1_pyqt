@@ -7,8 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import matplotlib.pyplot as mpl
 import numpy as np
 
@@ -17,8 +16,8 @@ from virtualArC import virtualarc
 
 Mnow=1000
 
-Mnow_str=QtCore.QString('1000')
-Mnow_position_str=QtCore.QString('W=0 | B=0')
+Mnow_str = '1000'
+Mnow_position_str = 'W=0 | B=0'
 
 baudrate='921600'
 

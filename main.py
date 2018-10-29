@@ -19,13 +19,11 @@ import serial
 import importlib
 import csv
 import time
-import FileDialog
 import requests
 import subprocess
 import gzip
 from functools import partial
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from virtualArC import virtualarc
 import ctypes
 myappid = 'ArC ONE Control' # arbitrary string
@@ -50,71 +48,71 @@ import Globals.GlobalFonts as fonts
 
 import ControlPanels
 
-class Arcontrol(QtGui.QMainWindow):
-    
+class Arcontrol(QtWidgets.QMainWindow):
+
     def __init__(self):
         super(Arcontrol, self).__init__()
-        
+
         self.initUI()
-        
-    def initUI(self): 
+
+    def initUI(self):
 
 
         ##########################
         # SPLASH SCREEN #
         pixmap = QtGui.QPixmap(os.getcwd()+"/Graphics/"+'splash2.png')
-        splashScreen=QtGui.QSplashScreen(pixmap)
+        splashScreen=QtWidgets.QSplashScreen(pixmap)
         splashScreen.show()
         ##########################
 
         splashScreen.showMessage("Starting up...", alignment=QtCore.Qt.AlignBottom, color=QtCore.Qt.white)
 
 
-    	##########################
-    	# Setup menubar
-    	menuBar = self.menuBar()
+        ##########################
+        # Setup menubar
+        menuBar = self.menuBar()
 
-    	fileMenu = menuBar.addMenu('File')			# File menu
-    	settingsMenu = menuBar.addMenu('Settings')	# Setting menu
-    	helpMenu = menuBar.addMenu('Help')			# help menu
+        fileMenu = menuBar.addMenu('File')			# File menu
+        settingsMenu = menuBar.addMenu('Settings')	# Setting menu
+        helpMenu = menuBar.addMenu('Help')			# help menu
 
-    	# Define the actions of each menu item before adding them to the menu
-    	# 1) File Menu
-        self.newAction = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'new.png'),'New Session', self)
+        # Define the actions of each menu item before adding them to the menu
+        # 1) File Menu
+        self.newAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'new.png'),'New Session', self)
         self.newAction.setShortcut('Ctrl+N')
         self.newAction.setStatusTip('Start a new session')
         self.newAction.triggered.connect(self.newSession)
 
 
-        self.openAction = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'open.png'),'Open', self)
+        self.openAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'open.png'),'Open', self)
         self.openAction.setShortcut('Ctrl+O')
         self.openAction.setStatusTip('Open a previous session')
         self.openAction.triggered.connect(self.openSession)
 
-        self.clearAction = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'clear.png'), 'Clear', self)
+        self.clearAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'clear.png'), 'Clear', self)
         self.clearAction.setShortcut('Ctrl+D')
         self.clearAction.setStatusTip('Clear all data')
         self.clearAction.triggered.connect(self.clearSession)
 
-        self.saveAction = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'save.png'),'Save', self)
+        self.saveAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'save.png'),'Save', self)
         self.saveAction.setShortcut('Ctrl+S')
         self.saveAction.setStatusTip('Save session')
         self.saveAction.triggered.connect(partial(self.saveSession, new=False))
 
-        self.saveAsAction = QtGui.QAction('Save as...', self)
+        self.saveAsAction = QtWidgets.QAction('Save as...', self)
         self.saveAsAction.setShortcut('Ctrl+S')
         self.saveAsAction.setStatusTip('Save session as...')
         self.saveAsAction.triggered.connect(partial(self.saveSession, new=True))
 
-        #exportEPSAction = QtGui.QAction('As EPS', self)
+        #exportEPSAction = QtWidgets.QAction('As EPS', self)
         #exportEPSAction.setStatusTip('Save current figure as EPS')
         #exportEPSAction.triggered.connect(self.exportSession)
 
-        #exportPNGAction = QtGui.QAction('As PNG', self)
+        #exportPNGAction = QtWidgets.QAction('As PNG', self)
         #exportPNGAction.setStatusTip('Save current figure as PNG')
         #exportPNGAction.triggered.connect(self.exportSession)
 
-        exitAction = QtGui.QAction('Exit', self)
+        exitAction = QtWidgets.QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.exitApplication)
@@ -135,19 +133,19 @@ class Arcontrol(QtGui.QMainWindow):
         fileMenu.addAction(exitAction)
 
         # 2) Settings Menu
-        self.updateAction = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Update available', self)
+        self.updateAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Update available', self)
         self.updateAction.setStatusTip('Update available')
         self.updateAction.triggered.connect(self.launch_manager)
 
-        self.updateAction_menu = QtGui.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Check for updates', self)
+        self.updateAction_menu = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Check for updates', self)
         self.updateAction_menu.setStatusTip('Check for updates')
-        self.updateAction_menu.triggered.connect(self.launch_manager)        
+        self.updateAction_menu.triggered.connect(self.launch_manager)
 
-        setCWDAction = QtGui.QAction('Set working directory', self)
+        setCWDAction = QtWidgets.QAction('Set working directory', self)
         setCWDAction.setStatusTip('Set current working directory')
         setCWDAction.triggered.connect(self.setCWD)
 
-        configAction = QtGui.QAction('Modify hardware settings', self)
+        configAction = QtWidgets.QAction('Modify hardware settings', self)
         configAction.setStatusTip('Modify hardware settings')
         configAction.triggered.connect(self.showConfig)
 
@@ -158,11 +156,11 @@ class Arcontrol(QtGui.QMainWindow):
         settingsMenu.addAction(self.updateAction_menu)
 
         # 3) Help menu
-        documentationAction = QtGui.QAction('Documentation', self)
+        documentationAction = QtWidgets.QAction('Documentation', self)
         documentationAction.setStatusTip('Show ArC One documentation')
         documentationAction.triggered.connect(self.showDocumentation)
 
-        aboutAction = QtGui.QAction('About ArC', self)
+        aboutAction = QtWidgets.QAction('About ArC', self)
         aboutAction.setStatusTip('Information about ArC Instruments Ltd.')
         aboutAction.triggered.connect(self.showAbout)
 
@@ -183,9 +181,9 @@ class Arcontrol(QtGui.QMainWindow):
 
         # Define custom actions/widgets for connecting to ArC
         # maybe here all need to be widgets to avoid icon issues
-        #connectAction = QtGui.QAction('Connect', self)
-        
-        self.connectBtn=QtGui.QPushButton('Connect')
+        #connectAction = QtWidgets.QAction('Connect', self)
+
+        self.connectBtn=QtWidgets.QPushButton('Connect')
         self.connectBtn.clicked.connect(self.connectArC)
         self.connectBtn.setStatusTip('Connect to ArC One')
         self.connectBtn.setStyleSheet(s.toolBtn)
@@ -194,20 +192,20 @@ class Arcontrol(QtGui.QMainWindow):
         #connectAction.setStatusTip('Connect to ArC One')
         #connectAction.triggered.connect(self.connectArC)
 
-        #resetAction = QtGui.QAction('Reset', self)
+        #resetAction = QtWidgets.QAction('Reset', self)
         #resetAction.setStatusTip('Reset ArC One')
         #resetAction.triggered.connect(self.resetArC)
 
-        #discAction = QtGui.QAction('Disconnect', self)
+        #discAction = QtWidgets.QAction('Disconnect', self)
         #discAction.setStatusTip('Disconnect ArC One')
         #discAction.triggered.connect(self.discArC)
 
-        self.discBtn=QtGui.QPushButton('Disconnect')
+        self.discBtn=QtWidgets.QPushButton('Disconnect')
         self.discBtn.clicked.connect(self.discArC)
         self.discBtn.setStatusTip('Disconnect from ArC One')
         self.discBtn.setStyleSheet(s.toolBtn)
 
-        self.comPorts = QtGui.QComboBox()
+        self.comPorts = QtWidgets.QComboBox()
         self.comPorts.setStyleSheet(s.toolCombo)
         self.comPorts.insertItems(1,self.scanSerials())
         self.comPorts.currentIndexChanged.connect(self.updateComPort)
@@ -215,11 +213,11 @@ class Arcontrol(QtGui.QMainWindow):
         #self.comPorts.installEventFilter(self)
         g.COM=self.comPorts.currentText()
 
-        self.refresh=QtGui.QPushButton('Refresh')
+        self.refresh=QtWidgets.QPushButton('Refresh')
         self.refresh.clicked.connect(self.updateCOMList)
         self.refresh.setStyleSheet(s.toolBtn)
         self.refresh.setStatusTip('Refresh COM list')
-        
+
         # Populate toolbar
         self.toolbar.addAction(self.newAction)
         self.toolbar.addAction(self.openAction)
@@ -233,18 +231,18 @@ class Arcontrol(QtGui.QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.clearAction)
 
-        spacer=QtGui.QWidget()
-        spacer.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
+        spacer=QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Expanding)
         self.toolbar.addWidget(spacer)
 
-        self.arcStatusLabel=QtGui.QLabel()
+        self.arcStatusLabel=QtWidgets.QLabel()
         self.arcStatusLabel.setMinimumWidth(200*g.scaling_factor)
         self.arcStatusLabel.setStyleSheet(s.arcStatus_disc)
         self.arcStatusLabel.setText('Disconnected')
         self.arcStatusLabel.setFont(fonts.font1)
         self.arcStatusLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.sessionModeLabel=QtGui.QLabel()
+        self.sessionModeLabel=QtWidgets.QLabel()
         self.sessionModeLabel.setFont(fonts.font1)
         self.sessionModeLabel.setText('Live: Local')
 
@@ -272,20 +270,20 @@ class Arcontrol(QtGui.QMainWindow):
         self.cp = crossbar_panel.crossbar_panel()
 
         # Divide the working space and populate
-        splitter = QtGui.QSplitter(QtCore.Qt.Horizontal) # toplevel divider
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal) # toplevel divider
         splitter.setHandleWidth(5)
 
-        frameRight = QtGui.QWidget(self)	# define it as a widget; works also if it's defined as a frame
+        frameRight = QtWidgets.QWidget(self)	# define it as a widget; works also if it's defined as a frame
 
-        layoutTop = QtGui.QHBoxLayout()
+        layoutTop = QtWidgets.QHBoxLayout()
         layoutTop.addWidget(self.mo)
         layoutTop.addWidget(dd)
 
-        self.layoutBot = QtGui.QHBoxLayout()
+        self.layoutBot = QtWidgets.QHBoxLayout()
         self.layoutBot.addWidget(self.pp)
         self.layoutBot.addWidget(self.cp)
 
-        layoutRight = QtGui.QVBoxLayout()
+        layoutRight = QtWidgets.QVBoxLayout()
         layoutRight.addLayout(layoutTop)
         layoutRight.addLayout(self.layoutBot)
 
@@ -317,7 +315,7 @@ class Arcontrol(QtGui.QMainWindow):
         layoutTop.setSpacing(0)
         self.layoutBot.setSpacing(0)
         layoutRight.setSpacing(0)
-        layoutRight.setContentsMargins(0,0,0,0)        
+        layoutRight.setContentsMargins(0,0,0,0)
 
         self.mo.setContentsMargins(0,0,0,0)
 
@@ -332,15 +330,13 @@ class Arcontrol(QtGui.QMainWindow):
         f.interfaceAntenna.updateHW.connect(self.updateHW)
 
         f.cbAntenna.recolor.connect(self.updateSaveButton)
-        
-    	# Setup main window geometry
-    	self.setGeometry(100, 100, g.scaling_factor*1500, g.scaling_factor*800)
-    	self.setWindowTitle('ArC One - Control Panel')  
-    	self.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png')) 
 
-        #self.redrawCrossbar()
+        # Setup main window geometry
+        self.setGeometry(100, 100, g.scaling_factor*1500, g.scaling_factor*800)
+        self.setWindowTitle('ArC One - Control Panel')
+        self.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png'))
 
-    	self.show()
+        self.show()
 
         splashScreen.finish(self)
 
@@ -390,19 +386,18 @@ class Arcontrol(QtGui.QMainWindow):
             status = vercmp(g.local_version, g.remote_version)
             if status > 0:
                 self.updateAction.setEnabled(True)
-        
+
     def launch_manager(self):
-        print "Launch platform manager"
         self.check_for_updates()
-        reply = QtGui.QMessageBox.question(self, "Launch ArC Platform Manager",
+        reply = QtWidgets.QMessageBox.question(self, "Launch ArC Platform Manager",
                 "This will delete all saved data and proceed with a platform update.",
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)
-        if reply==QtGui.QMessageBox.Yes:
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+        if reply==QtWidgets.QMessageBox.Yes:
             directory=os.path.join(os.getcwd(),os.pardir,"ArC Platform Manager")
             os.chdir(directory)
             launcher_path=os.path.join(directory,"ArC Platform Manager.exe")# + g.local_version)
             subprocess.Popen([launcher_path, g.local_version])
-            QtCore.QCoreApplication.instance().quit()
+            QtWidgets.QCoreApplication.instance().quit()
 
         # get current version
 
@@ -413,7 +408,7 @@ class Arcontrol(QtGui.QMainWindow):
         self.cfgHW.setFixedHeight(150)
 
         frameGm = self.cfgHW.frameGeometry()
-        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
+        centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.cfgHW.move(frameGm.topLeft())
 
@@ -436,7 +431,7 @@ class Arcontrol(QtGui.QMainWindow):
 
 
         frameGm = self.aboutSesh.frameGeometry()
-        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
+        centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.aboutSesh.move(frameGm.topLeft())
 
@@ -447,7 +442,6 @@ class Arcontrol(QtGui.QMainWindow):
 
 
     def updateCOMList(self):
-        print "captured event"
         self.comPorts.clear()
         self.comPorts.insertItems(1,self.scanSerials())
 
@@ -537,10 +531,10 @@ class Arcontrol(QtGui.QMainWindow):
 
     def newSession(self):
         if self.saveAction.isEnabled():
-            reply = QtGui.QMessageBox.question(self, "Start a new session",
+            reply = QtWidgets.QMessageBox.question(self, "Start a new session",
                     "Starting a new session will erase all recorded data. Do you want to proceed?",
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-            if reply == QtGui.QMessageBox.Yes:
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
+            if reply == QtWidgets.QMessageBox.Yes:
 
                 #print "Yes"
                 #clear mhistory
@@ -548,7 +542,7 @@ class Arcontrol(QtGui.QMainWindow):
 
                 #clear data display
                 #clear crossbar
-            elif reply == QtGui.QMessageBox.No:
+            elif reply == QtWidgets.QMessageBox.No:
                 pass
             else:
                 pass
@@ -565,7 +559,7 @@ class Arcontrol(QtGui.QMainWindow):
 
 
         frameGm = self.newSesh.frameGeometry()
-        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
+        centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.newSesh.move(frameGm.topLeft())
 
@@ -629,14 +623,14 @@ class Arcontrol(QtGui.QMainWindow):
 
     def openSession(self):
 
-        reply = QtGui.QMessageBox.question(self, "Open a previous session",
+        reply = QtWidgets.QMessageBox.question(self, "Open a previous session",
                 "Opening a previous session will erase all recorded data. Do you want to proceed?",
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-        if reply == QtGui.QMessageBox.Yes:
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
+        if reply == QtWidgets.QMessageBox.Yes:
             self.deleteAllData()
             self.findAndLoadFile()
             f.interfaceAntenna.changeSessionMode.emit('Offline')
-        elif reply == QtGui.QMessageBox.No:
+        elif reply == QtWidgets.QMessageBox.No:
             pass
         else:
             pass
@@ -652,24 +646,25 @@ class Arcontrol(QtGui.QMainWindow):
             try:
                 importlib.import_module(fls[:-3])     # import the module
             except:
-                print "WARNING - Could not load libraries related to module:", fls[:-3]
+                print("WARNING - Could not load libraries related to module:", fls[:-3])
 
-        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open file','', g.OPEN_FI_PATTERN))
+        path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
+                getOpenFileName(self, 'Open file','', g.OPEN_FI_PATTERN)[0])
+
+        if not os.path.isfile(path.filePath()):
+            return
 
         customArray=[]
-        name=path.fileName()
-
-        file=QtCore.QFile(path.filePath())
 
         error=0
-        if str(path.filePath().toUtf8()).endswith('.csv.gz'):
+        if str(path.filePath()).endswith('.csv.gz'):
             opener = gzip.open
         else:
             opener = open
 
-        with opener(path.filePath(), 'rb') as csvfile:
+        with opener(path.filePath(), 'rt') as csvfile:
             rdr = csv.reader(csvfile)
-    
+
             counter=1
             for values in rdr:
                 if (counter==1):
@@ -684,27 +679,25 @@ class Arcontrol(QtGui.QMainWindow):
                             m=float(values[2])
                             a=float(values[3])
                             pw=float(values[4])
-                            tag=str(values[5])    
+                            tag=str(values[5])
                             readTag=str(values[6])
                             readVoltage=float(values[7])
-                            g.Mhistory[w][b].append([m,a,pw,str(tag),readTag,readVoltage])   
+                            g.Mhistory[w][b].append([m,a,pw,str(tag),readTag,readVoltage])
 
                             if 'S R' in tag or tag[-1]=='e' or tag[0]=='P': # ignore read all points
-                                f.historyTreeAntenna.updateTree.emit(w,b) 
-                            
+                                f.historyTreeAntenna.updateTree.emit(w,b)
                         except ValueError:
                             error=1
 
                 counter=counter+1
 
-
                 # check if positions read are correct
         if (error==1):
-            #self.errorMessage=QtGui.QErrorMessage() 
-            #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")  
-            errMessage = QtGui.QMessageBox()
+            #self.errorMessage=QtWidgets.QErrorMessage()
+            #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")
+            errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Selected file is incompatible!")
-            errMessage.setIcon(QtGui.QMessageBox.Critical)
+            errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
 
@@ -713,10 +706,10 @@ class Arcontrol(QtGui.QMainWindow):
             for w in range(1,33):
                 for b in range(1,33):
                     if g.Mhistory[w][b]:
-                        #for dataPoint in g.Mhistory[w][b]:                        
+                        #for dataPoint in g.Mhistory[w][b]:
                         f.cbAntenna.recolor.emit(g.Mhistory[w][b][-1][0],w,b)
 
-            print "Loaded successfully"
+            print("Loaded successfully")
             f.interfaceAntenna.changeArcStatus.emit('Disc')
 
             return True
@@ -741,49 +734,41 @@ class Arcontrol(QtGui.QMainWindow):
         self.saveAction.setEnabled(False)
 
     def clearSession(self):
-    	print "Clear Session pressed"
-        reply = QtGui.QMessageBox.question(self, "Clear data",
+        reply = QtWidgets.QMessageBox.question(self, "Clear data",
                 "Are you sure you want to clear all data?",
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-        if reply == QtGui.QMessageBox.Yes:
-            print "Yes"
-            #clear mhistory
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
+        if reply == QtWidgets.QMessageBox.Yes:
             self.deleteAllData()
             g.saveFileName=[]
             #clear data display
             #clear crossbar
-        elif reply == QtGui.QMessageBox.No:
-            print "No"
         else:
-            print "Cancel"
-    	pass
+            pass
 
     def saveSession(self, new=False):
-    	print "Save Session pressed"
-
         if g.workingDirectory:
             if (not new) and g.saveFileName:
                 path=g.workingDirectory
             else:
-                path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, \
+                path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, \
                     'Save File', g.workingDirectory, g.SAVE_FI_PATTERN))
                 path=path_.filePath()
                 g.saveFileName=path_.fileName()
                 g.workingDirectory=path_.filePath()
         else:
-            path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, \
+            path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, \
                 'Save File', '', g.SAVE_FI_PATTERN))
             path=path_.filePath()
             g.saveFileName=path_.fileName()
             g.workingDirectory=path_.filePath()
 
         if not path.isEmpty():
-            if str(path.toUtf8()).endswith('csv.gz'):
+            if str(path).endswith('csv.gz'):
                 opener = gzip.open
             else:
                 opener = open
 
-            with opener(str(path.toUtf8()), 'wb') as stream:
+            with opener(str(path), 'wb') as stream:
                 writer = csv.writer(stream)
                 ######################
                 writer.writerow([g.sessionName])
@@ -802,43 +787,31 @@ class Arcontrol(QtGui.QMainWindow):
                                     rowdata.append('')
                             writer.writerow(rowdata)
             self.saveAction.setEnabled(False)
-    	pass
-
-    #def exportSession(self):
-   # 	print "New Session pressed"
-    #	pass
 
     def exitApplication(self):
-        reply = QtGui.QMessageBox.question(self, "Exit Application",
+        reply = QtWidgets.QMessageBox.question(self, "Exit Application",
             "Are you sure you want to exit?",
-            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
             #sys.exit(app.exec_())
-            QtCore.QCoreApplication.instance().quit()
+            QtWidgets.QCoreApplication.instance().quit()
         else:
             pass
 
     def setCWD(self):
-    	print "Set Working Directory"
         if g.workingDirectory:
-            wdirectory = str(QtGui.QFileDialog.getExistingDirectory(self,  "Select Directory", g.workingDirectory,))
+            wdirectory = str(QtWidgets.QFileDialog.getExistingDirectory(self,  "Select Directory", g.workingDirectory,))
         else:
-            wdirectory = str(QtGui.QFileDialog.getExistingDirectory(self, "Select Directory"))
+            wdirectory = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
         g.workingDirectory=wdirectory
-    	pass
 
     def configCB(self):
-    	print "New Session pressed"
-    	pass
+        pass
 
     def showDocumentation(self):
 
-        doc = os.getcwd()+'/Documentation/'+'ArC_ONE.pdf' 
-
+        doc = os.getcwd()+'/Documentation/'+'ArC_ONE.pdf'
         os.system('"' + doc + '"')
-
-    	print "Show Documentation"
-    	pass
 
     def connectArC(self):
         #g.ser=virtualarc.virtualArC([])
@@ -885,13 +858,13 @@ class Arcontrol(QtGui.QMainWindow):
                             g.ser.port=None
                         except SerialException:
                             pass
-                        reply = QtGui.QMessageBox.question(self, "Connect to ArC One",
+                        reply = QtWidgets.QMessageBox.question(self, "Connect to ArC One",
                             "Connection failed. Please check if ArC One is connected via the USB cable, and try another COM port. If the problem persists, restart this program with ArC One connected.",
-                            QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
                 except ValueError:
-                    reply = QtGui.QMessageBox.question(self, "Connect to ArC One",
+                    reply = QtWidgets.QMessageBox.question(self, "Connect to ArC One",
                         "Connection failed. Please check if ArC One is connected via the USB cable, and try another COM port. If the problem persists, restart this program with ArC One connected.",
-                        QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                        QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
                     try:
                         g.ser.close()
                         g.ser.port=None
@@ -899,9 +872,9 @@ class Arcontrol(QtGui.QMainWindow):
                         pass
 
             except serial.serialutil.SerialException:
-                reply = QtGui.QMessageBox.question(self, "Connect to ArC ONE",
+                reply = QtWidgets.QMessageBox.question(self, "Connect to ArC ONE",
                     "Connection failed due to non-existent COM port. Is Arc ONE connected?",
-                    QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                    QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
 
 
     def discArC(self):
@@ -933,8 +906,8 @@ class Arcontrol(QtGui.QMainWindow):
 
 
 def main():
-    
-    app = QtGui.QApplication(sys.argv)
+
+    app = QtWidgets.QApplication(sys.argv)
 
     # Determine the scaling factor
     if sys.platform == "win32":

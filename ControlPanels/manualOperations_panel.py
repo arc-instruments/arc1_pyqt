@@ -9,8 +9,7 @@
 
 import sys
 import os
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -26,7 +25,6 @@ class readAllWorker(QtCore.QObject):
 
     Vread=g.Vread
     tag='F R'+str(g.readOption)+' V='+str(Vread)
-
 
     def __init__(self):
         super(readAllWorker,self).__init__()
@@ -81,7 +79,7 @@ class readAllWorker(QtCore.QObject):
 
 
 
-class manualOperations_panel(QtGui.QWidget):
+class manualOperations_panel(QtWidgets.QWidget):
     def __init__(self):
         super(manualOperations_panel, self).__init__()
         self.initUI()
@@ -94,12 +92,12 @@ class manualOperations_panel(QtGui.QWidget):
         #self.butn=f.deviceAntenna()
         ######################################
         # Setup position and resistance labels
-        self.position = QtGui.QLabel(self)
+        self.position = QtWidgets.QLabel(self)
         self.position.setText(g.Mnow_position_str)
         self.position.setFont(fonts.font2)
         self.position.setStyleSheet(s.style1)
 
-        self.resistance = QtGui.QLabel(self)
+        self.resistance = QtWidgets.QLabel(self)
         self.resistance.setText(g.Mnow_str)
         self.resistance.setFont(fonts.font1)
         self.resistance.setStyleSheet(s.style1)
@@ -110,33 +108,33 @@ class manualOperations_panel(QtGui.QWidget):
 
         ######################################
         # Setup manual reading panel
-        self.readPanel = QtGui.QGroupBox('Read Operations')
+        self.readPanel = QtWidgets.QGroupBox('Read Operations')
         self.readPanel.setStyleSheet(s.groupStyle)
-        readPanelLayout = QtGui.QVBoxLayout()
+        readPanelLayout = QtWidgets.QVBoxLayout()
         readPanelLayout.setContentsMargins(10,25,10,10)
         #readPanelLayout.setContentsMargins(0,0,0,0)
 
-        push_read=QtGui.QPushButton('Read Single')
+        push_read=QtWidgets.QPushButton('Read Single')
         push_read.setStyleSheet(s.btnStyle)
         push_read.clicked.connect(self.readSingle)
 
-        push_readAll=QtGui.QPushButton('Read All')
+        push_readAll=QtWidgets.QPushButton('Read All')
         push_readAll.setStyleSheet(s.btnStyle)
         push_readAll.clicked.connect(self.readAll)
 
-        hbox_1=QtGui.QHBoxLayout()
+        hbox_1=QtWidgets.QHBoxLayout()
         #hbox_1.setContentsMargins(0,0,0,0)
         hbox_1.addWidget(push_read)
         hbox_1.addWidget(push_readAll)
 
         #'Update read' button.
-        push_updateRead=QtGui.QPushButton('Update Read')
+        push_updateRead=QtWidgets.QPushButton('Update Read')
         push_updateRead.setStyleSheet(s.btnStyle2)
         push_updateRead.clicked.connect(self.updateRead)
         push_updateRead.setMinimumWidth(100)
 
         # Read-out type options drop-down.
-        combo_readType=QtGui.QComboBox()
+        combo_readType=QtWidgets.QComboBox()
         combo_readType.setStyleSheet(s.comboStyle)
         #combo_readType.down-arrow.setPixMap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'newSeshLogo.png'))
         combo_readType.insertItems(1,g.readOptions)
@@ -145,7 +143,7 @@ class manualOperations_panel(QtGui.QWidget):
         g.readOption=combo_readType.currentIndex()
 
         #Numerical 'spin box' to set read-out voltage.
-        read_voltage=QtGui.QDoubleSpinBox()
+        read_voltage=QtWidgets.QDoubleSpinBox()
         #read_voltage.setHeight(25)
         read_voltage.setStyleSheet(s.spinStyle)
         read_voltage.setMinimum(-12)
@@ -156,25 +154,25 @@ class manualOperations_panel(QtGui.QWidget):
         read_voltage.valueChanged.connect(self.setVread)
 
         #Instantiate GUI row including update read, read-out type and read-out voltage spin-box.
-        hbox_2=QtGui.QHBoxLayout()
+        hbox_2=QtWidgets.QHBoxLayout()
         hbox_2.addWidget(push_updateRead)
         hbox_2.addWidget(combo_readType)
         hbox_2.addWidget(read_voltage)
 
         #Check-box.
-        self.customArrayCheckbox = QtGui.QCheckBox("Custom array")
+        self.customArrayCheckbox = QtWidgets.QCheckBox("Custom array")
         self.customArrayCheckbox.stateChanged.connect(self.toggleSA)
 
         #Text field to show selected file containing SA locations for particular application.
-        self.customArrayFileName=QtGui.QLabel()
+        self.customArrayFileName=QtWidgets.QLabel()
         self.customArrayFileName.setStyleSheet(s.style1)
 
         #File browser. Push-button connecting to function opening file browser.
-        push_browse = QtGui.QPushButton('...')
+        push_browse = QtWidgets.QPushButton('...')
         push_browse.clicked.connect(self.findSAfile)    # open custom array defive position file
         push_browse.setFixedWidth(20)
 
-        hbox_3=QtGui.QHBoxLayout()
+        hbox_3=QtWidgets.QHBoxLayout()
         hbox_3.addWidget(self.customArrayCheckbox)
         hbox_3.addWidget(self.customArrayFileName)
         hbox_3.addWidget(push_browse)
@@ -187,16 +185,16 @@ class manualOperations_panel(QtGui.QWidget):
 
         ######################################
         # Manual Pulse panel
-        self.pulsePanel = QtGui.QGroupBox('Manual Pulsing')
+        self.pulsePanel = QtWidgets.QGroupBox('Manual Pulsing')
         self.pulsePanel.setStyleSheet(s.groupStyle)
         
-        pulsePanelLayout= QtGui.QGridLayout()
+        pulsePanelLayout= QtWidgets.QGridLayout()
         pulsePanelLayout.setContentsMargins(10,25,10,10)
 
-        self.pulse_V_pos = QtGui.QLineEdit()
-        self.pulse_V_neg = QtGui.QLineEdit()
-        self.pulse_pw_pos = QtGui.QLineEdit()
-        self.pulse_pw_neg = QtGui.QLineEdit()
+        self.pulse_V_pos = QtWidgets.QLineEdit()
+        self.pulse_V_neg = QtWidgets.QLineEdit()
+        self.pulse_pw_pos = QtWidgets.QLineEdit()
+        self.pulse_pw_neg = QtWidgets.QLineEdit()
 
         self.pulse_V_pos.setStyleSheet(s.entryStyle)
         self.pulse_pw_pos.setStyleSheet(s.entryStyle)
@@ -217,34 +215,34 @@ class manualOperations_panel(QtGui.QWidget):
         self.pulse_pw_pos.setValidator(isFloat)
         self.pulse_pw_neg.setValidator(isFloat)
 
-        label_V = QtGui.QLabel('Voltage (V)')
-        label_pw = QtGui.QLabel('Duration')
+        label_V = QtWidgets.QLabel('Voltage (V)')
+        label_pw = QtWidgets.QLabel('Duration')
 
-        push_pulsePos = QtGui.QPushButton('+Pulse')
+        push_pulsePos = QtWidgets.QPushButton('+Pulse')
         push_pulsePos.clicked.connect(self.extractParamsPlus)
         push_pulsePos.setStyleSheet(s.btnStyle)
-        push_pulseNeg = QtGui.QPushButton('-Pulse')
+        push_pulseNeg = QtWidgets.QPushButton('-Pulse')
         push_pulseNeg.clicked.connect(self.extractParamsNeg)
         push_pulseNeg.setStyleSheet(s.btnStyle)
 
-        self.check_lock = QtGui.QCheckBox('Lock')
+        self.check_lock = QtWidgets.QCheckBox('Lock')
         self.check_lock.stateChanged.connect(self.lockPulses)
 
         pulsePanelLayout.addWidget(self.pulse_V_pos,0,0)
         pulsePanelLayout.addWidget(self.pulse_V_neg,0,2)
 
         # ========== ComboBox ===========
-        pw_pos_lay=QtGui.QHBoxLayout()
-        pw_neg_lay=QtGui.QHBoxLayout()
+        pw_pos_lay=QtWidgets.QHBoxLayout()
+        pw_neg_lay=QtWidgets.QHBoxLayout()
 
-        self.pw_plusDropDown=QtGui.QComboBox()
+        self.pw_plusDropDown=QtWidgets.QComboBox()
         self.pw_plusDropDown.setStyleSheet(s.comboStylePulse)
 
         self.unitsFull=[['s',1],['ms',0.001],['us',0.000001],['ns',0.000000001]]
         self.units=[e[0] for e in self.unitsFull]
         self.multiply=[e[1] for e in self.unitsFull]
 
-        self.pw_negDropDown=QtGui.QComboBox()
+        self.pw_negDropDown=QtWidgets.QComboBox()
         self.pw_negDropDown.setStyleSheet(s.comboStylePulse)
 
         self.pw_plusDropDown.insertItems(1,self.units)
@@ -278,19 +276,19 @@ class manualOperations_panel(QtGui.QWidget):
 
         ######################################
         # Display Options Panel
-        displayPanel = QtGui.QGroupBox('Display Options')
+        displayPanel = QtWidgets.QGroupBox('Display Options')
         displayPanel.setStyleSheet(s.groupStyle)
-        displayPanelLayout = QtGui.QHBoxLayout()
+        displayPanelLayout = QtWidgets.QHBoxLayout()
         displayPanelLayout.setContentsMargins(10,25,10,10)
 
-        push_displayAll = QtGui.QPushButton('Full')
+        push_displayAll = QtWidgets.QPushButton('Full')
         push_displayAll.setStyleSheet(s.btnStyle2)
         push_displayAll.clicked.connect(self.displayAll)
-        push_displayRange = QtGui.QPushButton('Range')
+        push_displayRange = QtWidgets.QPushButton('Range')
         push_displayRange.setStyleSheet(s.btnStyle2)
         push_displayRange.clicked.connect(self.displayRange)
 
-        points_spinbox = QtGui.QSpinBox()
+        points_spinbox = QtWidgets.QSpinBox()
         points_spinbox.setStyleSheet(s.spinStyle)
         points_spinbox.setMinimum(10)
         points_spinbox.setMaximum(10000)
@@ -299,7 +297,7 @@ class manualOperations_panel(QtGui.QWidget):
         points_spinbox.setSuffix(' p')
         points_spinbox.valueChanged.connect(self.updatePoints)
 
-        check_log = QtGui.QCheckBox('log Y')
+        check_log = QtWidgets.QCheckBox('log Y')
         check_log.stateChanged.connect(self.updateLogScale)
 
         displayPanelLayout.addWidget(push_displayAll)
@@ -310,7 +308,7 @@ class manualOperations_panel(QtGui.QWidget):
         displayPanel.setLayout(displayPanelLayout)
         ######################################
 
-        mainLayout = QtGui.QVBoxLayout()
+        mainLayout = QtWidgets.QVBoxLayout()
 
         mainLayout.addWidget(self.position)
         mainLayout.addWidget(self.resistance)
@@ -331,8 +329,6 @@ class manualOperations_panel(QtGui.QWidget):
         #self.show()
 
     def lockPulses(self, state):
-        print "capture"
-        print state
         if state==2:
             self.pulse_V_neg.setEnabled(False)
             self.pw_negDropDown.setEnabled(False)
@@ -344,13 +340,11 @@ class manualOperations_panel(QtGui.QWidget):
             self.pulse_pw_neg.setEnabled(True)
             self.update()
 
-
     def updateLogScale(self,event):
         f.displayUpdate.updateLog.emit(event)
 
 
     def toggleSA(self, event):
-        print event
         if (event==0):
             g.checkSA=False
             for w in range(1,33):
@@ -368,7 +362,6 @@ class manualOperations_panel(QtGui.QWidget):
                 for cell in g.customArray:
                     w,b=cell
                     f.SAantenna.enable.emit(w,b)
-                print "Enabled"
             else:
                 if self.findSAfile()==True:
                     g.checkSA=True
@@ -388,10 +381,12 @@ class manualOperations_panel(QtGui.QWidget):
                     g.checkSA=False
                     self.customArrayCheckbox.setCheckState(QtCore.Qt.Unchecked)
 
-
     def findSAfile(self):
-        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open file', "*.txt"))
-        #path=fname.getOpenFileName()
+        try:
+            path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
+                    getOpenFileName(self, 'Open file', "*.txt")[0])
+        except IndexError: # nothing selected
+            return
 
         customArray=[]
         name=path.fileName()
@@ -414,11 +409,11 @@ class manualOperations_panel(QtGui.QWidget):
         
         # check if positions read are correct
         if (error==1):
-            #self.errorMessage=QtGui.QErrorMessage() 
+            #self.errorMessage=QtWidgets.QErrorMessage()
             #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")  
-            errMessage = QtGui.QMessageBox()
+            errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Custom array text file formatted incorrectly, or selected devices outside of array range!")
-            errMessage.setIcon(QtGui.QMessageBox.Critical)
+            errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
             return False
@@ -441,10 +436,7 @@ class manualOperations_panel(QtGui.QWidget):
         g.b=b
 
     def readSingle(self):
-        #print "readSingle"
-        #print g.ser.port
         if g.ser.port != None:
-            #print "passed"
             job="1"
             g.ser.write(job+"\n")
             g.ser.write(str(g.w)+"\n")
@@ -500,7 +492,6 @@ class manualOperations_panel(QtGui.QWidget):
 
     def setVread(self,event):
         g.Vread=float(event)
-        print g.Vread
         if g.ser.port != None:
             job='01'
             g.ser.write(job+"\n")
@@ -585,7 +576,6 @@ class manualOperations_panel(QtGui.QWidget):
             f.displayUpdate.updateSignal.emit(g.w, g.b, 2, g.dispPoints, 99)
             f.historyTreeAntenna.updateTree.emit(g.w,g.b)
 
-
     def displayAll(self):
         f.displayUpdate.updateSignal.emit(g.w,g.b,1,g.dispPoints,0)
 
@@ -597,7 +587,6 @@ class manualOperations_panel(QtGui.QWidget):
         #print event
 
     def updateReadType(self,event):
-        print event
         g.readOption=event
         if g.ser.port != None:
             job='01'

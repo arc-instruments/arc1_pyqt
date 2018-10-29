@@ -42,7 +42,7 @@ Please note that Ro is defined again after each failure.
 """
 
 from __future__ import print_function
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
 import sys
 import os
@@ -186,7 +186,7 @@ class ThreadWrapper(QtCore.QObject):
         self.log("ConvergeToState on (W=%d, B=%d) finished..." % (w, b))
 
 
-class ConvergeToState(Ui_CTSParent, QtGui.QWidget):
+class ConvergeToState(Ui_CTSParent, QtWidgets.QWidget):
 
     PROGRAM_ONE = 0x1;
     PROGRAM_RANGE = 0x2;
@@ -250,7 +250,7 @@ class ConvergeToState(Ui_CTSParent, QtGui.QWidget):
         result["pwmax"] = float(self.pwMaxEdit.text())/1000.0
 
         idx = self.polarityCombo.currentIndex()
-        result["init_pol"] = int(self.polarityCombo.itemData(idx).toInt()[0])
+        result["init_pol"] = int(self.polarityCombo.itemData(idx))
 
         return result
 

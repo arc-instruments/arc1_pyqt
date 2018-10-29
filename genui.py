@@ -1,13 +1,11 @@
-#!/usr/bin/python2
-
-from __future__ import print_function
+#!/usr/bin/python
 
 import glob
 import os
 import os.path
 import sys
 
-from PyQt4.uic import compileUi
+from PyQt5.uic import compileUi
 
 
 def doCompile(src, dst):
@@ -33,7 +31,7 @@ def doCompile(src, dst):
             # just open the file
             out = open(dst, 'wt')
 
-    # see the docstring of PyQt4.uic.compileUi for more!
+    # see the docstring of PyQt5.uic.compileUi for more!
     compileUi(src, out, execute=False, indent=4)
 
 

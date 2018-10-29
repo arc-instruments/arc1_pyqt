@@ -7,10 +7,10 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
-import cell as c
+from . import cell as c
 
 import Globals.GlobalVars as g
 import Globals.GlobalFonts as fonts
@@ -18,7 +18,7 @@ import Globals.GlobalStyles as s
 import Globals.GlobalFunctions as f
 
 
-class new_Session(QtGui.QWidget):
+class new_Session(QtWidgets.QWidget):
     
     def __init__(self):
         super(new_Session, self).__init__()
@@ -26,61 +26,58 @@ class new_Session(QtGui.QWidget):
         self.initUI()
         
     def initUI(self):      
-        mainLayout=QtGui.QVBoxLayout()  # Set main vertical layout
+        mainLayout=QtWidgets.QVBoxLayout()  # Set main vertical layout
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
 
         # Setup top logo
         # ============================
-        logoTop=QtGui.QLabel()
+        logoTop=QtWidgets.QLabel()
         logoTop.setPixmap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'NewSeshLogoDrawing2.png'))
         mainLayout.addWidget(logoTop)
         # ============================
 
         # Setup general settings
         # ============================
-        self.generalSettings = QtGui.QGroupBox('General Settings')
+        self.generalSettings = QtWidgets.QGroupBox('General Settings')
         self.generalSettings.setStyleSheet(s.groupStyleNewSesh)
         self.generalSettings.setFont(fonts.font2)
-        genSetLayout=QtGui.QGridLayout()
+        genSetLayout=QtWidgets.QGridLayout()
         genSetLayout.setContentsMargins(10,20,10,20)
 
-        wModeLabel=QtGui.QLabel(self)
+        wModeLabel=QtWidgets.QLabel(self)
         wModeLabel.setText("Session Mode:")
         wModeLabel.setFont(fonts.font3)
 
-        wDirLabel=QtGui.QLabel(self)
+        wDirLabel=QtWidgets.QLabel(self)
         wDirLabel.setText("Working Directory:")
         wDirLabel.setFont(fonts.font3)
 
-        push_browse = QtGui.QPushButton('...')
+        push_browse = QtWidgets.QPushButton('...')
         push_browse.clicked.connect(self.selectWDir)    # open custom array defive position file
         push_browse.setFixedWidth(20)
 
-        self.dirName=QtGui.QLineEdit()
+        self.dirName=QtWidgets.QLineEdit()
         self.dirName.setReadOnly(True)
         self.dirName.setMaximumWidth(294)
         self.dirName.setStyleSheet(s.entryStyle2)
 
-        dirLayout=QtGui.QHBoxLayout()
+        dirLayout=QtWidgets.QHBoxLayout()
         dirLayout.addWidget(self.dirName)
         dirLayout.addWidget(push_browse)
 
-        wNameLabel=QtGui.QLabel(self)
+        wNameLabel=QtWidgets.QLabel(self)
         wNameLabel.setText("Session Name:")
         wNameLabel.setFont(fonts.font3)
 
-        self.wModeCombo=QtGui.QComboBox(self)
+        self.wModeCombo=QtWidgets.QComboBox(self)
         self.wModeCombo.addItem("Live: Local")
         self.wModeCombo.addItem("Live: External BNC")
         self.wModeCombo.addItem("Live: BNC to Local")    
         self.wModeCombo.addItem("Offline")
         self.wModeCombo.setFont(fonts.font3)
 
-        # Browse label and browse button
-        #wDirBrowse=QtGui.
-
-        self.wNameEntry=QtGui.QLineEdit()
+        self.wNameEntry=QtWidgets.QLineEdit()
         self.wNameEntry.setMaximumWidth(320)
         self.wNameEntry.setText('Package1')
         self.wNameEntry.setFont(fonts.font3)
@@ -101,44 +98,44 @@ class new_Session(QtGui.QWidget):
         # Setup mCAT settings
         # ============================
 
-        #hwTitle=QtGui.QLabel(self)
+        #hwTitle=QtWidgets.QLabel(self)
         #hwTitle.setText('Hardware Settings')
         #hwTitle.setFont(fonts.font3)
-        self.hwSettings = QtGui.QGroupBox('Hardware Settings')
+        self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
         self.hwSettings.setStyleSheet(s.groupStyleNewSesh)
         #palette=QtGui.QPalette()
         self.hwSettings.setFont(fonts.font2)
 
 
-        hwSetLayout=QtGui.QGridLayout()
+        hwSetLayout=QtWidgets.QGridLayout()
         hwSetLayout.setContentsMargins(10,20,10,10)
 
-        readCyclesLabel=QtGui.QLabel(self)
+        readCyclesLabel=QtWidgets.QLabel(self)
         readCyclesLabel.setText("Reading Cycles:")
         readCyclesLabel.setFont(fonts.font3)
 
-        sneakLabel=QtGui.QLabel(self)
+        sneakLabel=QtWidgets.QLabel(self)
         sneakLabel.setText("Sneak Path Limiting:")
         sneakLabel.setFont(fonts.font3)
 
-        arShapeLabel=QtGui.QLabel(self)
+        arShapeLabel=QtWidgets.QLabel(self)
         arShapeLabel.setText("Array Shape:")
         arShapeLabel.setFont(fonts.font3)
 
-        self.readCyclesEntry=QtGui.QLineEdit()
+        self.readCyclesEntry=QtWidgets.QLineEdit()
         self.readCyclesEntry.setFixedWidth(320)
         self.readCyclesEntry.setText("50")
         self.readCyclesEntry.setFont(fonts.font3)
 
-        self.sneakCombo=QtGui.QComboBox(self)
+        self.sneakCombo=QtWidgets.QComboBox(self)
         self.sneakCombo.setMaximumWidth(320)
         self.sneakCombo.addItem("Write: V/3")
         self.sneakCombo.addItem("Write: V/2")
         self.sneakCombo.setFont(fonts.font3)
         self.sneakCombo.setCurrentIndex(g.sneakPathOption)
 
-        cbHBox=QtGui.QHBoxLayout(self)
-        self.cb_w=QtGui.QSpinBox(self)
+        cbHBox=QtWidgets.QHBoxLayout(self)
+        self.cb_w=QtWidgets.QSpinBox(self)
         self.cb_w.setMinimum(1)
         self.cb_w.setMaximum(32)
         self.cb_w.setSingleStep(1)
@@ -146,7 +143,7 @@ class new_Session(QtGui.QWidget):
         self.cb_w.setFont(fonts.font3)
         self.cb_w.valueChanged.connect(self.redrawCB)
 
-        self.cb_b=QtGui.QSpinBox(self)
+        self.cb_b=QtWidgets.QSpinBox(self)
         self.cb_b.setMinimum(1)
         self.cb_b.setMaximum(32)
         self.cb_b.setSingleStep(1)
@@ -154,11 +151,11 @@ class new_Session(QtGui.QWidget):
         self.cb_b.valueChanged.connect(self.redrawCB)
         self.cb_b.setFont(fonts.font3)
 
-        cb_w_label=QtGui.QLabel(self)
+        cb_w_label=QtWidgets.QLabel(self)
         cb_w_label.setText("W:")
         cb_w_label.setFont(fonts.font3)
 
-        cb_b_label=QtGui.QLabel(self)
+        cb_b_label=QtWidgets.QLabel(self)
         cb_b_label.setText("B:")
         cb_b_label.setFont(fonts.font3)
 
@@ -171,7 +168,7 @@ class new_Session(QtGui.QWidget):
         cbHBox.addWidget(self.cb_b)
         cbHBox.addStretch()
 
-        aux=QtGui.QWidget()
+        aux=QtWidgets.QWidget()
         aux.setLayout(cbHBox)
 
         hwSetLayout.addWidget(readCyclesLabel,0,0)
@@ -185,31 +182,31 @@ class new_Session(QtGui.QWidget):
         self.hwSettings.setLayout(hwSetLayout)
         mainLayout.addWidget(self.hwSettings)
 
-        line2=QtGui.QFrame()
-        line2.setFrameShape(QtGui.QFrame.HLine)
-        line2.setFrameShadow(QtGui.QFrame.Plain)
+        line2=QtWidgets.QFrame()
+        line2.setFrameShape(QtWidgets.QFrame.HLine)
+        line2.setFrameShadow(QtWidgets.QFrame.Plain)
         line2.setStyleSheet(s.lineStyle)
         line2.setLineWidth(1)
 
         mainLayout.addWidget(line2)
 
-        cbWidget=QtGui.QWidget()
-        self.cbWindow=QtGui.QStackedLayout()
+        cbWidget=QtWidgets.QWidget()
+        self.cbWindow=QtWidgets.QStackedLayout()
         cbWidget.setLayout(self.cbWindow)
 
         mainLayout.addWidget(cbWidget)
 
         # Apply/Cancel buttons Layout
-        startLay_group=QtGui.QGroupBox()
+        startLay_group=QtWidgets.QGroupBox()
         startLay_group.setStyleSheet(s.groupStyle)
-        startLay=QtGui.QHBoxLayout()
+        startLay=QtWidgets.QHBoxLayout()
 
-        start_btn=QtGui.QPushButton('Start')
+        start_btn=QtWidgets.QPushButton('Start')
         start_btn.setStyleSheet(s.btnStyle2)
         start_btn.setMinimumWidth(100)
         start_btn.clicked.connect(self.startSession)
 
-        cancel_btn=QtGui.QPushButton('Cancel')
+        cancel_btn=QtWidgets.QPushButton('Cancel')
         cancel_btn.setStyleSheet(s.btnStyle2)
         cancel_btn.setMinimumWidth(100)
         cancel_btn.clicked.connect(self.cancelNewSession)
@@ -222,9 +219,9 @@ class new_Session(QtGui.QWidget):
 
         #startLay_group.setLayout(startLay)
 
-        line=QtGui.QFrame()
-        line.setFrameShape(QtGui.QFrame.HLine)
-        line.setFrameShadow(QtGui.QFrame.Plain)
+        line=QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Plain)
         line.setStyleSheet(s.lineStyle)
         line.setLineWidth(1)
 
@@ -237,7 +234,7 @@ class new_Session(QtGui.QWidget):
 
         mainLayout.addLayout(startLay)
 
-        #spacer=QtGui.QSpacerItem(1,1)
+        #spacer=QtWidgets.QSpacerItem(1,1)
         #mainLayout.addWidget(spacer)
         #mainLayout.addSpacing(1)
 
@@ -247,41 +244,40 @@ class new_Session(QtGui.QWidget):
         self.redrawCB()
 
     def selectWDir(self):
-        folderDialog=QtGui.QFileDialog()
-        #folderDialog.setFileMode(QtGui.QFileDialog.Directory)
+        folderDialog=QtWidgets.QFileDialog()
+        #folderDialog.setFileMode(QtWidgets.QFileDialog.Directory)
 
         directory = folderDialog.getExistingDirectory(self, 'Choose Directory', os.path.curdir)
 
         self.dirName.setText(directory)
-        print directory
 
         pass
 
     def redrawCB(self):
-        #layout=QtGui.QGridLayout()
+        #layout=QtWidgets.QGridLayout()
         #self.
         #self.cbWidget.setLayout(layout)
 
-        wordline=QtGui.QLabel()
+        wordline=QtWidgets.QLabel()
         wordline.setText("W\no\nr\nd\nl\ni\nn\ne")
-        bitline=QtGui.QLabel()
+        bitline=QtWidgets.QLabel()
         bitline.setText("Bitline")
 
-        bitH=QtGui.QHBoxLayout()
+        bitH=QtWidgets.QHBoxLayout()
         bitH.addStretch()
         bitH.addWidget(bitline)
         bitH.addStretch()
 
-        w1=QtGui.QWidget()
-        lay1=QtGui.QVBoxLayout()
-        lay2=QtGui.QVBoxLayout()
+        w1=QtWidgets.QWidget()
+        lay1=QtWidgets.QVBoxLayout()
+        lay2=QtWidgets.QVBoxLayout()
 
-        lay2=QtGui.QHBoxLayout()
-        layout=QtGui.QGridLayout()
+        lay2=QtWidgets.QHBoxLayout()
+        layout=QtWidgets.QGridLayout()
         layout.setSpacing(0)
         w1.setLayout(lay1)
 
-        layout2=QtGui.QVBoxLayout()
+        layout2=QtWidgets.QVBoxLayout()
         layout2.addStretch()
         layout2.addLayout(layout)
         #layout2.addLayout(bitH)
@@ -310,13 +306,13 @@ class new_Session(QtGui.QWidget):
         aCell=[]
 
         for w in range(1,wmax+1):
-            aux=QtGui.QLabel()
+            aux=QtWidgets.QLabel()
             aux.setText(str(w))
             aux.setFont(fonts.font4)
             layout.addWidget(aux,w,0)
 
         for b in range(1,bmax+1):
-            aux=QtGui.QLabel()
+            aux=QtWidgets.QLabel()
             aux.setText(str(b))
             aux.setFont(fonts.font4)
             layout.addWidget(aux,33,b)
@@ -330,25 +326,13 @@ class new_Session(QtGui.QWidget):
         g.wline_nr=self.cb_w.value()
         g.bline_nr=self.cb_b.value()
 
-        if not self.dirName.text().isEmpty():
+        if not len(self.dirName.text()) == 0:
             g.workingDirectory=self.dirName.text()
 
         g.readCycles=int(self.readCyclesEntry.text())
         g.sneakPathOption=self.sneakCombo.currentIndex()
-        #print "Sneak option: ", g.sneakPathOption
         g.sessionMode=self.wModeCombo.currentIndex()
         g.sessionName=self.wNameEntry.text()
-
-        # Browse label and browse button
-        #wDirBrowse=QtGui.
-
-        #print g.wline_nr
-        #print g.bline_nr
-        #print g.workingDirectory
-        #print g.readCycles
-        #print g.sneakPathOption
-        #print g.sessionMode
-        #print g.sessionName
 
         f.interfaceAntenna.reformat.emit()
 

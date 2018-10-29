@@ -9,9 +9,10 @@
 
 import sys
 import os
+import time
 import numpy as np
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+
+from PyQt5 import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
@@ -19,9 +20,8 @@ import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
-import time
 
-class dataDisplay_panel(QtGui.QWidget):
+class dataDisplay_panel(QtWidgets.QWidget):
     
     def __init__(self):
         super(dataDisplay_panel, self).__init__()
@@ -32,14 +32,14 @@ class dataDisplay_panel(QtGui.QWidget):
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
 
-        penM=QtGui.QPen()               # pen to draw the resistance curves
-        penM.setColor(QtCore.Qt.red)
+        # pen to draw the resistance curves
+        penM = pg.mkPen('r', width=1)
 
-        penP=QtGui.QPen()               # pen to draw the amplitude curves
-        penP.setColor(QtCore.Qt.blue)    
+        # pen to draw the amplitude curves
+        penP = pg.mkPen('b', width=1)
 
-        penPW=QtGui.QPen()
-        penPW.setColor(QtCore.Qt.darkGreen)
+        # pen to draw the pulse width curves
+        penPW = pg.mkPen(color=QtGui.QColor(QtCore.Qt.darkGreen), width=1)
 
         brushP=QtGui.QBrush()
         brushP.setColor(QtCore.Qt.blue)
@@ -63,7 +63,7 @@ class dataDisplay_panel(QtGui.QWidget):
         self.curveM=self.plot_mem.plot(pen=penM, symbolPen=None, symbolBrush=(255,0,0), symbol='s', symbolSize=5, pxMode=True)
         #self.plot_mem.enableAutoRange(self.plot_mem.getAxis('left'),True)
         labelM_style = {'color': '#000000', 'font-size': '10pt'}
-        self.plot_mem.getAxis('left').setLabel('Resistance\n', units='Ohms', **labelM_style)
+        self.plot_mem.getAxis('left').setLabel('Resistance\n', units='Ω', **labelM_style)
         self.plot_mem.getAxis('left').setGrid(50)
         self.plot_mem.getAxis('left').setWidth(60)
         self.plot_mem.showAxis('right')
@@ -80,7 +80,6 @@ class dataDisplay_panel(QtGui.QWidget):
         self.curvePMarkers=self.plot_pls.plot(pen=None, symbolPen=None, symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
 
         self.curveReadMarkers=self.plot_pls.plot(pen=None, symbolPen=(0,0,255), symbolBrush=None, symbol=self.readSymbol, symbolSize=6, pxMode=True)
-
 
         self.plot_pls.setFixedHeight(150)
         labelV_style = {'color': '#000000', 'font-size': '10pt'}
@@ -114,7 +113,7 @@ class dataDisplay_panel(QtGui.QWidget):
 
         self.plot_pls.getViewBox().setXLink(self.plot_mem.getViewBox()) # link x axes
 
-        mainLayout = QtGui.QVBoxLayout()
+        mainLayout = QtWidgets.QVBoxLayout()
         mainLayout.addWidget(view)
         mainLayout.setContentsMargins(0,0,3,3)
 
@@ -138,16 +137,12 @@ class dataDisplay_panel(QtGui.QWidget):
 
         self.updateViews()
 
-   # def rangeChangedViaMouse(self, event):
-     #   print "-"
-     #   print event
     def updateLogScale(self,event):
         self.log=event
         self.plot_mem.setLogMode(False,event)
 
     def wheelEventOverride(self, event):
-        print event
-        print "Wheel in motion"
+        pass
 
     def updateViews2(self):
         self.plot_pls.getViewBox().setGeometry(self.plot_mem.getViewBox().x(), self.plot_pls.getViewBox().y(), self.plot_pls.getViewBox().width(), self.plot_pls.getViewBox().height())
@@ -162,7 +157,6 @@ class dataDisplay_panel(QtGui.QWidget):
 
     def updateDisplay_short(self):
         self.updateDisplay(g.w,g.b,2,g.dispPoints,99)
-
 
     def updateDisplay(self,w,b,type,points,slider):
         # type = 1: display all data
@@ -233,8 +227,6 @@ class dataDisplay_panel(QtGui.QWidget):
 
 
             pNrList=np.asarray(range(firstPoint,lastPoint))
-
-            #print "pNrList=", pNrList, "Mlist=", Mlist
 
             self.curveM.setData(pNrList,np.asarray(Mlist))
             self.curveP.setData(np.repeat(pNrList,3),np.asarray(PList))

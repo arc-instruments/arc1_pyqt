@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 #import Queue
@@ -60,9 +60,6 @@ class getData(QtCore.QObject):
             tag_=tag+"_s"
             self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
             self.displayData.emit()
-            print Mnow
-        print "---"
-
 
         while True:
             start_op=time.time()
@@ -110,7 +107,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class Retention(QtGui.QWidget):
+class Retention(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(Retention, self).__init__()
@@ -119,11 +116,11 @@ class Retention(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('Retention')
+        titleLabel = QtWidgets.QLabel('Retention')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Measure resistive states for extended periods of time.')
+        descriptionLabel = QtWidgets.QLabel('Measure resistive states for extended periods of time.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -139,7 +136,7 @@ class Retention(QtGui.QWidget):
         rightLabels=[]
         self.rightEdits=[]
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -152,50 +149,50 @@ class Retention(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 2, 1)
 
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             #gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
             #gridLayout.addWidget(lineEdit, i,5)
 
 
         # ========== ComboBox ===========
-        every_lay=QtGui.QHBoxLayout()
-        duration_lay=QtGui.QHBoxLayout()
+        every_lay=QtWidgets.QHBoxLayout()
+        duration_lay=QtWidgets.QHBoxLayout()
 
-        self.every_dropDown=QtGui.QComboBox()
+        self.every_dropDown=QtWidgets.QComboBox()
         self.every_dropDown.setStyleSheet(s.comboStylePulse)
 
         self.unitsFull=[['s',1],['min',60],['hrs',3600]]
         self.units=[e[0] for e in self.unitsFull]
         self.multiply=[e[1] for e in self.unitsFull]
 
-        self.duration_dropDown=QtGui.QComboBox()
+        self.duration_dropDown=QtWidgets.QComboBox()
         self.duration_dropDown.setStyleSheet(s.comboStylePulse)
 
         self.every_dropDown.insertItems(1,self.units)
@@ -219,11 +216,11 @@ class Retention(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -235,11 +232,11 @@ class Retention(QtGui.QWidget):
         vbox1.addStretch()
 
         if self.short==False:
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -264,11 +261,11 @@ class Retention(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
@@ -278,15 +275,11 @@ class Retention(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
-
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

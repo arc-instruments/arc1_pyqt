@@ -10,8 +10,7 @@
 import sys
 import os
 import importlib
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 import Globals.GlobalStyles as s
 import Globals.GlobalVars as g
@@ -19,21 +18,21 @@ import Globals.GlobalVars as g
 sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
 
 
-class prog_panel(QtGui.QWidget):
+class prog_panel(QtWidgets.QWidget):
     
     def __init__(self):
         super(prog_panel, self).__init__()
         self.initUI()
         
     def initUI(self):   
-        mainLayout=QtGui.QVBoxLayout()
+        mainLayout=QtWidgets.QVBoxLayout()
 
-        hbox_1=QtGui.QHBoxLayout()
+        hbox_1=QtWidgets.QHBoxLayout()
 
-        label_panels = QtGui.QLabel('Panels:')
+        label_panels = QtWidgets.QLabel('Panels:')
         label_panels.setMaximumWidth(40)
 
-        self.prog_panelList = QtGui.QComboBox()
+        self.prog_panelList = QtWidgets.QComboBox()
         self.prog_panelList.setStyleSheet(s.comboStyle)
         self.prog_panelList.setMinimumWidth(150*g.scaling_factor)
 
@@ -46,15 +45,15 @@ class prog_panel(QtGui.QWidget):
         boldFont.setBold(True)
         self.prog_panelList.setItemData(self.prog_panelList.findText("SuperMode"), boldFont, QtCore.Qt.FontRole)
 
-        self.push_add=QtGui.QPushButton('Add')
+        self.push_add=QtWidgets.QPushButton('Add')
         self.push_add.setStyleSheet(s.btnStyle2)
         self.push_add.clicked.connect(self.addPanel)
 
-        self.push_remove=QtGui.QPushButton('Remove')
+        self.push_remove=QtWidgets.QPushButton('Remove')
         self.push_remove.setStyleSheet(s.btnStyle2)
         self.push_remove.clicked.connect(self.removePanel)
 
-        self.tabFrame=QtGui.QTabWidget()
+        self.tabFrame=QtWidgets.QTabWidget()
 
         hbox_1.addWidget(label_panels)
         hbox_1.addWidget(self.prog_panelList)
@@ -68,11 +67,11 @@ class prog_panel(QtGui.QWidget):
 
         self.setContentsMargins(0,0,0,0)
 
-        #self.mainPanel = QtGui.QGroupBox('')
+        #self.mainPanel = QtWidgets.QGroupBox('')
         #self.mainPanel.setStyleSheet(s.groupStyleProg)
         #self.mainPanel.setLayout(mainLayout)
 
-        #container=QtGui.QVBoxLayout()
+        #container=QtWidgets.QVBoxLayout()
         #container.addWidget(self.mainPanel)   
         #container.setContentsMargins(0,0,0,0)    
 

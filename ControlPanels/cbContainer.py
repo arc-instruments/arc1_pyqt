@@ -7,9 +7,9 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
-import device as d
+from . import device as d
 
 
 import Globals.GlobalFunctions as f
@@ -18,7 +18,7 @@ import Globals.GlobalFonts as fonts
 import Globals.GlobalStyles as s
 
 
-class cbContainer(QtGui.QWidget):
+class cbContainer(QtWidgets.QWidget):
     
     def __init__(self):
         super(cbContainer, self).__init__()
@@ -26,16 +26,16 @@ class cbContainer(QtGui.QWidget):
         self.initUI()
         
     def initUI(self):      
-        #mainLayout=QtGui.QGridLayout()  # Set grid layout
+        #mainLayout=QtWidgets.QGridLayout()  # Set grid layout
         #self.setLayout(mainLayout)
         #mainLayout.setSpacing(0)
-        layout=QtGui.QGridLayout(self)
+        layout=QtWidgets.QGridLayout(self)
         self.setLayout(layout)
         layout.setSpacing(0)
 
         self.cells=[[[] for x in range(0,g.bline_nr+1)] for y in range(0,g.wline_nr+1)]
 
-        #sizePolicy=QtGui.QSizePolicy()
+        #sizePolicy=QtWidgets.QSizePolicy()
         #sizePolicy.setWidthForHeight(True)
 
         for r in range(1,g.wline_nr+1):           # populate the grid with a "device" in each box
@@ -51,13 +51,13 @@ class cbContainer(QtGui.QWidget):
                 layout.addWidget(self.cells[r][c],r,c)
 
         for w in range(1,g.wline_nr+1):
-            aux=QtGui.QLabel()
+            aux=QtWidgets.QLabel()
             aux.setText(str(w))
             aux.setFont(fonts.cbFont)
             layout.addWidget(aux,w,0)
 
         for b in range(1,g.bline_nr+1):
-            aux=QtGui.QLabel()
+            aux=QtWidgets.QLabel()
             aux.setText(str(b))
             aux.setFont(fonts.cbFont)
             layout.addWidget(aux,33,b)
@@ -68,15 +68,15 @@ class cbContainer(QtGui.QWidget):
         f.SAantenna.disable.connect(self.disableCell)
         f.SAantenna.enable.connect(self.enableCell)
 
-        self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, self)
+        self.rubberband = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
         self.setMouseTracking(True)
 
         self.rangeRect=QtCore.QRect()
 
-        self.rectWidget=QtGui.QWidget(self)
+        self.rectWidget=QtWidgets.QWidget(self)
         self.rectWidget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
         self.installEventFilter(self)
-        #self.highlightBox=QtGui.QWidget(self)
+        #self.highlightBox=QtWidgets.QWidget(self)
         #self.highlightBox.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
 
         self.dragging=False
@@ -139,9 +139,6 @@ class cbContainer(QtGui.QWidget):
             else:
                 self.rectWidget.show()
 
-
-        #QtGui.QWidget.mousePressEvent(self, event) 
-
     def mouseMoveEvent(self, event):
         #if self.rubberband.isVisible():
         if self.dragging==True:
@@ -152,9 +149,7 @@ class cbContainer(QtGui.QWidget):
             wList=[]
             bList=[]
 
-            #print self.findChildren(QtGui.QWidget)
-
-            for child in self.findChildren(QtGui.QWidget):
+            for child in self.findChildren(QtWidgets.QWidget):
                 if rect.intersects(child.geometry()):
                     #selected.append(child)
                     position=child.whatsThis().split(" ")
@@ -189,7 +184,7 @@ class cbContainer(QtGui.QWidget):
             self.rectWidget.setStyleSheet("border: 3px solid red")
             self.rectWidget.show()
 
-        #QtGui.QWidget.mouseMoveEvent(self, event)
+        #QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

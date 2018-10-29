@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
@@ -85,7 +85,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class Endurance(QtGui.QWidget):
+class Endurance(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(Endurance, self).__init__()
@@ -94,11 +94,11 @@ class Endurance(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('Endurance')
+        titleLabel = QtWidgets.QLabel('Endurance')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Cycle the resistive state of a bistable device using alternative polarity voltage pulses, for any number of cycles.')
+        descriptionLabel = QtWidgets.QLabel('Cycle the resistive state of a bistable device using alternative polarity voltage pulses, for any number of cycles.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -132,7 +132,7 @@ class Endurance(QtGui.QWidget):
         self.leftEdits=[]
         self.rightEdits=[]
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -145,46 +145,46 @@ class Endurance(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        #lineRight=QtGui.QFrame()
-        #lineRight.setFrameShape(QtGui.QFrame.VLine); 
-        #lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        #lineRight=QtWidgets.QFrame()
+        #lineRight.setFrameShape(QtWidgets.QFrame.VLine);
+        #lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         #lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 6, 1)
         #gridLayout.addWidget(lineRight, 0, 6, 5, 1)
 
-        #label1=QtGui.QLabel('Pulse Amplitude (V)')
+        #label1=QtWidgets.QLabel('Pulse Amplitude (V)')
         #label1.setFixedWidth(150)
-        #label2=QtGui.QLabel('Pulse width (us)')
+        #label2=QtWidgets.QLabel('Pulse width (us)')
         #label2.setFixedWidth(150)
-        #label3=QtGui.QLabel('Cycles')
+        #label3=QtWidgets.QLabel('Cycles')
         #label3.setFixedWidth(150)
-        #label4=QtGui.QLabel('Interpulse (ms)')
+        #label4=QtWidgets.QLabel('Interpulse (ms)')
         #label4.setFixedWidth(150)
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
@@ -201,11 +201,11 @@ class Endurance(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -218,11 +218,11 @@ class Endurance(QtGui.QWidget):
 
         if self.short==False:
 
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -278,26 +278,22 @@ class Endurance(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):

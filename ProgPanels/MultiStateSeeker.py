@@ -8,7 +8,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
 import sys
 import os
@@ -361,7 +361,8 @@ class ThreadWrapper(QtCore.QObject):
         self.finished.emit()
         print("### MultiStateSeeker finished!")
 
-class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
+
+class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
 
     PROGRAM_ONE = 0x1;
     PROGRAM_RANGE = 0x2;
@@ -470,13 +471,13 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         result["stability_tmax"] = float(self.maxStabilityTimeEdit.text())
         mode_index = self.stateModeCombo.currentIndex()
         stability_index = self.stabilityModeCombo.currentIndex()
-        result["state_mode"] = self.stateModeCombo.itemData(mode_index).toInt()[0]
-        result["stability_mode"] = self.stabilityModeCombo.itemData(stability_index).toString()
+        result["state_mode"] = int(self.stateModeCombo.itemData(mode_index))
+        result["stability_mode"] = str(self.stabilityModeCombo.itemData(stability_index))
         result["stability_slope"] = float(self.stabilitySlopeEdit.text())
         result["stability_tmetric"] = float(self.tmetricEdit.text())
 
         assess_index = self.assessModeCombo.currentIndex()
-        result["assess_mode"] = self.assessModeCombo.itemData(assess_index).toString()
+        result["assess_mode"] = str(self.assessModeCombo.itemData(assess_index))
 
         result["state_reads"] = int(self.stateReadsEdit.text())
         result["state_prog_pulses"] = int(self.statePulsesEdit.text())
@@ -499,7 +500,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         result["state_retention"] = (float(self.stateRetentionEdit.text()) * retention_mult) / 1000.0
         result["state_stdev"] = int(self.stateStdevSpinBox.value())
         monotonicIndex = self.monotonicityComboBox.currentIndex()
-        result["state_monotonic"] = self.monotonicityComboBox.itemData(monotonicIndex).toInt()[0]
+        result["state_monotonic"] = int(self.monotonicityComboBox.itemData(monotonicIndex))
         result["state_counter_reset"] = int(self.resetCounterCheckBox.isChecked())
 
         result["single_phase_run"] = bool(self.singlePhaseRunCheckBox.isChecked())
@@ -603,7 +604,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         self.pwConst04LabelStackedWidget.setCurrentIndex(index)
         self.pwConst04EditStackedWidget.setCurrentIndex(index)
 
-        state_mode = self.assessModeCombo.itemData(index).toString()
+        state_mode = str(self.assessModeCombo.itemData(index))
         self.updateInputWidgets()
 
     def singlePhaseRunChecked(self, *args):
@@ -621,7 +622,8 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
             self.stateModeCombo.setEnabled(False)
 
     def singlePhaseRunPhaseChanged(self, phaseIndex):
-        phase = self.singlePhaseRunComboBox.itemData(phaseIndex).toInt()[0]
+        #phase = self.singlePhaseRunComboBox.itemData(phaseIndex).toInt()[0]
+        phase = self.singlePhaseRunComboBox.itemData(phaseIndex)
 
         if phase == 1:
             self.phase1GroupBox.setEnabled(True)
@@ -638,7 +640,7 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
     def updateInputWidgets(self):
         index = self.assessModeCombo.currentIndex()
-        sweep_mode = str(self.assessModeCombo.itemData(index).toString())
+        sweep_mode = str(self.assessModeCombo.itemData(index))
 
         self.voltageBiasLabel.setEnabled(True)
         self.stateVoltageEdit.setEnabled(True)
@@ -661,28 +663,28 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
 
     @staticmethod
     def display(w, b, data, parent=None):
-        dialog = QtGui.QDialog(parent, QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowSystemMenuHint)
-        containerLayout = QtGui.QHBoxLayout()
+        dialog = QtWidgets.QDialog(parent, QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowSystemMenuHint)
+        containerLayout = QtWidgets.QHBoxLayout()
         dialog.setLayout(containerLayout)
-        tabs = QtGui.QTabWidget(dialog)
+        tabs = QtWidgets.QTabWidget(dialog)
         containerLayout.addWidget(tabs)
-        saveButton = QtGui.QPushButton("Export data")
+        saveButton = QtWidgets.QPushButton("Export data")
 
         resStates = []
 
-        tab1 = QtGui.QWidget()
-        topLayout = QtGui.QVBoxLayout()
-        bottomLayout = QtGui.QHBoxLayout()
-        bottomLayout.addItem(QtGui.QSpacerItem(40, 10, QtGui.QSizePolicy.Expanding))
+        tab1 = QtWidgets.QWidget()
+        topLayout = QtWidgets.QVBoxLayout()
+        bottomLayout = QtWidgets.QHBoxLayout()
+        bottomLayout.addItem(QtWidgets.QSpacerItem(40, 10, QtWidgets.QSizePolicy.Expanding))
         bottomLayout.addWidget(saveButton)
-        topLayout.addWidget(QtGui.QLabel("Calculated resistive states for device %d x %d" % (w, b)))
-        resultTable = QtGui.QTableWidget()
+        topLayout.addWidget(QtWidgets.QLabel("Calculated resistive states for device %d x %d" % (w, b)))
+        resultTable = QtWidgets.QTableWidget()
         resultTable.setColumnCount(3)
         resultTable.setHorizontalHeaderLabels(["Resistance", "Lower bound", "Upper bound"])
         resultTable.verticalHeader().setVisible(False)
-        resultTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-        resultTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        resultTable.setSelectionMode(QtGui.QTableWidget.NoSelection)
+        resultTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        resultTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        resultTable.setSelectionMode(QtWidgets.QTableWidget.NoSelection)
         topLayout.addWidget(resultTable)
         topLayout.addItem(bottomLayout)
         dialog.setGeometry(100,100,600,400)
@@ -698,9 +700,9 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
                 resStates.append([float(elements[2]), float(elements[3]), float(elements[4])])
                 position = resultTable.rowCount()
                 resultTable.insertRow(position)
-                resultTable.setItem(position, 0, QtGui.QTableWidgetItem(elements[2]))
-                resultTable.setItem(position, 1, QtGui.QTableWidgetItem(elements[3]))
-                resultTable.setItem(position, 2, QtGui.QTableWidgetItem(elements[4]))
+                resultTable.setItem(position, 0, QtWidgets.QTableWidgetItem(elements[2]))
+                resultTable.setItem(position, 1, QtWidgets.QTableWidgetItem(elements[3]))
+                resultTable.setItem(position, 2, QtWidgets.QTableWidgetItem(elements[4]))
         resultTable.resizeColumnsToContents()
         resultTable.resizeRowsToContents()
 
@@ -710,8 +712,8 @@ class MultiStateSeeker(Ui_MSSParent, QtGui.QWidget):
         plot = pyqtgraph.PlotWidget()
         plot.getAxis('bottom').setLabel("State #")
         plot.getAxis('left').setLabel("Resistance", units=u"Ω")
-        tab2 = QtGui.QWidget()
-        plotLayout = QtGui.QVBoxLayout()
+        tab2 = QtWidgets.QWidget()
+        plotLayout = QtWidgets.QVBoxLayout()
         plotLayout.addWidget(plot)
         tab2.setLayout(plotLayout)
         tabs.addTab(tab2, "Plot")

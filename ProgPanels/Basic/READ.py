@@ -7,11 +7,10 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 
 import time
-
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -81,7 +80,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class READ(QtGui.QWidget):
+class READ(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(READ, self).__init__()
@@ -92,12 +91,12 @@ class READ(QtGui.QWidget):
         self.Vread=g.Vread
         self.readOption=g.readOption
 
-        vbox1=QtGui.QVBoxLayout()
-        hbox1=QtGui.QHBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
+        hbox1=QtWidgets.QHBoxLayout()
 
-        titleLabel = QtGui.QLabel('READ')
+        titleLabel = QtWidgets.QLabel('READ')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Apply a READ operation.')
+        descriptionLabel = QtWidgets.QLabel('Apply a READ operation.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -105,7 +104,7 @@ class READ(QtGui.QWidget):
         isFloat=QtGui.QDoubleValidator()
 
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -118,22 +117,22 @@ class READ(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 2, 1)
 
         # ========== ComboBox ===========
-        self.combo_readType=QtGui.QComboBox()
+        self.combo_readType=QtWidgets.QComboBox()
         self.combo_readType.setStyleSheet(s.comboStyle)
         self.combo_readType.insertItems(1,g.readOptions)
         self.combo_readType.currentIndexChanged.connect(self.updateReadType)
         self.combo_readType.setCurrentIndex(2)
         #g.readOption=combo_readType.currentIndex()
 
-        self.read_voltage=QtGui.QDoubleSpinBox()
+        self.read_voltage=QtWidgets.QDoubleSpinBox()
         #read_voltage.setHeight(25)
         self.read_voltage.setStyleSheet(s.spinStyle)
         self.read_voltage.setMinimum(-12)
@@ -151,11 +150,11 @@ class READ(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -167,11 +166,11 @@ class READ(QtGui.QWidget):
         vbox1.addStretch()
 
         if self.short==False:
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -196,13 +195,13 @@ class READ(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
-            if isinstance(item, QtGui.QDoubleSpinBox):
+            if isinstance(item, QtWidgets.QDoubleSpinBox):
                 layoutWidgets.append([i,'QDoubleSpinBox', item.value()])
 
         
@@ -212,13 +211,10 @@ class READ(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,w_type,value in layoutWidgets:
             if w_type=='QLineEdit':
-                print i, w_type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if w_type=='QComboBox':
-                print i, w_type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if w_type=='QCheckBox':
-                print i, w_type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
             if w_type=='QDoubleSpinBox':
                 self.gridLayout.itemAt(i).widget().setValue(value)

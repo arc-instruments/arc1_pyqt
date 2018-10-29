@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
@@ -90,7 +90,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class FormFinder(QtGui.QWidget):
+class FormFinder(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(FormFinder, self).__init__()
@@ -99,11 +99,11 @@ class FormFinder(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('FormFinder')
+        titleLabel = QtWidgets.QLabel('FormFinder')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Applies a pulsed voltage ramp. Can be utilised when electroforming.')
+        descriptionLabel = QtWidgets.QLabel('Applies a pulsed voltage ramp. Can be utilised when electroforming.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -137,7 +137,7 @@ class FormFinder(QtGui.QWidget):
                     '10',\
                     '7']
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -150,31 +150,31 @@ class FormFinder(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.VLine); 
-        lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        lineRight=QtWidgets.QFrame()
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 7, 1)
         gridLayout.addWidget(lineRight, 0, 6, 7, 1)
 
-        #gridLayout=QtGui.QGridLayout()
+        #gridLayout=QtWidgets.QGridLayout()
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
@@ -182,19 +182,19 @@ class FormFinder(QtGui.QWidget):
             gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
 
-        gridLayout.addWidget(QtGui.QLabel("Pulse width progression"), 4, 4)
-        self.pulsingModeCombo = QtGui.QComboBox()
+        gridLayout.addWidget(QtWidgets.QLabel("Pulse width progression"), 4, 4)
+        self.pulsingModeCombo = QtWidgets.QComboBox()
         # you might wonder why we have different job numbers here. 14 is
         # the original formfinder which allowed only for geometric progression
         # of pulse widths. 141 is the newer version that also allows linear
@@ -212,19 +212,19 @@ class FormFinder(QtGui.QWidget):
         self.pulsingModeCombo.currentIndexChanged.connect(self.pulsingModeComboIndexChanged)
         gridLayout.addWidget(self.pulsingModeCombo, 4, 5)
 
-        self.checkNeg=QtGui.QCheckBox(self)
+        self.checkNeg=QtWidgets.QCheckBox(self)
         self.checkNeg.setText("Negative amplitude?")
         gridLayout.addWidget(self.checkNeg,5,4)
 
-        self.checkRthr=QtGui.QCheckBox(self)
+        self.checkRthr=QtWidgets.QCheckBox(self)
         self.checkRthr.setText("Use Rthr (%)")
         gridLayout.addWidget(self.checkRthr,6,4)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -238,11 +238,11 @@ class FormFinder(QtGui.QWidget):
 
         if self.short==False:
 
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -263,8 +263,8 @@ class FormFinder(QtGui.QWidget):
         self.gridLayout=gridLayout
 
     def pulsingModeComboIndexChanged(self, idx):
-        data = self.pulsingModeCombo.itemData(idx).toPyObject()
-        mode = data[QtCore.QString("mode")]
+        data = self.pulsingModeCombo.itemData(idx)
+        mode = data["mode"]
 
         if int(mode) == 1:
             self.leftLabels[4].setText("Pulse width step (us)")
@@ -277,11 +277,11 @@ class FormFinder(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
@@ -291,13 +291,10 @@ class FormFinder(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):
@@ -316,8 +313,7 @@ class FormFinder(QtGui.QWidget):
         g.ser.write(job+"\n")   # sends the job
 
         pmodeIdx = self.pulsingModeCombo.currentIndex()
-        pmode = self.pulsingModeCombo.itemData(pmodeIdx).toPyObject()[\
-            QtCore.QString("mode")]
+        pmode = self.pulsingModeCombo.itemData(pmodeIdx)["mode"]
 
         g.ser.write(str(float(self.leftEdits[0].text())*polarity)+"\n")
         g.ser.write(str(float(self.leftEdits[1].text())*polarity)+"\n")
@@ -362,8 +358,7 @@ class FormFinder(QtGui.QWidget):
     def programOne(self):
         if g.ser.port != None:
             idx = self.pulsingModeCombo.currentIndex()
-            job = self.pulsingModeCombo.itemData(idx).toPyObject()[\
-                QtCore.QString("job")]
+            job = self.pulsingModeCombo.itemData(idx)["job"]
             self.sendParams(str(job))
 
             self.thread=QtCore.QThread()
@@ -384,8 +379,7 @@ class FormFinder(QtGui.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             idx = self.pulsingModeCombo.currentIndex()
-            job = self.pulsingModeCombo.itemData(idx).toPyObject()[\
-                QtCore.QString("job")]
+            job = self.pulsingModeCombo.itemData(idx)["job"]
             self.sendParams(str(job))
 
             self.thread=QtCore.QThread()
@@ -393,15 +387,13 @@ class FormFinder(QtGui.QWidget):
             self.finalise_thread_initialisation()
 
             self.thread.start()
-        
 
     def programAll(self):
         if g.ser.port != None:
             rangeDev=self.makeDeviceList(False)
 
             idx = self.pulsingModeCombo.currentIndex()
-            job = self.pulsingModeCombo.itemData(idx).toPyObject()[\
-                QtCore.QString("job")]
+            job = self.pulsingModeCombo.itemData(idx)["job"]
             self.sendParams(str(job))
 
             self.thread=QtCore.QThread()
@@ -422,7 +414,6 @@ class FormFinder(QtGui.QWidget):
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
-
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
         rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
@@ -437,7 +428,6 @@ class FormFinder(QtGui.QWidget):
             maxW=g.maxW
             minB=g.minB
             maxB=g.maxB            
-
 
         # Find how many SA devices are contained in the range
         if g.checkSA==False:
