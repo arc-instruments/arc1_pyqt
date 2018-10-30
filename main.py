@@ -397,7 +397,7 @@ class Arcontrol(QtWidgets.QMainWindow):
             os.chdir(directory)
             launcher_path=os.path.join(directory,"ArC Platform Manager.exe")# + g.local_version)
             subprocess.Popen([launcher_path, g.local_version])
-            QtWidgets.QCoreApplication.instance().quit()
+            QtCore.QCoreApplication.instance().quit()
 
         # get current version
 
@@ -793,8 +793,7 @@ class Arcontrol(QtWidgets.QMainWindow):
             "Are you sure you want to exit?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
-            #sys.exit(app.exec_())
-            QtWidgets.QCoreApplication.instance().quit()
+            QtCore.QCoreApplication.instance().quit()
         else:
             pass
 
