@@ -13,6 +13,7 @@ from PyQt5 import QtGui, QtWidgets
 from time import sleep
 import numpy as np
 import collections
+import struct
 from virtualArC import virtualarc
 
 
@@ -172,6 +173,14 @@ def saveFuncToFilename(func, title="", parent=None):
 
     if fname:
         func(fname)
+
+def gzipFileSize(fname):
+    with open(fname, 'rb') as f:
+        # gzip uncompressed file size is stored in the
+        # last 4 bytes of the file. This will roll over
+        # for files > 4 GB
+        f.seek(-4,2)
+        return struct.unpack('I', f.read(4))[0]
 
 ###########################################
 # UUpdate Hover panel
