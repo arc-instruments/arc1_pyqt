@@ -638,6 +638,8 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def findAndLoadFile(self):
 
+        bytecount = lambda x: len(x.encode())
+
         # Import all programming panels in order to get all tags
         files = [fls for fls in os.listdir('ProgPanels') if fls.endswith(".py")]  # populate prog panel dropbox
         for fls in files:
@@ -657,13 +659,17 @@ class Arcontrol(QtWidgets.QMainWindow):
         customArray=[]
 
         error=0
+        bytesLoaded = 0
         if str(path.filePath()).endswith('.csv.gz'):
             opener = gzip.open
+            filesize = f.gzipFileSize(path.filePath())
         else:
             opener = open
+            filesize = os.stat(path.filePath()).st_size
 
         with opener(path.filePath(), 'rt') as csvfile:
             rdr = csv.reader(csvfile)
+            delimiter_size = len(rdr.dialect.lineterminator.encode())
 
             counter=1
             for values in rdr:
@@ -689,9 +695,14 @@ class Arcontrol(QtWidgets.QMainWindow):
                         except ValueError:
                             error=1
 
+                # find the byte size of the values + the byte size of the delimiter + the commas
+                bytesLoaded += sum(map(bytecount, values)) + delimiter_size + len(values) - 1
+                print("Loading file %d%%\r" % (bytesLoaded/filesize * 100), end='')
+
                 counter=counter+1
 
-                # check if positions read are correct
+        print()
+        # check if positions read are correct
         if (error==1):
             #self.errorMessage=QtWidgets.QErrorMessage()
             #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")
@@ -709,7 +720,7 @@ class Arcontrol(QtWidgets.QMainWindow):
                         #for dataPoint in g.Mhistory[w][b]:
                         f.cbAntenna.recolor.emit(g.Mhistory[w][b][-1][0],w,b)
 
-            print("Loaded successfully")
+            print("File loaded successfully")
             f.interfaceAntenna.changeArcStatus.emit('Disc')
 
             return True
