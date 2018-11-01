@@ -50,6 +50,9 @@ import ControlPanels
 
 class Arcontrol(QtWidgets.QMainWindow):
 
+    operationProgress = QtCore.pyqtSignal(int)
+    operationFinished = QtCore.pyqtSignal()
+
     def __init__(self):
         super(Arcontrol, self).__init__()
 
@@ -636,15 +639,53 @@ class Arcontrol(QtWidgets.QMainWindow):
             pass
 
 
-    def findAndLoadFile(self):
+    def _loadCSV(self, csvfile, filesize):
 
         bytecount = lambda x: len(x.encode())
 
+        bytesLoaded = 0
+        rdr = csv.reader(csvfile)
+        delimiter_size = len(rdr.dialect.lineterminator.encode())
+
+        error = 0
+
+        for (counter, values) in enumerate(rdr):
+            if (counter == 0):
+                g.sessionName=str(values[0])
+                f.historyTreeAntenna.changeSessionName.emit()
+            else:
+                if counter > 2:
+                    try:
+                        w = int(values[0])
+                        b = int(values[1])
+                        m = float(values[2])
+                        a = float(values[3])
+                        pw = float(values[4])
+                        tag = str(values[5])
+                        readTag = str(values[6])
+                        readVoltage = float(values[7])
+                        g.Mhistory[w][b].append([m, a, pw, str(tag), readTag, readVoltage])
+
+                        if 'S R' in tag or tag[-1]=='e' or tag[0]=='P': # ignore read all points
+                            f.historyTreeAntenna.updateTree.emit(w, b)
+                    except ValueError:
+                        error = 1
+
+            # find the byte size of the values + the byte size of the delimiter + the commas
+            bytesLoaded += sum(map(bytecount, values)) + delimiter_size + len(values) - 1
+            progress = int((bytesLoaded/filesize)*100)
+            self.operationProgress.emit(progress)
+            print("Loading file %d%%\r" % progress, end='')
+
+        print()
+        self.operationFinished.emit()
+        return error
+
+    def findAndLoadFile(self):
+
         # Import all programming panels in order to get all tags
-        files = [fls for fls in os.listdir('ProgPanels') if fls.endswith(".py")]  # populate prog panel dropbox
+        files = [fls for fls in os.listdir('ProgPanels') if fls.endswith(".py")]
         for fls in files:
-            #prog_panelList.append(f[:-3])
-            #moduleName=str(self.prog_panelList.currentText())   # format module name from drop down
             try:
                 importlib.import_module(fls[:-3])     # import the module
             except:
@@ -656,10 +697,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         if not os.path.isfile(path.filePath()):
             return
 
-        customArray=[]
-
-        error=0
-        bytesLoaded = 0
         if str(path.filePath()).endswith('.csv.gz'):
             opener = gzip.open
             filesize = f.gzipFileSize(path.filePath())
@@ -668,44 +705,10 @@ class Arcontrol(QtWidgets.QMainWindow):
             filesize = os.stat(path.filePath()).st_size
 
         with opener(path.filePath(), 'rt') as csvfile:
-            rdr = csv.reader(csvfile)
-            delimiter_size = len(rdr.dialect.lineterminator.encode())
+            error = self._loadCSV(csvfile, filesize)
 
-            counter=1
-            for values in rdr:
-                if (counter==1):
-                    g.sessionName=str(values[0])
-                    f.historyTreeAntenna.changeSessionName.emit()
-                else:
-                    if counter>3:
-                        #print values
-                        try:
-                            w=int(values[0])
-                            b=int(values[1])
-                            m=float(values[2])
-                            a=float(values[3])
-                            pw=float(values[4])
-                            tag=str(values[5])
-                            readTag=str(values[6])
-                            readVoltage=float(values[7])
-                            g.Mhistory[w][b].append([m,a,pw,str(tag),readTag,readVoltage])
-
-                            if 'S R' in tag or tag[-1]=='e' or tag[0]=='P': # ignore read all points
-                                f.historyTreeAntenna.updateTree.emit(w,b)
-                        except ValueError:
-                            error=1
-
-                # find the byte size of the values + the byte size of the delimiter + the commas
-                bytesLoaded += sum(map(bytecount, values)) + delimiter_size + len(values) - 1
-                print("Loading file %d%%\r" % (bytesLoaded/filesize * 100), end='')
-
-                counter=counter+1
-
-        print()
         # check if positions read are correct
-        if (error==1):
-            #self.errorMessage=QtWidgets.QErrorMessage()
-            #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")
+        if (error):
             errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Selected file is incompatible!")
             errMessage.setIcon(QtWidgets.QMessageBox.Critical)
@@ -724,7 +727,6 @@ class Arcontrol(QtWidgets.QMainWindow):
             f.interfaceAntenna.changeArcStatus.emit('Disc')
 
             return True
-
 
     def deleteAllData(self):
         g.Mhistory=[[[] for bit in range(33)] for word in range(33)]  # Main data container
