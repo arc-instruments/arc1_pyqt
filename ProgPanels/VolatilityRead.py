@@ -58,7 +58,7 @@ class getData(QtCore.QObject):
             g.ser.write(str(int(w))+"\n")
             g.ser.write(str(int(b))+"\n")
 
-            Mnow=float(g.ser.readline().rstrip())   # get first read value
+            Mnow = f.getFloats(1)
             self.sendData.emit(w,b,Mnow,self.A,self.pw,tag+'_s')
 
             start=time.time()
@@ -71,7 +71,7 @@ class getData(QtCore.QObject):
                 for i in range(self.B): #Obtain data for entire batch.
                     #Send data to log-file.
                     dataTime=int(g.ser.readline().rstrip())
-                    Mnow=float(g.ser.readline().rstrip())
+                    Mnow=f.getFloats(1)
                     self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_i_ '+ str(dataTime))
 
                     #Hold all or portion of incoming data in temporary array.
@@ -138,7 +138,7 @@ class getData(QtCore.QObject):
                     stop=1
                     g.ser.write(str(int(stop))+"\n")
 
-            Mnow=float(g.ser.readline().rstrip())   # get first read value
+            Mnow = f.getFloats(1)   # get first read value
             self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_e')
 
             self.updateTree.emit(w,b)
