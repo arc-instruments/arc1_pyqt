@@ -39,15 +39,15 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             endCommand=0
@@ -310,49 +310,49 @@ class FormFinder(QtWidgets.QWidget):
         if (self.checkNeg.isChecked()):
             polarity=-1
 
-        g.ser.write(job+"\n")   # sends the job
+        g.ser.write_b(job+"\n")   # sends the job
 
         pmodeIdx = self.pulsingModeCombo.currentIndex()
         pmode = self.pulsingModeCombo.itemData(pmodeIdx)["mode"]
 
-        g.ser.write(str(float(self.leftEdits[0].text())*polarity)+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text())*polarity)+"\n")
-        g.ser.write(str(float(self.leftEdits[2].text())*polarity)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[0].text())*polarity)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[1].text())*polarity)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text())*polarity)+"\n")
 
         time.sleep(0.05)
 
-        g.ser.write(str(float(self.leftEdits[3].text())/1000000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[3].text())/1000000)+"\n")
 
         # Determine the step
         if job != "14": # modal formfinder
             if pmode == 1:
                 # if step is time make it into seconds
-                g.ser.write(str(float(self.leftEdits[4].text())/1000000)+"\n")
+                g.ser.write_b(str(float(self.leftEdits[4].text())/1000000)+"\n")
             else:
                 # else it is percentage, leave it as is
-                g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
+                g.ser.write_b(str(float(self.leftEdits[4].text()))+"\n")
         else: # legacy behaviour
-            g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
+            g.ser.write_b(str(float(self.leftEdits[4].text()))+"\n")
 
-        g.ser.write(str(float(self.leftEdits[5].text())/1000000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[5].text())/1000000)+"\n")
 
-        g.ser.write(str(float(self.leftEdits[6].text())/1000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[6].text())/1000)+"\n")
         time.sleep(0.05)
         
-        g.ser.write(str(float(self.rightEdits[1].text()))+"\n")
-        #g.ser.write(str(float(self.rightEdits[2].text()))+"\n")
+        g.ser.write_b(str(float(self.rightEdits[1].text()))+"\n")
+        #g.ser.write_b(str(float(self.rightEdits[2].text()))+"\n")
         time.sleep(0.05)
         if self.checkRthr.isChecked():
-            g.ser.write(str(float(self.rightEdits[2].text()))+"\n")
+            g.ser.write_b(str(float(self.rightEdits[2].text()))+"\n")
         else:
-            g.ser.write(str(float(0))+"\n")
+            g.ser.write_b(str(float(0))+"\n")
         time.sleep(0.05)
 
         if job != "14": # newer version of formfinder
-            g.ser.write(str(int(pmode))+"\n")
+            g.ser.write_b(str(int(pmode))+"\n")
 
-        g.ser.write(str(int(self.rightEdits[3].text()))+"\n")
-        g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
+        g.ser.write_b(str(int(self.rightEdits[3].text()))+"\n")
+        g.ser.write_b(str(int(self.rightEdits[0].text()))+"\n")
         time.sleep(0.05)
 
     def programOne(self):

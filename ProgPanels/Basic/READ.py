@@ -45,14 +45,14 @@ class getData(QtCore.QObject):
             needsUpdate=True
             # Update Read
             job='01'
-            g.ser.write(job+"\n")
-            g.ser.write(str(float(self.readType))+"\n")
-            g.ser.write(str(float(self.Vread))+"\n")       
+            g.ser.write_b(job+"\n")
+            g.ser.write_b(str(float(self.readType))+"\n")
+            g.ser.write_b(str(float(self.Vread))+"\n")       
 
         job="1"
-        g.ser.write(job+"\n")
-        g.ser.write(str(g.w)+"\n")
-        g.ser.write(str(g.b)+"\n")
+        g.ser.write_b(job+"\n")
+        g.ser.write_b(str(g.w)+"\n")
+        g.ser.write_b(str(g.b)+"\n")
 
         # try:
         #     currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
@@ -71,9 +71,9 @@ class getData(QtCore.QObject):
         if needsUpdate==True:
             # Update Read
             job='01'
-            g.ser.write(job+"\n")
-            g.ser.write(str(float(g.readOption))+"\n")
-            g.ser.write(str(float(g.Vread))+"\n") 
+            g.ser.write_b(job+"\n")
+            g.ser.write_b(str(float(g.readOption))+"\n")
+            g.ser.write_b(str(float(g.Vread))+"\n") 
 
         self.disableInterface.emit(False)
         
@@ -252,8 +252,8 @@ class READ(QtWidgets.QWidget):
 
     def updateRead(self):
         job='01'
-        g.ser.write(job+"\n")
-        g.ser.write(str(g.readOption)+"\n")
+        g.ser.write_b(job+"\n")
+        g.ser.write_b(str(g.readOption)+"\n")
         
-        g.ser.write(str(g.Vread)+"\n")
+        g.ser.write_b(str(g.Vread)+"\n")
 

@@ -45,15 +45,15 @@ class getData(QtCore.QObject):
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             for cycle in range(1,self.totalCycles+1):
@@ -380,12 +380,12 @@ class CurveTracer(QtWidgets.QWidget):
         pass
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
-        g.ser.write(str(float(self.rightEdits[1].text())/1000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[1].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
+        g.ser.write_b(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
+        g.ser.write_b(str(float(self.rightEdits[1].text())/1000)+"\n")
         time.sleep(0.01)
         CSp=float(self.rightEdits[2].text())
         CSn=float(self.rightEdits[3].text())
@@ -396,18 +396,18 @@ class CurveTracer(QtWidgets.QWidget):
             CSn=10.1
 
 
-        g.ser.write(str(CSp/1000000)+"\n")
-        g.ser.write(str(CSn/-1000000)+"\n")
+        g.ser.write_b(str(CSp/1000000)+"\n")
+        g.ser.write_b(str(CSn/-1000000)+"\n")
 
-        g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
-        g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
-        g.ser.write(str(int(self.combo_IVoption.currentIndex()))+"\n")
-        g.ser.write(str(int(self.returnCheck))+"\n")
+        g.ser.write_b(str(int(self.rightEdits[0].text()))+"\n")
+        g.ser.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.returnCheck))+"\n")
 
     def programOne(self):
         if g.ser.port != None:
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             totalCycles=int(self.rightEdits[0].text())
             
@@ -426,7 +426,7 @@ class CurveTracer(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -442,7 +442,7 @@ class CurveTracer(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
             self.thread=QtCore.QThread()

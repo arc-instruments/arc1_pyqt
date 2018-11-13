@@ -49,15 +49,15 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n") #Tell mBED how many devices to be operated on.
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n") #Tell mBED how many devices to be operated on.
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             #store a first read
             valuesNew=f.getFloats(3)
@@ -68,18 +68,18 @@ class getData(QtCore.QObject):
             self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
             self.displayData.emit()
 
-            g.ser.write(str(int(len(self.timeSteps)))+"\n")
+            g.ser.write_b(str(int(len(self.timeSteps)))+"\n")
 
             for dt in self.timeSteps:
                 #dt/=self.warp # bug fix
                 total_time, total_voltage=self.make_time_series(dt/self.warp, self.gain, self.warp, self.max_spike_time, self.pre_time, \
                              self.pre_voltage, self.post_time, self.post_voltage)
 
-                g.ser.write(str(int(len(total_time)))+"\n")
+                g.ser.write_b(str(int(len(total_time)))+"\n")
 
                 for i in range(len(total_time)):
-                    g.ser.write(str(float(total_time[i]))+"\n")
-                    g.ser.write(str(float(total_voltage[i]))+"\n")
+                    g.ser.write_b(str(float(total_time[i]))+"\n")
+                    g.ser.write_b(str(float(total_voltage[i]))+"\n")
                     time.sleep(0.001)
 
                 valuesNew=f.getFloats(3)
@@ -713,7 +713,7 @@ class STDP(QtWidgets.QWidget):
 
         if g.ser.port != None:
             job="40"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -738,7 +738,7 @@ class STDP(QtWidgets.QWidget):
 
 
             job="40"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -757,7 +757,7 @@ class STDP(QtWidgets.QWidget):
 
 
             job="40"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 

@@ -52,9 +52,9 @@ class getData(QtCore.QObject):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write("1\n")
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b("1\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             Mnow=f.getFloats(1)
             tag_=tag+"_s"
@@ -69,9 +69,9 @@ class getData(QtCore.QObject):
                 b=device[1]
                 self.highlight.emit(w,b)
 
-                g.ser.write("1\n")
-                g.ser.write(str(int(w))+"\n")
-                g.ser.write(str(int(b))+"\n")
+                g.ser.write_b("1\n")
+                g.ser.write_b(str(int(w))+"\n")
+                g.ser.write_b(str(int(b))+"\n")
 
                 Mnow=f.getFloats(1)
                 tag_=tag+"_"+ str(time.time())
@@ -92,9 +92,9 @@ class getData(QtCore.QObject):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write("1\n")
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b("1\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             Mnow=f.getFloats(1)
             tag_=tag+"_e"

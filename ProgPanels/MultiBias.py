@@ -217,16 +217,16 @@ class MultiBias(QtWidgets.QWidget):
         else:
             if g.ser.port != None:
                 job="50"
-                g.ser.write(job+"\n")   # sends the job
+                g.ser.write_b(job+"\n")   # sends the job
 
                 self.sendParams()
 
-                g.ser.write(str(len(wLines))+"\n")
-                g.ser.write(str(self.edit_blines.value())+"\n")
-                g.ser.write(str(RW)+"\n")
+                g.ser.write_b(str(len(wLines))+"\n")
+                g.ser.write_b(str(self.edit_blines.value())+"\n")
+                g.ser.write_b(str(RW)+"\n")
 
                 for nr in wLines:
-                    g.ser.write(str(nr)+"\n")
+                    g.ser.write_b(str(nr)+"\n")
 
 
                 self.thread=QtCore.QThread()
@@ -236,9 +236,9 @@ class MultiBias(QtWidgets.QWidget):
                 self.thread.start()
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
-        g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
-        g.ser.write(str(float(self.leftEdits[2].text()))+"\n")              # send read Voltage
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
+        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
+        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")              # send read Voltage
 
 
     def apply_write(self):

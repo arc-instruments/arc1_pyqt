@@ -110,6 +110,9 @@ class virtualArC(object):
         if job=="33":
             pass
 
+    def write_b(self, value):
+        self.write(value)
+
     ################################################## CURVETRACER ####
     def get_formfinder(self, value):
         self.counter+=1

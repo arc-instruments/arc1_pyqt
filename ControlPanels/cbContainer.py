@@ -129,9 +129,9 @@ class cbContainer(QtWidgets.QWidget):
                     f.displayUpdate.updateSignal_short.emit()
 
             if g.sessionMode==2 and g.ser.port != None:
-                g.ser.write("02\n")
-                g.ser.write(str(int(w))+"\n")
-                g.ser.write(str(int(b))+"\n")
+                g.ser.write_b("02\n")
+                g.ser.write_b(str(int(w))+"\n")
+                g.ser.write_b(str(int(b))+"\n")
 
         else:
             if self.rectWidget.isVisible():

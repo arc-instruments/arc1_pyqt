@@ -79,7 +79,7 @@ class getData(QtCore.QObject):
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
 
@@ -87,8 +87,8 @@ class getData(QtCore.QObject):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             for cycle in range(1,self.totalCycles+1):
@@ -502,29 +502,29 @@ class CT_LIVE(QtWidgets.QWidget):
 
     def sendParams(self, totalCycles):
         # try:
-        #g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
+        #g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
         # except:
-        g.ser.write(str(self.v_pmax)+"\n")
-        g.ser.write(str(self.v_nmax)+"\n")
-        g.ser.write(str(self.v_start)+"\n")
-        g.ser.write(str(self.v_step)+"\n")
-        g.ser.write(str((float(self.pw-2)/1000))+"\n")
-        g.ser.write(str(float(self.interpulse/1000))+"\n")
+        g.ser.write_b(str(self.v_pmax)+"\n")
+        g.ser.write_b(str(self.v_nmax)+"\n")
+        g.ser.write_b(str(self.v_start)+"\n")
+        g.ser.write_b(str(self.v_step)+"\n")
+        g.ser.write_b(str((float(self.pw-2)/1000))+"\n")
+        g.ser.write_b(str(float(self.interpulse/1000))+"\n")
         time.sleep(0.01)
-        g.ser.write(str((self.c_p)/1000000)+"\n")
-        g.ser.write(str((self.c_n)/-1000000)+"\n")
+        g.ser.write_b(str((self.c_p)/1000000)+"\n")
+        g.ser.write_b(str((self.c_n)/-1000000)+"\n")
 
-        g.ser.write(str(totalCycles)+"\n")
-        g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
-        g.ser.write(str(int(self.combo_IVoption.currentIndex()))+"\n")
-        g.ser.write(str(int(self.returnCheck))+"\n")
+        g.ser.write_b(str(totalCycles)+"\n")
+        g.ser.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.returnCheck))+"\n")
 
     def programOne(self, totalCycles):
         if g.ser.port != None:
             self.wi=g.w
             self.bi=g.b
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
             
             self.sendParams(totalCycles)
 

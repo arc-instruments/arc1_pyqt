@@ -206,9 +206,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             #Select and read active device.
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar))+"\n")
-                            g.ser.write(str(int(b_tar))+"\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar))+"\n")
+                            g.ser.write_b(str(int(b_tar))+"\n")
 
                             result = f.getFloats(1)[0]
 
@@ -306,9 +306,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             #Select device to be 'plasticised'.
-                            g.ser.write("02\n") #Select device operation.
-                            g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
-                            g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+                            g.ser.write_b("02\n") #Select device operation.
+                            g.ser.write_b(str(int(w_tar))+"\n") #Send wordline address.
+                            g.ser.write_b(str(int(b_tar))+"\n") #Send bitline address.
 
                             print('--')
 
@@ -321,9 +321,9 @@ class getData(QtCore.QObject):
 
                             #Select and read active device.
                             time.sleep(0.005)
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar))+"\n")
-                            g.ser.write(str(int(b_tar))+"\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar))+"\n")
+                            g.ser.write_b(str(int(b_tar))+"\n")
                             time.sleep(0.005)
                             result = f.getFloats(1)[0]
 
@@ -421,9 +421,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             # Select and read active device.
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar)) + "\n")
-                            g.ser.write(str(int(b_tar)) + "\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar)) + "\n")
+                            g.ser.write_b(str(int(b_tar)) + "\n")
 
                             result = f.getFloats(1)[0]
 
@@ -527,9 +527,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             # Select device to be 'plasticised'.
-                            g.ser.write("02\n")  # Select device operation.
-                            g.ser.write(str(int(w_tar)) + "\n")  # Send wordline address.
-                            g.ser.write(str(int(b_tar)) + "\n")  # Send bitline address.
+                            g.ser.write_b("02\n")  # Select device operation.
+                            g.ser.write_b(str(int(w_tar)) + "\n")  # Send wordline address.
+                            g.ser.write_b(str(int(b_tar)) + "\n")  # Send bitline address.
 
                             print('--')
 
@@ -542,9 +542,9 @@ class getData(QtCore.QObject):
 
                             # Select and read active device.
                             time.sleep(0.005)
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar)) + "\n")
-                            g.ser.write(str(int(b_tar)) + "\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar)) + "\n")
+                            g.ser.write_b(str(int(b_tar)) + "\n")
                             time.sleep(0.005)
                             result = f.getFloats(1)[0]
 
@@ -577,21 +577,21 @@ class getData(QtCore.QObject):
         #Plasticity parameters.
 
         if plastdir:
-            g.ser.write("04\n") #Select device operation.
-            g.ser.write(str(float(g.opEdits[0].text()))+"\n") #Send amplitude (V).
+            g.ser.write_b("04\n") #Select device operation.
+            g.ser.write_b(str(float(g.opEdits[0].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
-            g.ser.write(str(float(g.opEdits[1].text()))+"\n") #Send duration (s).
+            g.ser.write_b(str(float(g.opEdits[1].text()))+"\n") #Send duration (s).
             #time.sleep(0.005)
-            #g.ser.write(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #g.ser.write_b(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
         else:
-            g.ser.write("04\n") #Select device operation.
-            g.ser.write(str(float(g.opEdits[2].text()))+"\n") #Send amplitude (V).
+            g.ser.write_b("04\n") #Select device operation.
+            g.ser.write_b(str(float(g.opEdits[2].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
-            g.ser.write(str(float(g.opEdits[3].text()))+"\n") #Send duration (s).
+            g.ser.write_b(str(float(g.opEdits[3].text()))+"\n") #Send duration (s).
             #time.sleep(0.005)
-            #g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #g.ser.write_b("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
 
@@ -834,10 +834,10 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
         pass
 
     def sendParams(self): #UPDATE WITH RELEVANT STUFF ONCE CONNECTION TO MBED READY TO BE MADE.
-        g.ser.write(str(float(self.topEdits[0].text()))+"\n") #Recipient partner IP.
-        g.ser.write(str(float(self.topEdits[1].text()))+"\n") #Recipient partner port.
-        g.ser.write(str(float(self.btmEdits[0].text()))+"\n") #Sending partner IP.
-        g.ser.write(str(float(self.btmEdits[1].text()))+"\n") #Sending partner port.
+        g.ser.write_b(str(float(self.topEdits[0].text()))+"\n") #Recipient partner IP.
+        g.ser.write_b(str(float(self.topEdits[1].text()))+"\n") #Recipient partner port.
+        g.ser.write_b(str(float(self.btmEdits[0].text()))+"\n") #Sending partner IP.
+        g.ser.write_b(str(float(self.btmEdits[1].text()))+"\n") #Sending partner port.
 
     def UDPstart(self):
 
@@ -848,7 +848,7 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
         postport = self.btmEdits[1].text()
 
         #job="40"
-        #g.ser.write(job+"\n")   # sends the job
+        #g.ser.write_b(job+"\n")   # sends the job
         
         #self.sendParams()
 
@@ -886,7 +886,7 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
         rangeDev=self.makeDeviceList(True)
 
         job="33"
-        g.ser.write(job+"\n")   # sends the job
+        g.ser.write_b(job+"\n")   # sends the job
 
         self.sendParams()
 

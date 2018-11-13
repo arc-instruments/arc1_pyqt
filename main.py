@@ -22,6 +22,7 @@ import time
 import requests
 import subprocess
 import gzip
+import types
 from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
 from virtualArC import virtualarc
@@ -47,6 +48,11 @@ import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
 
 import ControlPanels
+
+
+def write_b(ser, what):
+    ser.write(what.encode())
+
 
 class Arcontrol(QtWidgets.QMainWindow):
 
@@ -422,9 +428,9 @@ class Arcontrol(QtWidgets.QMainWindow):
     def updateHW(self):
         if g.ser.port != None:  # only connect if it's disconnected
             job="011"
-            g.ser.write(job+"\n")                       # Send initial parameters
-            g.ser.write(str(int(g.readCycles))+"\n")         # readcycles and array size
-            g.ser.write(str(int(g.sneakPathOption))+"\n")           # send total nr of wordlines
+            g.ser.write_b(job+"\n")                       # Send initial parameters
+            g.ser.write_b(str(int(g.readCycles))+"\n")         # readcycles and array size
+            g.ser.write_b(str(int(g.sneakPathOption))+"\n")           # send total nr of wordlines
 
     def showAbout(self):
         from ControlPanels import aboutSection
@@ -835,21 +841,22 @@ class Arcontrol(QtWidgets.QMainWindow):
                 #g.ser=virtualarc.virtualArC([])
                 g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=7, parity=serial.PARITY_EVEN, \
                                 stopbits=serial.STOPBITS_ONE) # connect to the serial port
+                g.ser.write_b = types.MethodType(write_b, g.ser)
 
-                g.ser.write("00\n") # initial reset of the mBED
+                g.ser.write_b("00\n") # initial reset of the mBED
 
                 time.sleep(1)
 
-                g.ser.write(job+"\n")                       # Send initial parameters
-                g.ser.write(str(float(g.readCycles))+"\n")         # readcycles and array size
-                g.ser.write(str(float(g.wline_nr))+"\n")           # send total nr of wordlines
-                g.ser.write(str(float(g.bline_nr))+"\n")           # send total nr of bitlines
+                g.ser.write_b(job+"\n")                       # Send initial parameters
+                g.ser.write_b(str(float(g.readCycles))+"\n")         # readcycles and array size
+                g.ser.write_b(str(float(g.wline_nr))+"\n")           # send total nr of wordlines
+                g.ser.write_b(str(float(g.bline_nr))+"\n")           # send total nr of bitlines
 
-                g.ser.write(str(float(g.readOption))+"\n")
-                g.ser.write(str(float(g.sessionMode))+"\n")        # send session mode
-                g.ser.write(str(float(g.sneakPathOption))+"\n")
+                g.ser.write_b(str(float(g.readOption))+"\n")
+                g.ser.write_b(str(float(g.sessionMode))+"\n")        # send session mode
+                g.ser.write_b(str(float(g.sneakPathOption))+"\n")
 
-                g.ser.write(str(float(g.Vread))+"\n")
+                g.ser.write_b(str(float(g.Vread))+"\n")
 
 
                 confirmation=[]
@@ -859,9 +866,9 @@ class Arcontrol(QtWidgets.QMainWindow):
                         f.interfaceAntenna.disable.emit(False)
 
                         job='01'
-                        g.ser.write(job+"\n")
-                        g.ser.write(str(g.readOption)+"\n")
-                        g.ser.write(str(g.Vread)+"\n")
+                        g.ser.write_b(job+"\n")
+                        g.ser.write_b(str(g.readOption)+"\n")
+                        g.ser.write_b(str(g.Vread)+"\n")
 
 
                     else:
@@ -896,7 +903,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def resetArC(self):
         job="00"
-        g.ser.write(job+"\n")
+        g.ser.write_b(job+"\n")
 
     def scanSerials(self):  # scan for available ports. returns a list of tuples (num, name)
         available = []

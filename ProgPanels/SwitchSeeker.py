@@ -39,15 +39,15 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             endCommand=0
@@ -286,18 +286,18 @@ class SwitchSeeker(QtWidgets.QWidget):
         return False
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[2].text())/1000)+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[5].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[8].text())/1000)+"\n")
-        g.ser.write(str(float(self.leftEdits[9].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text())/1000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[4].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[5].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[8].text())/1000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[9].text()))+"\n")
         time.sleep(0.01)
-        g.ser.write(str(int(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[1].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[6].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[7].text()))+"\n")
-        g.ser.write(str(int(self.checkRead.isChecked()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[0].text()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[1].text()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[6].text()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[7].text()))+"\n")
+        g.ser.write_b(str(int(self.checkRead.isChecked()))+"\n")
 
         # Check if Stage I should be skipped
         if self.skipICheckBox.isChecked():
@@ -310,12 +310,12 @@ class SwitchSeeker(QtWidgets.QWidget):
             # if 0 then Stage I will not be skipped
             skipStageI = str(0)
 
-        g.ser.write(skipStageI+"\n")
+        g.ser.write_b(skipStageI+"\n")
 
     def programOne(self):
         if g.ser.port != None:
             job="%d"%self.getJobCode()
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -337,7 +337,7 @@ class SwitchSeeker(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             job="%d"%self.getJobCode()
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -352,7 +352,7 @@ class SwitchSeeker(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="%d"%self.getJobCode()
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 

@@ -636,25 +636,25 @@ class ThreadWrapper(QtCore.QObject):
 
     def curveTracer(self, w, b, vPos, vNeg, vStart, vStep, interpulse, pwstep, ctType, startTag, midTag, endTag):
         print("Sending CT data")
-        g.ser.write(str(201) + "\n")
+        g.ser.write_b(str(201) + "\n")
 
-        g.ser.write(str(vPos) + "\n")
-        g.ser.write(str(vNeg) + "\n")
-        g.ser.write(str(vStart) + "\n")
-        g.ser.write(str(vStep) + "\n")
-        g.ser.write(str(pwstep) + "\n")
-        g.ser.write(str(interpulse) + "\n")
+        g.ser.write_b(str(vPos) + "\n")
+        g.ser.write_b(str(vNeg) + "\n")
+        g.ser.write_b(str(vStart) + "\n")
+        g.ser.write_b(str(vStep) + "\n")
+        g.ser.write_b(str(pwstep) + "\n")
+        g.ser.write_b(str(interpulse) + "\n")
         time.sleep(0.01)
-        g.ser.write(str(10.1/1000000) + "\n") # CSp
-        g.ser.write(str(-10.1/1000000) + "\n") # CSn
-        g.ser.write(str(1) + "\n") # single cycle
-        g.ser.write(str(ctType) + "\n") # staircase or pulsed
-        g.ser.write(str(0) + "\n") # towards V+ always
-        g.ser.write(str(0) + "\n") # do not halt+return
+        g.ser.write_b(str(10.1/1000000) + "\n") # CSp
+        g.ser.write_b(str(-10.1/1000000) + "\n") # CSn
+        g.ser.write_b(str(1) + "\n") # single cycle
+        g.ser.write_b(str(ctType) + "\n") # staircase or pulsed
+        g.ser.write_b(str(0) + "\n") # towards V+ always
+        g.ser.write_b(str(0) + "\n") # do not halt+return
 
-        g.ser.write(str(1) + "\n") # single device always
-        g.ser.write(str(int(w)) + "\n") # word line
-        g.ser.write(str(int(b)) + "\n") # bit line
+        g.ser.write_b(str(1) + "\n") # single device always
+        g.ser.write_b(str(int(w)) + "\n") # word line
+        g.ser.write_b(str(int(b)) + "\n") # bit line
 
         end = False
 
@@ -700,26 +700,26 @@ class ThreadWrapper(QtCore.QObject):
 
     def formFinder(self, w, b, V, pw, interpulse, nrPulses, startTag, midTag, endTag):
 
-        g.ser.write(str(14) + "\n") # job number, form finder
+        g.ser.write_b(str(14) + "\n") # job number, form finder
 
-        g.ser.write(str(V) + "\n") # Vmin == Vmax
+        g.ser.write_b(str(V) + "\n") # Vmin == Vmax
         if V > 0:
-            g.ser.write(str(0.1) + "\n") # no step, single voltage
+            g.ser.write_b(str(0.1) + "\n") # no step, single voltage
         else:
-            g.ser.write(str(-0.1) + "\n")
-        g.ser.write(str(V) + "\n") # Vmax == Vmin
-        g.ser.write(str(pw) + "\n") # pw_min == pw_max
-        g.ser.write(str(100.0) + "\n") # no pulse step
-        g.ser.write(str(pw) + "\n") # pw_max == pw_min
-        g.ser.write(str(interpulse) + "\n") # interpulse time
-        #g.ser.write(str(nrPulses) + "\n") # number of pulses
-        g.ser.write(str(10.0) + "\n") # 10 Ohms R threshold (ie no threshold)
-        g.ser.write(str(0.0) + "\n") # 0% R threshold (ie no threshold)
-        g.ser.write(str(7) + "\n") # 7 -> no series resistance
-        g.ser.write(str(nrPulses) + "\n") # number of pulses
-        g.ser.write(str(1) + "\n") # single device always
-        g.ser.write(str(int(w)) + "\n") # word line
-        g.ser.write(str(int(b)) + "\n") # bit line
+            g.ser.write_b(str(-0.1) + "\n")
+        g.ser.write_b(str(V) + "\n") # Vmax == Vmin
+        g.ser.write_b(str(pw) + "\n") # pw_min == pw_max
+        g.ser.write_b(str(100.0) + "\n") # no pulse step
+        g.ser.write_b(str(pw) + "\n") # pw_max == pw_min
+        g.ser.write_b(str(interpulse) + "\n") # interpulse time
+        #g.ser.write_b(str(nrPulses) + "\n") # number of pulses
+        g.ser.write_b(str(10.0) + "\n") # 10 Ohms R threshold (ie no threshold)
+        g.ser.write_b(str(0.0) + "\n") # 0% R threshold (ie no threshold)
+        g.ser.write_b(str(7) + "\n") # 7 -> no series resistance
+        g.ser.write_b(str(nrPulses) + "\n") # number of pulses
+        g.ser.write_b(str(1) + "\n") # single device always
+        g.ser.write_b(str(int(w)) + "\n") # word line
+        g.ser.write_b(str(int(b)) + "\n") # bit line
 
         end = False
 

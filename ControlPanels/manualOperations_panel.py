@@ -34,11 +34,11 @@ class readAllWorker(QtCore.QObject):
         self.b_old=g.b
         self.disableInterface.emit(True)
         job="2"
-        g.ser.write(job+"\n")   # sends the job
+        g.ser.write_b(job+"\n")   # sends the job
         if g.checkSA==False:
-            g.ser.write(str(1)+"\n")    # send the type of read - currently read All devices
-            g.ser.write(str(g.wline_nr)+"\n")
-            g.ser.write(str(g.bline_nr)+"\n")
+            g.ser.write_b(str(1)+"\n")    # send the type of read - currently read All devices
+            g.ser.write_b(str(g.wline_nr)+"\n")
+            g.ser.write_b(str(g.bline_nr)+"\n")
             for word in range(1,g.wline_nr+1):    # perform standard read All
                 for bit in range(1,g.bline_nr+1):      
                     #Mnow=float(g.ser.readline().rstrip())         # read the value
@@ -54,14 +54,14 @@ class readAllWorker(QtCore.QObject):
             #self.disableInterface.emit(False)
             #self.finished.emit()
         else:
-            g.ser.write(str(2)+"\n")    # send the type of read - read stand alone custom array
-            g.ser.write(str(g.wline_nr)+"\n")
-            g.ser.write(str(g.bline_nr)+"\n")
-            g.ser.write(str(len(g.customArray))+"\n")
+            g.ser.write_b(str(2)+"\n")    # send the type of read - read stand alone custom array
+            g.ser.write_b(str(g.wline_nr)+"\n")
+            g.ser.write_b(str(g.bline_nr)+"\n")
+            g.ser.write_b(str(len(g.customArray))+"\n")
             for cell in g.customArray:
                 word,bit=cell
-                g.ser.write(str(word)+"\n")  # send wordline
-                g.ser.write(str(bit)+"\n")  # send bitline
+                g.ser.write_b(str(word)+"\n")  # send wordline
+                g.ser.write_b(str(bit)+"\n")  # send bitline
 
                 #Mnow=float(g.ser.readline().rstrip())         # read the value
                 Mnow=float(f.getFloats(1))
@@ -438,9 +438,9 @@ class manualOperations_panel(QtWidgets.QWidget):
     def readSingle(self):
         if g.ser.port != None:
             job="1"
-            g.ser.write(job+"\n")
-            g.ser.write(str(g.w)+"\n")
-            g.ser.write(str(g.b)+"\n")
+            g.ser.write_b(job+"\n")
+            g.ser.write_b(str(g.w)+"\n")
+            g.ser.write_b(str(g.b)+"\n")
 
             # try:
             #     currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
@@ -482,25 +482,25 @@ class manualOperations_panel(QtWidgets.QWidget):
     def updateRead(self):
         if g.ser.port != None:
             job='01'
-            g.ser.write(job+"\n")
+            g.ser.write_b(job+"\n")
             if g.Vread < 0 and g.readOption == 2:
-                g.ser.write(str(3)+"\n") # use correct option for Vread < 0
+                g.ser.write_b(str(3)+"\n") # use correct option for Vread < 0
             else:
-                g.ser.write(str(g.readOption)+"\n")
+                g.ser.write_b(str(g.readOption)+"\n")
             
-            g.ser.write(str(g.Vread)+"\n")
+            g.ser.write_b(str(g.Vread)+"\n")
 
     def setVread(self,event):
         g.Vread=float(event)
         if g.ser.port != None:
             job='01'
-            g.ser.write(job+"\n")
+            g.ser.write_b(job+"\n")
             if g.Vread < 0 and g.readOption == 2:
-                g.ser.write(str(3)+"\n") # use correct option for Vread < 0
+                g.ser.write_b(str(3)+"\n") # use correct option for Vread < 0
             else:
-                g.ser.write(str(g.readOption)+"\n")
+                g.ser.write_b(str(g.readOption)+"\n")
             
-            g.ser.write(str(g.Vread)+"\n")
+            g.ser.write_b(str(g.Vread)+"\n")
 
 
     def extractParamsPlus(self):
@@ -590,8 +590,8 @@ class manualOperations_panel(QtWidgets.QWidget):
         g.readOption=event
         if g.ser.port != None:
             job='01'
-            g.ser.write(job+"\n")
-            g.ser.write(str(g.readOption)+"\n")
+            g.ser.write_b(job+"\n")
+            g.ser.write_b(str(g.readOption)+"\n")
             
-            g.ser.write(str(g.Vread)+"\n")
+            g.ser.write_b(str(g.Vread)+"\n")
 

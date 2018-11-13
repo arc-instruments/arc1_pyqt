@@ -43,7 +43,7 @@ class getData(QtCore.QObject):
         self.changeArcStatus.emit('Busy')
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         #Stop condition preparation area.
         linfit = lambda x, a, b: a * x + b #Define linear fitter.
@@ -55,8 +55,8 @@ class getData(QtCore.QObject):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             Mnow=float(g.ser.readline().rstrip())   # get first read value
             self.sendData.emit(w,b,Mnow,self.A,self.pw,tag+'_s')
@@ -86,10 +86,10 @@ class getData(QtCore.QObject):
                 if self.stopOpt == 'FixTime':
                     if (timeNow-start)>=self.stopTime:       # if more than stopTime has elapsed, do not request a new batch
                         stop=1
-                        g.ser.write(str(int(stop))+"\n")
+                        g.ser.write_b(str(int(stop))+"\n")
                     else:
                         stop=0
-                        g.ser.write(str(int(stop))+"\n")
+                        g.ser.write_b(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'LinearFit':
                     if self.B > 1: #Check that there are at least 2 points in batch, or no linear fit possible.
@@ -105,14 +105,14 @@ class getData(QtCore.QObject):
 
                         if abs(relslope)<=self.stopTol or (timeNow-start)>=self.stopTime: # If the linear slope along the batch drops below certain magnitude, or time limit exceeded stop procedure.
                             stop=1
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
                         else:
                             stop=0
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
 
                     else: #If the batch is not large enough just end it there.
                         stop=1
-                        g.ser.write(str(int(stop))+"\n")
+                        g.ser.write_b(str(int(stop))+"\n")
 
 
                 elif self.stopOpt == 'T-Test':
@@ -123,20 +123,20 @@ class getData(QtCore.QObject):
                         if tmet < self.stopConf or (timeNow-start)>=self.stopTime: #If probability (loosely speaking) of null hypothesis being true is below our confidence tolerance...
                             #... stop requestiong batches. Also have a max time-check.
                             stop=1
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
                         else:
                             stop=0
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
 
                     else: #If the batch is not large enough just end it there.
                         stop=1
-                        g.ser.write(str(int(stop))+"\n")
+                        g.ser.write_b(str(int(stop))+"\n")
                         print('WARNING: Batch not long enough to support this oepration. Minimum batch length required is '+str(2*self.ttestsamp)+'.')
 
                 #DEFAULT case - something went wrong so just stop the text after 1 batch.
                 else:
                     stop=1
-                    g.ser.write(str(int(stop))+"\n")
+                    g.ser.write_b(str(int(stop))+"\n")
 
             Mnow=float(g.ser.readline().rstrip())   # get first read value
             self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_e')
@@ -362,10 +362,10 @@ class VolatilityRead(QtWidgets.QWidget):
         pass
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")
-        g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
 
     def programOne(self):
         if g.ser.port != None:
@@ -378,7 +378,7 @@ class VolatilityRead(QtWidgets.QWidget):
             pw=float(self.leftEdits[1].text())/1000000
 
             job="33"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
             
             self.sendParams()
 
@@ -409,7 +409,7 @@ class VolatilityRead(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             job="33"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -432,7 +432,7 @@ class VolatilityRead(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="33"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 

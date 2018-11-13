@@ -39,15 +39,15 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n") #Tell mBED how many devices to be operated on.
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n") #Tell mBED how many devices to be operated on.
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             endCommand=0
@@ -302,26 +302,26 @@ class Endurance(QtWidgets.QWidget):
         return False
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
-        g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
-        g.ser.write(str(float(self.leftEdits[2].text())/1000000)+"\n")      # send positive cut-off (A)
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
+        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
+        g.ser.write_b(str(float(self.leftEdits[2].text())/1000000)+"\n")      # send positive cut-off (A)
         #time.sleep(0.001)
-        g.ser.write(str(float(self.rightEdits[0].text())*-1)+"\n")          # send negative amplitude
-        g.ser.write(str(float(self.rightEdits[1].text())/1000000)+"\n")     # send negative pw
-        g.ser.write(str(float(self.rightEdits[2].text())/1000000)+"\n")     # send negative cut-off (A)
+        g.ser.write_b(str(float(self.rightEdits[0].text())*-1)+"\n")          # send negative amplitude
+        g.ser.write_b(str(float(self.rightEdits[1].text())/1000000)+"\n")     # send negative pw
+        g.ser.write_b(str(float(self.rightEdits[2].text())/1000000)+"\n")     # send negative cut-off (A)
         #time.sleep(0.001)
-        g.ser.write(str(float(self.leftEdits[5].text()))+"\n")              # send interpulse (ms)
+        g.ser.write_b(str(float(self.leftEdits[5].text()))+"\n")              # send interpulse (ms)
 
-        g.ser.write(str(int(self.leftEdits[3].text()))+"\n")              # send positive nr of pulses
-        g.ser.write(str(int(self.rightEdits[3].text()))+"\n")             # send negative nr of pulses
-        g.ser.write(str(int(self.leftEdits[4].text()))+"\n")              # send cycles
+        g.ser.write_b(str(int(self.leftEdits[3].text()))+"\n")              # send positive nr of pulses
+        g.ser.write_b(str(int(self.rightEdits[3].text()))+"\n")             # send negative nr of pulses
+        g.ser.write_b(str(int(self.leftEdits[4].text()))+"\n")              # send cycles
         #time.sleep(0.001)
 
 
     def programOne(self):
         if g.ser.port != None:
             job="191"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -344,7 +344,7 @@ class Endurance(QtWidgets.QWidget):
 
 
             job="191"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -360,7 +360,7 @@ class Endurance(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="191"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 

@@ -48,25 +48,25 @@ class ThreadWrapper(QtCore.QObject):
 
         numDevices = int(len(self.deviceList))
 
-        g.ser.write(str(161) + "\n")
+        g.ser.write_b(str(161) + "\n")
 
         data = self.params
 
-        g.ser.write(str(data["pulse_duration"])+"\n")
-        g.ser.write(str(data["vmin"])+"\n")
-        g.ser.write(str(data["vstep"])+"\n")
-        g.ser.write(str(data["vmax"])+"\n")
-        g.ser.write(str(data["interpulse"])+"\n")
+        g.ser.write_b(str(data["pulse_duration"])+"\n")
+        g.ser.write_b(str(data["vmin"])+"\n")
+        g.ser.write_b(str(data["vstep"])+"\n")
+        g.ser.write_b(str(data["vmax"])+"\n")
+        g.ser.write_b(str(data["interpulse"])+"\n")
 
-        g.ser.write(str(data["trailer_reads"])+"\n")
-        g.ser.write(str(data["prog_pulses"])+"\n")
-        g.ser.write(str(data["tolerance_band"])+"\n")
-        g.ser.write(str(data["read_write"])+"\n")
+        g.ser.write_b(str(data["trailer_reads"])+"\n")
+        g.ser.write_b(str(data["prog_pulses"])+"\n")
+        g.ser.write_b(str(data["tolerance_band"])+"\n")
+        g.ser.write_b(str(data["read_write"])+"\n")
 
-        g.ser.write(str(numDevices)+"\n")
+        g.ser.write_b(str(numDevices)+"\n")
 
-        g.ser.write(str(w)+"\n")
-        g.ser.write(str(b)+"\n")
+        g.ser.write_b(str(w)+"\n")
+        g.ser.write_b(str(b)+"\n")
 
     def phase1(self, w, b):
 
@@ -111,7 +111,7 @@ class ThreadWrapper(QtCore.QObject):
     def initialisePhase2(self, w, b, sign = 1):
         numDevices = int(len(self.deviceList))
 
-        g.ser.write(str(162) + "\n")
+        g.ser.write_b(str(162) + "\n")
 
         data = self.params
         stateMode = data["state_mode"]
@@ -120,13 +120,13 @@ class ThreadWrapper(QtCore.QObject):
             stateMode = 1
         voltage = float(data["stability_voltage"] * sign * stateMode)
 
-        g.ser.write(str(voltage) + "\n")
-        g.ser.write(str(data["stability_pw"]) + "\n")
+        g.ser.write_b(str(voltage) + "\n")
+        g.ser.write_b(str(data["stability_pw"]) + "\n")
 
-        g.ser.write(str(numDevices)+"\n")
+        g.ser.write_b(str(numDevices)+"\n")
 
-        g.ser.write(str(w)+"\n")
-        g.ser.write(str(b)+"\n")
+        g.ser.write_b(str(w)+"\n")
+        g.ser.write_b(str(b)+"\n")
 
     def phase2(self, w, b, sign = 1):
 
@@ -190,10 +190,10 @@ class ThreadWrapper(QtCore.QObject):
             self.displayData.emit()
 
             if lastPoint:
-                g.ser.write(str(1) + "\n")
+                g.ser.write_b(str(1) + "\n")
                 break
             else:
-                g.ser.write(str(0) + "\n")
+                g.ser.write_b(str(0) + "\n")
 
         return result
 
@@ -203,57 +203,57 @@ class ThreadWrapper(QtCore.QObject):
         data = self.params
 
         if str(data["assess_mode"]) == "voltage":
-            g.ser.write(str(163) + "\n")
+            g.ser.write_b(str(163) + "\n")
 
-            g.ser.write(str(data["state_reads"]) + "\n")
-            g.ser.write(str(data["state_prog_pulses"]) + "\n")
-            g.ser.write(str(data["state_stdev"]) + "\n")
-            g.ser.write(str(data["state_monotonic"]) + "\n")
-            g.ser.write(str(data["state_counter_reset"]) + "\n")
+            g.ser.write_b(str(data["state_reads"]) + "\n")
+            g.ser.write_b(str(data["state_prog_pulses"]) + "\n")
+            g.ser.write_b(str(data["state_stdev"]) + "\n")
+            g.ser.write_b(str(data["state_monotonic"]) + "\n")
+            g.ser.write_b(str(data["state_counter_reset"]) + "\n")
 
-            g.ser.write(str(data["state_pulse_duration"]) + "\n")
-            g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
-            g.ser.write(str(-sign * data["state_mode"] * data["state_vstep"]) + "\n")
-            g.ser.write(str(-sign * data["state_vmax"]) + "\n")
-            g.ser.write(str(data["state_interpulse"]) + "\n")
-            g.ser.write(str(data["state_retention"]) + "\n")
+            g.ser.write_b(str(data["state_pulse_duration"]) + "\n")
+            g.ser.write_b(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
+            g.ser.write_b(str(-sign * data["state_mode"] * data["state_vstep"]) + "\n")
+            g.ser.write_b(str(-sign * data["state_vmax"]) + "\n")
+            g.ser.write_b(str(data["state_interpulse"]) + "\n")
+            g.ser.write_b(str(data["state_retention"]) + "\n")
         elif str(data["assess_mode"]) == "pulse":
-            g.ser.write(str(164) + "\n")
+            g.ser.write_b(str(164) + "\n")
 
-            g.ser.write(str(data["state_reads"]) + "\n")
-            g.ser.write(str(data["state_prog_pulses"]) + "\n")
-            g.ser.write(str(data["state_stdev"]) + "\n")
-            g.ser.write(str(data["state_monotonic"]) + "\n")
-            g.ser.write(str(data["state_counter_reset"]) + "\n")
+            g.ser.write_b(str(data["state_reads"]) + "\n")
+            g.ser.write_b(str(data["state_prog_pulses"]) + "\n")
+            g.ser.write_b(str(data["state_stdev"]) + "\n")
+            g.ser.write_b(str(data["state_monotonic"]) + "\n")
+            g.ser.write_b(str(data["state_counter_reset"]) + "\n")
 
-            g.ser.write(str(data["state_pwmin"]) + "\n")
-            g.ser.write(str(-sign * data["state_mode"] * data["state_voltage"]) + "\n")
-            g.ser.write(str(data["state_pwstep"]) + "\n")
-            g.ser.write(str(data["state_pwmax"]) + "\n")
-            g.ser.write(str(data["state_interpulse"]) + "\n")
-            g.ser.write(str(data["state_retention"]) + "\n")
+            g.ser.write_b(str(data["state_pwmin"]) + "\n")
+            g.ser.write_b(str(-sign * data["state_mode"] * data["state_voltage"]) + "\n")
+            g.ser.write_b(str(data["state_pwstep"]) + "\n")
+            g.ser.write_b(str(data["state_pwmax"]) + "\n")
+            g.ser.write_b(str(data["state_interpulse"]) + "\n")
+            g.ser.write_b(str(data["state_retention"]) + "\n")
         elif str(data["assess_mode"]) == "program":
-            g.ser.write(str(165) + "\n")
+            g.ser.write_b(str(165) + "\n")
 
-            g.ser.write(str(data["state_reads"]) + "\n")
-            g.ser.write(str(data["state_prog_pulses_min"]) + "\n")
-            g.ser.write(str(data["state_prog_pulses_step"]) + "\n")
-            g.ser.write(str(data["state_prog_pulses_max"]) + "\n")
-            g.ser.write(str(data["state_stdev"]) + "\n")
-            g.ser.write(str(data["state_monotonic"]) + "\n")
-            g.ser.write(str(data["state_counter_reset"]) + "\n")
+            g.ser.write_b(str(data["state_reads"]) + "\n")
+            g.ser.write_b(str(data["state_prog_pulses_min"]) + "\n")
+            g.ser.write_b(str(data["state_prog_pulses_step"]) + "\n")
+            g.ser.write_b(str(data["state_prog_pulses_max"]) + "\n")
+            g.ser.write_b(str(data["state_stdev"]) + "\n")
+            g.ser.write_b(str(data["state_monotonic"]) + "\n")
+            g.ser.write_b(str(data["state_counter_reset"]) + "\n")
 
-            g.ser.write(str(data["state_pulse_duration"]) + "\n")
-            g.ser.write(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
-            g.ser.write(str(data["state_interpulse"]) + "\n")
-            g.ser.write(str(data["state_retention"]) + "\n")
+            g.ser.write_b(str(data["state_pulse_duration"]) + "\n")
+            g.ser.write_b(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
+            g.ser.write_b(str(data["state_interpulse"]) + "\n")
+            g.ser.write_b(str(data["state_retention"]) + "\n")
         else:
             raise Exception("Unknown state assessment mode")
 
-        g.ser.write(str(numDevices)+"\n")
+        g.ser.write_b(str(numDevices)+"\n")
 
-        g.ser.write(str(w)+"\n")
-        g.ser.write(str(b)+"\n")
+        g.ser.write_b(str(w)+"\n")
+        g.ser.write_b(str(b)+"\n")
 
     def phase3(self, w, b, sign = 1):
         self.initialisePhase3(w, b, sign)
@@ -519,16 +519,16 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
     def sendParams(self):
         data = self.gatherData()
 
-        g.ser.write(str(data["pulse_duration"])+"\n")
-        g.ser.write(str(data["vmin"])+"\n")
-        g.ser.write(str(data["vstep"])+"\n")
-        g.ser.write(str(data["vmax"])+"\n")
-        g.ser.write(str(data["interpulse"])+"\n")
+        g.ser.write_b(str(data["pulse_duration"])+"\n")
+        g.ser.write_b(str(data["vmin"])+"\n")
+        g.ser.write_b(str(data["vstep"])+"\n")
+        g.ser.write_b(str(data["vmax"])+"\n")
+        g.ser.write_b(str(data["interpulse"])+"\n")
 
-        g.ser.write(str(data["trailer_reads"])+"\n")
-        g.ser.write(str(data["prog_pulses"])+"\n")
-        g.ser.write(str(data["tolerance_band"])+"\n")
-        g.ser.write(str(data["read_write"])+"\n")
+        g.ser.write_b(str(data["trailer_reads"])+"\n")
+        g.ser.write_b(str(data["prog_pulses"])+"\n")
+        g.ser.write_b(str(data["tolerance_band"])+"\n")
+        g.ser.write_b(str(data["read_write"])+"\n")
 
     def programDevs(self, programType):
 

@@ -211,7 +211,8 @@ def getFloats(n):
         while g.ser.inWaiting()<n*4:
             pass
         values=g.ser.read(size=n*4) # read n * 4 bits of data (n floats) from the input serial
-        extracted=np.frombuffer(buffer(values), dtype=np.float32)
+        buf = memoryview(values)
+        extracted=np.frombuffer(buf, dtype=np.float32)
     else:
         extracted = g.ser.read(n)
     return extracted    # returns a list of these floats
