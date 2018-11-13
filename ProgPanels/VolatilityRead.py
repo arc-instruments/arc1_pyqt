@@ -2,7 +2,6 @@ from PyQt4 import QtGui, QtCore
 import sys
 import os
 import time
-import scipy.optimize as opt
 import scipy.stats as stat
 import numpy as np
 
@@ -45,11 +44,6 @@ class getData(QtCore.QObject):
 
         g.ser.write(str(int(len(self.deviceList)))+"\n")
 
-        #Stop condition preparation area.
-        linfit = lambda x, a, b: a * x + b #Define linear fitter.
-        xline = range(self.B) #Define x-axis values.
-        initguess = [0.0, 0.0]
-
         for device in self.deviceList:
             w=device[0]
             b=device[1]
@@ -66,19 +60,17 @@ class getData(QtCore.QObject):
 
             while stop==0:
                 #Prepare for batch processing.
-                values = [] #Reset batch result array contents.
+                values = np.empty(shape=self.B) #Reset batch result array contents.
 
-                for i in range(self.B): #Obtain data for entire batch.
+                for i in np.arange(self.B): #Obtain data for entire batch.
                     #Send data to log-file.
                     dataTime=int(g.ser.readline().rstrip())
                     Mnow=f.getFloats(1)
                     self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_i_ '+ str(dataTime))
 
                     #Hold all or portion of incoming data in temporary array.
-                    values.append(Mnow)
-
-                    #Update display.
-                    #self.displayData.emit()
+                    #values.append(Mnow)
+                    values[i] = Mnow
 
                 timeNow=time.time()
 
@@ -94,16 +86,20 @@ class getData(QtCore.QObject):
                 elif self.stopOpt == 'LinearFit':
                     if self.B > 1: #Check that there are at least 2 points in batch, or no linear fit possible.
                         try: #Try computing linear fit.
-                            fitres = opt.curve_fit(linfit, xline, values, initguess) #Compute linear fit.
+                            fitres = np.polyfit(np.arange(self.B), values, 1)
                         except RuntimeError: #If that proves impossible...
-                            fitres = [[0]] #...assign dummy value.
-                            print('Error: Could not fit data to linear function within no. of iteration limits.')
+                            fitres = np.array([0, 0]) #...assign dummy value.
+                            print('Error: Could not fit data to linear function.')
 
-                        linslope = fitres[0][0]*self.B #Obtain slope of linear fit on volatile data in units of %/batch.
-                        relslope = linslope/np.mean(values) #Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
-                        print('Fitted resistive state slope: ' + str(relslope*100) + ' %/batch.')
+                        # Obtain slope of linear fit on volatile data in units of %/batch.
+                        linslope = fitres[0]*self.B
+                        # Convert linear fit slope (Ohms/batch) into relative slope (%/batch)
+                        relslope = linslope/np.mean(values)
+                        print('Fitted resistive state slope: %g %%/batch.' % (relslope*100))
 
-                        if abs(relslope)<=self.stopTol or (timeNow-start)>=self.stopTime: # If the linear slope along the batch drops below certain magnitude, or time limit exceeded stop procedure.
+                        # If the linear slope along the batch drops below certain magnitude,
+                        # or time limit exceeded stop procedure.
+                        if abs(relslope)<=self.stopTol or (timeNow-start)>=self.stopTime:
                             stop=1
                             g.ser.write(str(int(stop))+"\n")
                         else:
@@ -113,7 +109,6 @@ class getData(QtCore.QObject):
                     else: #If the batch is not large enough just end it there.
                         stop=1
                         g.ser.write(str(int(stop))+"\n")
-
 
                 elif self.stopOpt == 'T-Test':
                     if self.B >= self.ttestsamp*2: #Check that the batch is actually large enough to carry out a stat-test.
@@ -131,7 +126,7 @@ class getData(QtCore.QObject):
                     else: #If the batch is not large enough just end it there.
                         stop=1
                         g.ser.write(str(int(stop))+"\n")
-                        print('WARNING: Batch not long enough to support this oepration. Minimum batch length required is '+str(2*self.ttestsamp)+'.')
+                        print('WARNING: Batch not long enough to support this operation. Minimum batch length required is '+str(2*self.ttestsamp)+'.')
 
                 #DEFAULT case - something went wrong so just stop the text after 1 batch.
                 else:
@@ -503,4 +498,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main() 
+    main()
