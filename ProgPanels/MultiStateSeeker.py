@@ -495,7 +495,7 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
         result["state_prog_pulses_max"] = int(self.statePulsesMaxEdit.text())
 
         multiplier_index = self.stateRetentionMultiplierComboBox.currentIndex()
-        retention_mult = self.stateRetentionMultiplierComboBox.itemData(multiplier_index).toFloat()[0]
+        retention_mult = float(self.stateRetentionMultiplierComboBox.itemData(multiplier_index))
 
         result["state_retention"] = (float(self.stateRetentionEdit.text()) * retention_mult) / 1000.0
         result["state_stdev"] = int(self.stateStdevSpinBox.value())
@@ -507,7 +507,7 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
 
         if result["single_phase_run"]:
             phaseIndex = self.singlePhaseRunComboBox.currentIndex()
-            phase = self.singlePhaseRunComboBox.itemData(phaseIndex).toInt()[0]
+            phase = self.singlePhaseRunComboBox.itemData(phaseIndex)
             result["single_phase_run_phase"] = phase
         else:
             result["single_phase_run_phase"] = None
@@ -622,7 +622,6 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
             self.stateModeCombo.setEnabled(False)
 
     def singlePhaseRunPhaseChanged(self, phaseIndex):
-        #phase = self.singlePhaseRunComboBox.itemData(phaseIndex).toInt()[0]
         phase = self.singlePhaseRunComboBox.itemData(phaseIndex)
 
         if phase == 1:
