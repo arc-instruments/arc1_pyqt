@@ -787,7 +787,7 @@ class Arcontrol(QtWidgets.QMainWindow):
             else:
                 opener = open
 
-            with opener(str(path), 'wb') as stream:
+            with opener(str(path), 'w') as stream:
                 writer = csv.writer(stream)
                 ######################
                 writer.writerow([g.sessionName])
