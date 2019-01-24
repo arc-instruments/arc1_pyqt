@@ -770,13 +770,13 @@ class Arcontrol(QtWidgets.QMainWindow):
                 path=g.workingDirectory
             else:
                 path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, \
-                    'Save File', g.workingDirectory, g.SAVE_FI_PATTERN))
+                    'Save File', g.workingDirectory, g.SAVE_FI_PATTERN)[0])
                 path=path_.filePath()
                 g.saveFileName=path_.fileName()
                 g.workingDirectory=path_.filePath()
         else:
             path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, \
-                'Save File', '', g.SAVE_FI_PATTERN))
+                'Save File', '', g.SAVE_FI_PATTERN)[0])
             path=path_.filePath()
             g.saveFileName=path_.fileName()
             g.workingDirectory=path_.filePath()
