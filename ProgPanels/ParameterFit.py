@@ -154,7 +154,7 @@ g.tagDict.update({tag:"Parameter Fit*"})
 
 def _curve_fit(func, x, y, **kwargs):
     v = scipy.version.short_version.split('.')
-    if int(v[1]) <= 16:
+    if int(v[0]) == 0 and int(v[1]) <= 16:
         if 'method' in kwargs.keys():
             kwargs.pop('method')
     return curve_fit(func, x, y, **kwargs)
@@ -508,16 +508,14 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
 
         tp=params0[0][0] # value for the tp parameter in (2)
 
-        fit=[]
+        RmaxSET=np.empty(len(posVOL[:(POSlimitPOSITION+1)]))
 
         # Rm for each set
         for i in range(len(posVOL[:(POSlimitPOSITION+1)])):
             def funPOSfinal(t,Rm):
                 return (R0pos[:(POSlimitPOSITION+1)][i]+(Spos*(-1+np.exp(posVOL[:(POSlimitPOSITION+1)][i]/tp)))*(Rm**2)*t-(Spos*(-1+np.exp(posVOL[:(POSlimitPOSITION+1)][i]/tp)))*Rm*R0pos[:(POSlimitPOSITION+1)][i]*t)/(1+(Spos*(-1+np.exp(posVOL[:(POSlimitPOSITION+1)][i]/tp)))*(Rm-R0pos[:(POSlimitPOSITION+1)][i])*t)
             a=_curve_fit(funPOSfinal, time, positiveDATAarray[:(POSlimitPOSITION+1)][i][:,1], p0=(Rmpos[i]),method='lm')
-            fit.append(a)
-
-        RmaxSET=(np.asarray(fit))[:,0][:,0]
+            RmaxSET[i] = a[0][0]
 
         def RmaxFIT(x,a,b):
             return a*x+b
@@ -534,21 +532,17 @@ class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
         Sneg=paramsN[0][0] #value for the An parameter in (2)
         Rmneg0=paramsN[0][1]
 
-
         def funNEGnext(t,tp):
             return (R0neg[NEGlimitPOSITION]+(Sneg*(-1+np.exp(-negVOL[NEGlimitPOSITION]/tp)))*(Rmneg0**2)*t-(Sneg*(-1+np.exp(-negVOL[NEGlimitPOSITION]/tp)))*Rmneg0*R0neg[NEGlimitPOSITION]*t)/(1+(Sneg*(-1+np.exp(-negVOL[NEGlimitPOSITION]/tp)))*(Rmneg0-R0neg[NEGlimitPOSITION])*t)
         params0N=_curve_fit(funNEGnext, time, negativeDATAarray[NEGlimitPOSITION][:,1], p0=(1),method='lm')
         tn=params0N[0][0] #value for the tp parameter in (2)
 
-        fitN=[]
+        RminSET=np.empty(len(negVOL[(NEGlimitPOSITION):]))
         for i in range(len(negVOL[(NEGlimitPOSITION):])):
             def funNEGfinal(t,Rm):
                 return (R0neg[(NEGlimitPOSITION):][i]+(Sneg*(-1+np.exp(-negVOL[(NEGlimitPOSITION):][i]/tn)))*(Rm**2)*t-(Sneg*(-1+np.exp(-negVOL[(NEGlimitPOSITION):][i]/tn)))*Rm*R0neg[(NEGlimitPOSITION):][i]*t)/(1+(Sneg*(-1+np.exp(-negVOL[(NEGlimitPOSITION):][i]/tn)))*(Rm-R0neg[(NEGlimitPOSITION):][i])*t)
             a=_curve_fit(funNEGfinal, time, negativeDATAarray[(NEGlimitPOSITION):][i][:,1], p0=(Rmneg[(NEGlimitPOSITION):][i]),method='lm')
-            fitN.append(a)
-
-        RminSET=(np.asarray(fitN))[:,0][:,0]
-
+            RminSET[i] = a[0][0]
 
         def RminFIT(x,a,b):
             return a*x+b
