@@ -40,7 +40,7 @@ from GeneratedUiElements.chronoamperometry import Ui_ChronoAmpParent
 
 
 tag="CRA"
-g.tagDict.update({tag:"ChronoAmperometry"})
+g.tagDict.update({tag:"ChronoAmperometry*"})
 
 
 class ThreadWrapper(QtCore.QObject):
@@ -147,7 +147,7 @@ class ThreadWrapper(QtCore.QObject):
                 end = True
                 aTag = tag + "_e"
 
-            self.sendData.emit(w, b, buf[0], buf[1], buf[2]/1e6, aTag)
+            self.sendData.emit(w, b, buf[0], buf[1], buf[2], aTag)
             self.displayData.emit()
             aTag = tag + "_i"
 
@@ -202,6 +202,40 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtGui.QWidget):
         result["num_reads"] = int(self.numReadsBox.value())
 
         return result
+
+    @staticmethod
+    def display(w, b, data, parent=None):
+        dialog = QtGui.QDialog(parent, QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowSystemMenuHint)
+
+        containerLayout = QtGui.QHBoxLayout()
+        dialog.setLayout(containerLayout)
+        dialog.setWindowTitle("Chronoamperometry W=%d | B=%d" % (w, b))
+
+        R = np.empty(len(data))
+        I = np.empty(len(data))
+        T = np.empty(len(data))
+        for (i,line) in enumerate(data):
+            T[i] = i*(1.0/(len(data)-1))*line[2]
+            R[i] = line[0]
+            I[i] = line[1]/line[0]
+
+        gv = pyqtgraph.GraphicsLayoutWidget(show=False)
+        RTplot = gv.addPlot(name="resistance")
+        RTplot.plot(T, R, pen=None, symbolPen=None, symbolBrush=(255,0,0), symbol='x')
+        RTplot.getAxis('left').setLabel('Resistance', units=u"Ω")
+        RTplot.getAxis('left').setStyle(tickTextWidth=40, autoExpandTextSpace=False)
+        RTplot.getAxis('bottom').setLabel('Time', units="s")
+        gv.nextRow()
+        ITplot = gv.addPlot(name="current")
+        ITplot.plot(T, I, pen=None, symbolPen=None, symbolBrush=(0, 0, 255), symbol='+')
+        ITplot.getAxis('left').setLabel('Current', units=u"A")
+        ITplot.getAxis('left').setStyle(tickTextWidth=40, autoExpandTextSpace=False)
+        ITplot.getAxis('bottom').setLabel('Time', units="s")
+        ITplot.setXLink("resistance")
+
+        containerLayout.addWidget(gv)
+
+        return dialog
 
     def programDevs(self, programType):
 
@@ -263,3 +297,4 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtGui.QWidget):
 
         return rangeDev
 
+g.DispCallbacks[tag] = ChronoAmperometry.display
