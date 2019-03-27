@@ -211,17 +211,18 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtGui.QWidget):
     def display(w, b, data, parent=None):
         dialog = QtGui.QDialog(parent, QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowSystemMenuHint)
 
-        containerLayout = QtGui.QHBoxLayout()
-        dialog.setLayout(containerLayout)
+        containerLayout = QtGui.QVBoxLayout()
         dialog.setWindowTitle("Chronoamperometry W=%d | B=%d" % (w, b))
 
         R = np.empty(len(data))
         I = np.empty(len(data))
         T = np.empty(len(data))
+        V = np.empty(len(data))
         for (i,line) in enumerate(data):
             T[i] = i*(1.0/(len(data)-1))*line[2]
             R[i] = line[0]
             I[i] = line[1]/line[0]
+            V[i] = line[1]
 
         gv = pyqtgraph.GraphicsLayoutWidget(show=False)
         RTplot = gv.addPlot(name="resistance")
@@ -231,13 +232,32 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtGui.QWidget):
         RTplot.getAxis('bottom').setLabel('Time', units="s")
         gv.nextRow()
         ITplot = gv.addPlot(name="current")
-        ITplot.plot(T, I, pen=None, symbolPen=None, symbolBrush=(0, 0, 255), symbol='+')
+        ITplot.plot(T, I, pen=None, symbolPen=None, symbolBrush=(0,0,255), symbol='+')
         ITplot.getAxis('left').setLabel('Current', units=u"A")
         ITplot.getAxis('left').setStyle(tickTextWidth=40, autoExpandTextSpace=False)
         ITplot.getAxis('bottom').setLabel('Time', units="s")
         ITplot.setXLink("resistance")
-
+        gv.nextRow()
+        VTplot = gv.addPlot(name="voltage")
+        VTplot.plot(T, V, pen=pyqtgraph.mkPen(color=(0,125,0), width=2), symbolPen=None,
+                symbolBrush=(0,125,0), symbol='o')
+        VTplot.getAxis('left').setLabel('Bias', units=u"V")
+        VTplot.getAxis('left').setStyle(tickTextWidth=40, autoExpandTextSpace=False)
+        VTplot.getAxis('bottom').setLabel('Time', units="s")
+        VTplot.setXLink("resistance")
         containerLayout.addWidget(gv)
+
+        saveButton = QtGui.QPushButton("Export data")
+
+        saveCb = partial(f.writeDelimitedData, np.column_stack((T, V, R, I)))
+        saveButton.clicked.connect(partial(f.saveFuncToFilename, saveCb, "Save data to...", parent))
+
+        bottomLayout = QtGui.QHBoxLayout()
+        bottomLayout.addItem(QtGui.QSpacerItem(40, 10, QtGui.QSizePolicy.Expanding))
+        bottomLayout.addWidget(saveButton)
+        containerLayout.addItem(bottomLayout)
+
+        dialog.setLayout(containerLayout)
 
         return dialog
 
