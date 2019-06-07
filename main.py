@@ -781,20 +781,20 @@ class Arcontrol(QtWidgets.QMainWindow):
             g.saveFileName=path_.fileName()
             g.workingDirectory=path_.filePath()
 
-        if not path.isEmpty():
+        if len(path) > 0:
             if str(path).endswith('csv.gz'):
                 opener = gzip.open
             else:
                 opener = open
 
-            with opener(str(path), 'w') as stream:
+            with opener(str(path), 'w', newline='') as stream:
                 writer = csv.writer(stream)
                 ######################
                 writer.writerow([g.sessionName])
                 writer.writerow([time.strftime("%c")])
                 ########################
 
-                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag', 'ReadTag','ReadVoltage'])
+                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag', 'ReadTag', 'ReadVoltage'])
                 for w in range(1,g.wline_nr+1):
                     for b in range(1,g.bline_nr+1):
                         for row in range(len(g.Mhistory[w][b])):
