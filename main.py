@@ -382,15 +382,16 @@ class Arcontrol(QtGui.QMainWindow):
         try:
             response = requests.get(version_url, stream=True, timeout=2)
             g.remote_version=str(response.text.split("\n")[1])
-            connection=True
-        except:
+            if response.status_code < 400:
+                connection=True
+        except Exception as exc:
             pass
 
         if connection: # if there is an internet connection and the remote version has been retrieved
             status = vercmp(g.local_version, g.remote_version)
             if status > 0:
                 self.updateAction.setEnabled(True)
-        
+
     def launch_manager(self):
         print "Launch platform manager"
         self.check_for_updates()
