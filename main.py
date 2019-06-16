@@ -381,7 +381,7 @@ class Arcontrol(QtGui.QMainWindow):
 
         connection=False
         # check remote version:
-        version_url="http://arc-instruments.com/files/release/version.txt"
+        version_url="http://files.arc-instruments.co.uk/release/version.txt"
         try:
             response = requests.get(version_url, stream=True, timeout=2)
             g.remote_version=str(response.text.split("\n")[1])
@@ -398,6 +398,18 @@ class Arcontrol(QtGui.QMainWindow):
     def launch_manager(self):
         print "Launch platform manager"
         self.check_for_updates()
+        if vercmp(g.local_version, '1.4.2') >= 0:
+            msg = QtGui.QMessageBox()
+            msg.setWindowTitle("ArC ONE Upgrade")
+            msg.setIcon(QtGui.QMessageBox.Warning)
+            msg.setText("""Your version is <b>%s</b>. Upgrading from 1.4.2 """
+                        """to any newer requires a <b>fresh installation</b>. Please """
+                        """follow the details at """
+                        """<a href="http://www.arc-instruments.co.uk/blog/upgrade-from-142/">"""
+                        """http://www.arc-instruments.co.uk/blog/upgrade-from-142/</a> """
+                        """for further information.""" % g.local_version)
+            msg.exec_()
+            return
         reply = QtGui.QMessageBox.question(self, "Launch ArC Platform Manager",
                 "This will delete all saved data and proceed with a platform update.",
                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)
