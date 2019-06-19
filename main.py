@@ -894,6 +894,9 @@ class Arcontrol(QtGui.QMainWindow):
                         g.ser.write(str(g.readOption)+"\n")
                         g.ser.write(str(g.Vread)+"\n")
 
+                        # disable interface on BNC-to-Local
+                        if g.sessionMode == 2:
+                            self.setModeBNCtoLocal()
 
                     else:
                         try:
