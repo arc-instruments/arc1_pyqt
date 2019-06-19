@@ -47,7 +47,7 @@ class new_Session(QtGui.QWidget):
                     "modules, but <b>if you have custom modules</b> you should "+ \
                     "prepare to migrate them to Python 3.6+. The ArC Instruments "+ \
                     "team can help you during the transition. If you need any "+ \
-                    "help send us an e-mail at info@arc-instruments.co.uk."
+                    "help send us an e-mail at <b>py3migrate@arc-instruments.co.uk</b>."
             warningLabel = QtGui.QLabel(self)
             warningLabel.setText(warningLabelText)
             warningLabel.setFont(fonts.font3)
