@@ -91,6 +91,10 @@ class prog_panel(QtWidgets.QWidget):
 
         self.tabFrame.setCurrentWidget(widg)
 
+    def setEnabled(self, state):
+        for child in range(self.tabFrame.count()):
+            self.tabFrame.widget(child).setEnabled(state)
+
     def removePanel(self):
         self.tabFrame.removeTab(self.tabFrame.currentIndex())
 
