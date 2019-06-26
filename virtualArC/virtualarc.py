@@ -728,10 +728,10 @@ class virtualArC(object):
 def pulse(crossbar, w, b, ampl, pw, dt):
     global write_scheme
 
-    b_inactive=range(1,33)
+    b_inactive=list(range(1,33))
     b_inactive.remove(b)
 
-    w_inactive=range(1,33)
+    w_inactive=list(range(1,33))
     w_inactive.remove(w)
 
     for timestep in range(int(pw/dt)):
