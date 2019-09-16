@@ -559,12 +559,12 @@ class manualOperations_panel(QtWidgets.QWidget):
         if g.ser.port != None: 
             ser=g.ser                   # simplify the namespace
             job="3"                     # define job
-            ser.write(job+"\n")            # Send job followed by cell position and pulsing parameters
-            ser.write(str(g.w)+"\n")
-            ser.write(str(g.b)+"\n")
+            ser.write_b(job+"\n")            # Send job followed by cell position and pulsing parameters
+            ser.write_b(str(g.w)+"\n")
+            ser.write_b(str(g.b)+"\n")
 
-            ser.write(str(float(self.amplitude))+"\n")
-            ser.write(str(float(self.pw))+"\n")
+            ser.write_b(str(float(self.amplitude))+"\n")
+            ser.write_b(str(float(self.pw))+"\n")
 
             # Read the value of M after the pulse
             # currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
