@@ -167,6 +167,8 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
     def __init__(self, short=False):
         super(ChronoAmperometry, self).__init__()
         self.short = short
+        self.thread = None
+        self.threadWrapper = None
 
         self.setupUi(self)
 
@@ -263,8 +265,6 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
 
     def programDevs(self, programType):
 
-        self.thread=QtCore.QThread()
-
         if programType == self.PROGRAM_ONE:
             devs = [[g.w, g.b]]
         else:
@@ -275,21 +275,29 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
 
         allData = self.gatherData()
 
+        self.thread = QtCore.QThread()
         self.threadWrapper = ThreadWrapper(devs, allData)
 
         self.threadWrapper.moveToThread(self.thread)
         self.thread.started.connect(self.threadWrapper.run)
         self.threadWrapper.finished.connect(self.thread.quit)
-        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
-        self.thread.finished.connect(self.threadWrapper.deleteLater)
+        self.threadWrapper.finished.connect(self.threadWrapperFinished)
+        self.thread.finished.connect(self.threadFinished)
         self.threadWrapper.sendData.connect(f.updateHistory)
-        self.threadWrapper.sendDataCT.connect(f.updateHistory_CT)
         self.threadWrapper.highlight.connect(f.cbAntenna.cast)
         self.threadWrapper.displayData.connect(f.displayUpdate.cast)
         self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.disable.emit)
+        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
         self.thread.start()
+
+    def threadFinished(self):
+        self.thread.wait()
+        self.thread = None
+
+    def threadWrapperFinished(self):
+        self.threadWrapper = None
 
     def disableProgPanel(self, state):
         self.hboxProg.setEnabled(not state)
