@@ -10,6 +10,7 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
+import platform
 
 import Globals.GlobalVars as g
 import Globals.GlobalFonts as fonts
@@ -53,9 +54,10 @@ class aboutSection(QtWidgets.QWidget):
         botHLay.setSpacing(0)
 
         infoLay=QtWidgets.QVBoxLayout()
-        infoLay.setContentsMargins(0,0,0,0)
+        infoLay.setContentsMargins(0,10,0,10)
         infoLay.setSpacing(0)
 
+        line0=QtWidgets.QLabel()
         line1=QtWidgets.QLabel()
         line2=QtWidgets.QLabel()
         line3=QtWidgets.QLabel()
@@ -64,14 +66,20 @@ class aboutSection(QtWidgets.QWidget):
         line6=QtWidgets.QLabel()
         line7=QtWidgets.QLabel()
 
+        system = "%s %s" % (platform.system(), platform.architecture()[0])
+        pyver = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
+
+        line0.setText("ArC ONE: <b>%s</b> System: <b>%s</b> "
+                "Python: <b>%s</b> Qt: <b>%s</b>  " %
+                (g.local_version, system, pyver, QtCore.QT_VERSION_STR))
         line1.setText('75 Sirocco, 33 Channel Way')
         line2.setText('Ocean Village')
         line3.setText('Southampton, UK')
-        line4.setText('SO14 3JF')
+        line4.setText('SO14 3JF\n')
         line5.setText('www.arc-instruments.co.uk')
         line6.setText('office@arc-instruments.co.uk')
-        line7.setText('+44 777 235 0889')
-        
+        line7.setText('+44 777 235 0889\n')
+
         infoLay.addWidget(line1)
         infoLay.addWidget(line2)
         infoLay.addWidget(line3)
@@ -80,9 +88,11 @@ class aboutSection(QtWidgets.QWidget):
         infoLay.addWidget(line5)
         infoLay.addWidget(line6)
         infoLay.addWidget(line7)
+        infoLay.addStretch()
+        infoLay.addWidget(line0)
 
         botHLay.addLayout(infoLay)
-        
+
         mainLayout.addStretch()
         mainLayout.addLayout(botHLay)
         mainLayout.addStretch()
