@@ -27,6 +27,7 @@ from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
 from virtualArC import virtualarc
 import ctypes
+import semver
 myappid = 'ArC ONE Control' # arbitrary string
 
 # Platform dependent configuration
@@ -55,22 +56,7 @@ import ControlPanels
 # If `target` is older than `orig` -> -1
 # If `target` is same version as `orig` -> 0
 def vercmp(orig, target):
-    old = [int(x) for x in orig.split(".")]
-    # if version has less than 3 parts, pad with zeros
-    if len(old) < 3:
-        old.extend([0] * (3 - len(old)))
-
-    new = [int(x) for x in target.split(".")]
-    # if version has less than 3 parts, pad with zeros
-    if len(new) < 3:
-        new.extend([0] * (3 - len(new)))
-
-    for i in range(3):
-        if new[i] > old[i]:
-            return 1
-        if new[i] < old[i]:
-            return -1
-    return 0
+    return semver.compare(target, orig)
 
 
 def write_b(ser, what):
@@ -379,7 +365,8 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def check_for_updates(self):
         # check local version:
-        with open(os.path.join("source","version.txt"), "r") as f:
+        thisdir = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(thisdir, "source","version.txt"), "r") as f:
             g.local_version=str(f.read().split("\n")[1])
 
         connection=False
