@@ -19,7 +19,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="stimulusTab">
       <attribute name="title">
        <string>Stimulus</string>
       </attribute>
@@ -304,7 +304,7 @@ font-weight: bold;</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="mechanismTab">
       <attribute name="title">
        <string>Mechanism</string>
       </attribute>

@@ -285,11 +285,21 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
             self.modelStackedWidget.addWidget(v)
             self.mechanismModelCombo.addItem(k, v)
 
+        if len(self.IVs) < 1:
+            mechanismTab = self.tabWidget.findChild(QtGui.QWidget, \
+                "mechanismTab")
+            idx = self.tabWidget.indexOf(mechanismTab)
+            if idx > 0:
+                self.tabWidget.setTabEnabled(idx, False)
+
     def exportClicked(self):
         saveCb = partial(f.writeDelimitedData, self.modelData)
         f.saveFuncToFilename(saveCb, title="Save data to...", parent=self)
 
     def IVSpinBoxValueChanged(self, value):
+
+        if len(self.IVs) < 1:
+            return
 
         R0 = self.IVs[value-1]["R0"]
         x = np.array(self.IVs[value-1]["data"][0])
