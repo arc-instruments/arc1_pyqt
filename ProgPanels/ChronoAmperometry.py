@@ -263,6 +263,15 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
 
         return dialog
 
+    def programOne(self):
+        self.programDevs(self.PROGRAM_ONE)
+
+    def programRange(self):
+        self.programDevs(self.PROGRAM_RANGE)
+
+    def programAll(self):
+        self.programDevs(self.PROGRAM_ALL)
+
     def programDevs(self, programType):
 
         if programType == self.PROGRAM_ONE:

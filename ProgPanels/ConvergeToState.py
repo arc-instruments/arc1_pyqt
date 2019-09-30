@@ -256,6 +256,15 @@ class ConvergeToState(Ui_CTSParent, QtWidgets.QWidget):
 
         return result
 
+    def programOne(self):
+        self.programDevs(self.PROGRAM_ONE)
+
+    def programRange(self):
+        self.programDevs(self.PROGRAM_RANGE)
+
+    def programAll(self):
+        self.programDevs(self.PROGRAM_ALL)
+
     def programDevs(self, programType):
 
         if programType == self.PROGRAM_ONE:

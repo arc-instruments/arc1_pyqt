@@ -856,6 +856,15 @@ class ParameterFit(Ui_PFParent, QtWidgets.QWidget):
 
         return result
 
+    def programOne(self):
+        self.programDevs(self.PROGRAM_ONE)
+
+    def programRange(self):
+        self.programDevs(self.PROGRAM_RANGE)
+
+    def programAll(self):
+        self.programDevs(self.PROGRAM_ALL)
+
     def programDevs(self, programType):
 
         self.thread=QtCore.QThread()

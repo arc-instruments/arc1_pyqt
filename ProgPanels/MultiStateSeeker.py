@@ -532,8 +532,16 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
         g.ser.write_b(str(data["tolerance_band"])+"\n")
         g.ser.write_b(str(data["read_write"])+"\n")
 
-    def programDevs(self, programType):
+    def programOne(self):
+        self.programDevs(self.PROGRAM_ONE)
 
+    def programRange(self):
+        self.programDevs(self.PROGRAM_RANGE)
+
+    def programAll(self):
+        self.programDevs(self.PROGRAM_ALL)
+
+    def programDevs(self, programType):
 
         if programType == self.PROGRAM_ONE:
             devs = [[g.w, g.b]]
