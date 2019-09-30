@@ -829,8 +829,15 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def showDocumentation(self):
 
-        doc = os.getcwd()+'/Documentation/'+'ArC_ONE.pdf'
-        os.system('"' + doc + '"')
+        thisdir = os.path.dirname(os.path.abspath(__file__))
+        doc = os.path.join(thisdir, 'Documentation', 'ArC_ONE.pdf')
+
+        if sys.platform == "win32":
+            os.startfile(os.path.normpath(doc))
+        elif sys.platform == "darwin":
+            subprocess.run(['open', doc], check=True)
+        elif sys.platform in ["linux", "linux2"]:
+            subprocess.run(['xdg-open', doc], check=True)
 
     def connectArC(self):
         #g.ser=virtualarc.virtualArC([])
