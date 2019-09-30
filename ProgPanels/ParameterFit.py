@@ -372,8 +372,8 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
     def fitClicked(self):
         self.parameterResultLabel.setText("")
         numPoints = int(self.numPulsesEdit.text())
-        posRef = float(self.refPosCombo.itemData(self.refPosCombo.currentIndex()).toFloat()[0])
-        negRef = float(self.refNegCombo.itemData(self.refNegCombo.currentIndex()).toFloat()[0])
+        posRef = float(self.refPosCombo.itemData(self.refPosCombo.currentIndex()))
+        negRef = float(self.refNegCombo.itemData(self.refNegCombo.currentIndex()))
 
         try:
             (Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw) = self.fit(posRef, negRef, numPoints)
