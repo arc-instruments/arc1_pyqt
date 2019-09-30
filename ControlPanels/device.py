@@ -8,7 +8,7 @@
 ####################################
 
 import sys
-from PyQt4 import QtGui
+from PyQt5 import QtGui, QtWidgets
 import numpy as np
 
 
@@ -16,7 +16,7 @@ import Globals
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 
-class device(QtGui.QWidget):
+class device(QtWidgets.QWidget):
     
     def __init__(self,r,c):
         super(device, self).__init__()
@@ -122,7 +122,7 @@ class device(QtGui.QWidget):
 
 
 
-class lineNr(QtGui.QLabel):
+class lineNr(QtWidgets.QLabel):
 
     def __init__(self,n):
         super(lineNr, self).__init__()

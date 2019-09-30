@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
@@ -8,11 +8,6 @@ import struct
 import numpy as np
 import csv
 import threading
-
-
-# Set up directory environment.
-#sys.path.append(os.path.abspath(os.getcwd()+'/ControlPanels/'))
-#sys.path.append(os.path.abspath(os.getcwd()+'/Globals/'))
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalVars as g
@@ -61,7 +56,6 @@ class getData(QtCore.QObject):
         #self.preNeurdt = 257*[[- self.LTDwin - 1]] #Matrix holding abs. timings for pre-type spikes. Mat(x,y): x-> Pre-syn. neuron ID. y-> =1: last absolute time of firing for neuron x, =0: index of neuron.
         #self.postNeurdt = 4097*[[- self.LTPwin - 1]] #Matrix holding abs. timings for post-type spikes. Mat(x,y): x-> Post-syn. neuron ID. y-> =0: last absolute time of firing for neuron x.
         self.Neurdt = 4097 * [[- self.LTPwin - 1]] #Matrix holding absolute times of spikes of any type. Mat(x,y): x-> Neuron ID. y-> =0: last absolute time of firing for neuron x.
-
 
     def runUDP(self):
         #First, set the green light for the UDP protocol.
@@ -112,7 +106,6 @@ class getData(QtCore.QObject):
             #sock.sendto(pack_data, (self.postip, int(self.postport)))
             #sock.sendto(pack_data, (self.preip, int(self.preport)))
 
-
             #LISTENING MODE.
             ready = select.select([sock], [], [], maxlisten) #Non-blocking socket. Send it: 1) list of sockets to read from, 2) list of sockets to write to...
             #...3) list of sockets to check for errors, 4) time allocated to these tasks. Returns 3 lists in this order: 1) Readable socket. 2) Writable. 3) In error.
@@ -131,8 +124,8 @@ class getData(QtCore.QObject):
                 tst_res_in = (unpacked_data[1]>>24)&0xff #From Padova: shows type of event: 0 -> PSP, 1 -> stimulated AP, 2 -> spontaneous AP.
                 tst_in = unpacked_data[1]&0xffffff #Timestamp in. General relative time (time between events regardless of origin).
 
-                print "---------------------------------------------------------------"
-                print "Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr
+                print("---------------------------------------------------------------")
+                print("Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr)
 
                 if(id_res_in == g.partcode[0]):
                     print("(P1)") #Partner 1
@@ -213,9 +206,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             #Select and read active device.
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar))+"\n")
-                            g.ser.write(str(int(b_tar))+"\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar))+"\n")
+                            g.ser.write_b(str(int(b_tar))+"\n")
 
                             result = f.getFloats(1)[0]
 
@@ -313,9 +306,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             #Select device to be 'plasticised'.
-                            g.ser.write("02\n") #Select device operation.
-                            g.ser.write(str(int(w_tar))+"\n") #Send wordline address.
-                            g.ser.write(str(int(b_tar))+"\n") #Send bitline address.
+                            g.ser.write_b("02\n") #Select device operation.
+                            g.ser.write_b(str(int(w_tar))+"\n") #Send wordline address.
+                            g.ser.write_b(str(int(b_tar))+"\n") #Send bitline address.
 
                             print('--')
 
@@ -328,9 +321,9 @@ class getData(QtCore.QObject):
 
                             #Select and read active device.
                             time.sleep(0.005)
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar))+"\n")
-                            g.ser.write(str(int(b_tar))+"\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar))+"\n")
+                            g.ser.write_b(str(int(b_tar))+"\n")
                             time.sleep(0.005)
                             result = f.getFloats(1)[0]
 
@@ -428,9 +421,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             # Select and read active device.
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar)) + "\n")
-                            g.ser.write(str(int(b_tar)) + "\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar)) + "\n")
+                            g.ser.write_b(str(int(b_tar)) + "\n")
 
                             result = f.getFloats(1)[0]
 
@@ -534,9 +527,9 @@ class getData(QtCore.QObject):
                             f.displayUpdate.updateSignal_short.emit()
 
                             # Select device to be 'plasticised'.
-                            g.ser.write("02\n")  # Select device operation.
-                            g.ser.write(str(int(w_tar)) + "\n")  # Send wordline address.
-                            g.ser.write(str(int(b_tar)) + "\n")  # Send bitline address.
+                            g.ser.write_b("02\n")  # Select device operation.
+                            g.ser.write_b(str(int(w_tar)) + "\n")  # Send wordline address.
+                            g.ser.write_b(str(int(b_tar)) + "\n")  # Send bitline address.
 
                             print('--')
 
@@ -549,9 +542,9 @@ class getData(QtCore.QObject):
 
                             # Select and read active device.
                             time.sleep(0.005)
-                            g.ser.write("1\n")
-                            g.ser.write(str(int(w_tar)) + "\n")
-                            g.ser.write(str(int(b_tar)) + "\n")
+                            g.ser.write_b("1\n")
+                            g.ser.write_b(str(int(w_tar)) + "\n")
+                            g.ser.write_b(str(int(b_tar)) + "\n")
                             time.sleep(0.005)
                             result = f.getFloats(1)[0]
 
@@ -584,21 +577,21 @@ class getData(QtCore.QObject):
         #Plasticity parameters.
 
         if plastdir:
-            g.ser.write("04\n") #Select device operation.
-            g.ser.write(str(float(g.opEdits[0].text()))+"\n") #Send amplitude (V).
+            g.ser.write_b("04\n") #Select device operation.
+            g.ser.write_b(str(float(g.opEdits[0].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
-            g.ser.write(str(float(g.opEdits[1].text()))+"\n") #Send duration (s).
+            g.ser.write_b(str(float(g.opEdits[1].text()))+"\n") #Send duration (s).
             #time.sleep(0.005)
-            #g.ser.write(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #g.ser.write_b(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
         else:
-            g.ser.write("04\n") #Select device operation.
-            g.ser.write(str(float(g.opEdits[2].text()))+"\n") #Send amplitude (V).
+            g.ser.write_b("04\n") #Select device operation.
+            g.ser.write_b(str(float(g.opEdits[2].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
-            g.ser.write(str(float(g.opEdits[3].text()))+"\n") #Send duration (s).
+            g.ser.write_b(str(float(g.opEdits[3].text()))+"\n") #Send duration (s).
             #time.sleep(0.005)
-            #g.ser.write("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
+            #g.ser.write_b("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
 
@@ -649,7 +642,7 @@ class UDPstopper(QtCore.QObject):
         g.UDPampel = 0 #Set the UDP traffic light to 0.
         self.finished.emit()
 
-class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWidget.
+class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidgets.QWidget.
     
     def __init__(self):
         super(UDPmod, self).__init__()
@@ -660,12 +653,12 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
         ### Define GUI elements ###
         #Define module as a QVBox.
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
         #Configure module title and description and text formats.
-        titleLabel = QtGui.QLabel('UDPmod')
+        titleLabel = QtWidgets.QLabel('UDPmod')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('UDP connectivity for neuromorphic applications.')
+        descriptionLabel = QtWidgets.QLabel('UDP connectivity for neuromorphic applications.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -688,23 +681,23 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         opInit=['4.0', '0.0001', '-4.0', '0.0001', '9000.0', '4000.0']
 
         # Setup the column 'length' ratios.
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,1)
         gridLayout.setColumnStretch(1,1)
         #gridLayout.setSpacing(2)
 
         #Setup the line separators
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.HLine);
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.HLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.HLine);
-        lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        lineRight=QtWidgets.QFrame()
+        lineRight.setFrameShape(QtWidgets.QFrame.HLine);
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         lineRight.setLineWidth(1)
-        lineOps=QtGui.QFrame()
-        lineOps.setFrameShape(QtGui.QFrame.HLine);
-        lineOps.setFrameShadow(QtGui.QFrame.Raised);
+        lineOps=QtWidgets.QFrame()
+        lineOps.setFrameShape(QtWidgets.QFrame.HLine);
+        lineOps.setFrameShadow(QtWidgets.QFrame.Raised);
         lineOps.setLineWidth(1)
 
 
@@ -715,12 +708,12 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
 
         for i in range(len(topLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(topLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             #lineEdit.setValidator(isFloat)
             self.topEdits.append(lineEdit)
@@ -729,12 +722,12 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         offset = len(topLabels)+1 #offset parameter is simply the first row of the bottom panel/label section.
 
         for i in range(len(btmLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(btmLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, offset+i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(rightInit[i])
             #lineEdit.setValidator(isFloat)
             self.btmEdits.append(lineEdit)
@@ -742,12 +735,12 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
 
         for i in range(len(opLabels)):
-            opLabel=QtGui.QLabel()
+            opLabel=QtWidgets.QLabel()
             opLabel.setText(opLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(opLabel, 8+i,0)
 
-            opEdit=QtGui.QLineEdit()
+            opEdit=QtWidgets.QLineEdit()
             opEdit.setText(opInit[i])
             opEdit.setValidator(isFloat)
             g.opEdits.append(opEdit)
@@ -756,16 +749,16 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         # ============================================== #
 
         #Label explaining connectivity matrix boot from file.
-        CMLabel=QtGui.QLabel()
+        CMLabel=QtWidgets.QLabel()
         #lineLabel.setFixedHeight(50)
         CMLabel.setText("Connectivity matrix file: ")
 
         #Text field to show selected file containing SA locations for particular application.
-        self.UDPmapFName=QtGui.QLabel()
+        self.UDPmapFName=QtWidgets.QLabel()
         self.UDPmapFName.setStyleSheet(s.style1)
 
         #File browser. Push-button connecting to function opening file browser.
-        push_browse = QtGui.QPushButton('...')
+        push_browse = QtWidgets.QPushButton('...')
         push_browse.clicked.connect(self.findUDPMAPfile)    # open custom array defive position file
         push_browse.setFixedWidth(20)
 
@@ -777,11 +770,11 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        self.scrlArea=QtGui.QScrollArea()
+        self.scrlArea=QtWidgets.QScrollArea()
         self.scrlArea.setWidget(self.vW)
         self.scrlArea.setContentsMargins(0,0,0,0)
         self.scrlArea.setWidgetResizable(False)
@@ -794,11 +787,11 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         vbox1.addStretch()
 
         #Create graphics area that holds buttons to activate module.
-        self.hboxProg=QtGui.QHBoxLayout()
+        self.hboxProg=QtWidgets.QHBoxLayout()
 
-        push_launchUDP=QtGui.QPushButton('Launch UDP interface') #Button to launch UDP interface.
-        push_range=QtGui.QPushButton('Apply to Range')
-        stop_udp=QtGui.QPushButton('STOP UDP')
+        push_launchUDP=QtWidgets.QPushButton('Launch UDP interface') #Button to launch UDP interface.
+        push_range=QtWidgets.QPushButton('Apply to Range')
+        stop_udp=QtWidgets.QPushButton('STOP UDP')
 
         push_launchUDP.setStyleSheet(s.btnStyle)
         push_range.setStyleSheet(s.btnStyle)
@@ -816,35 +809,35 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
         self.setLayout(vbox1)
         self.vW.setFixedWidth(self.size().width())
-        #print '-------'
-        #print self.vW.size().width()
-        #print self.scrlArea.size().width()
-        #print '-------'
-        #self.vW.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        #self.scrlArea.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        #print('-------')
+        #print(self.vW.size().width())
+        #print(self.scrlArea.size().width())
+        #print('-------')
+        #self.vW.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        #self.scrlArea.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
 
         #self.vW.setFixedWidth(self.sizeHint().width())
 
     def updateStopOptions(self, event):
-        print event   
+        print(event)
 
     def eventFilter(self, object, event):
-        #print object
+        #print(object)
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width()) #Always set vW width to window width - scrollbar width.
         #if event.type()==QtCore.QEvent.Paint:
         #    self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #print self.vW.size().width()
+        #print(self.vW.size().width())
         return False
 
     def resizeWidget(self,event): #Dummy function - unnecessary vestige.
         pass
 
     def sendParams(self): #UPDATE WITH RELEVANT STUFF ONCE CONNECTION TO MBED READY TO BE MADE.
-        g.ser.write(str(float(self.topEdits[0].text()))+"\n") #Recipient partner IP.
-        g.ser.write(str(float(self.topEdits[1].text()))+"\n") #Recipient partner port.
-        g.ser.write(str(float(self.btmEdits[0].text()))+"\n") #Sending partner IP.
-        g.ser.write(str(float(self.btmEdits[1].text()))+"\n") #Sending partner port.
+        g.ser.write_b(str(float(self.topEdits[0].text()))+"\n") #Recipient partner IP.
+        g.ser.write_b(str(float(self.topEdits[1].text()))+"\n") #Recipient partner port.
+        g.ser.write_b(str(float(self.btmEdits[0].text()))+"\n") #Sending partner IP.
+        g.ser.write_b(str(float(self.btmEdits[1].text()))+"\n") #Sending partner port.
 
     def UDPstart(self):
 
@@ -855,7 +848,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         postport = self.btmEdits[1].text()
 
         #job="40"
-        #g.ser.write(job+"\n")   # sends the job
+        #g.ser.write_b(job+"\n")   # sends the job
         
         #self.sendParams()
 
@@ -881,7 +874,6 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         else:
             self.hboxProg.setEnabled(True)
 
-
     def programRange(self):
 
         stopTime=int(self.btmEdits[0].text())
@@ -894,7 +886,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         rangeDev=self.makeDeviceList(True)
 
         job="33"
-        g.ser.write(job+"\n")   # sends the job
+        g.ser.write_b(job+"\n")   # sends the job
 
         self.sendParams()
 
@@ -912,7 +904,6 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
         self.getData.disableInterface.connect(f.interfaceAntenna.disable.emit)
 
         self.thread.start()
-        
 
     def UDPstop(self):
         self.thread2=QtCore.QThread()
@@ -940,7 +931,6 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
             minB=g.minB
             maxB=g.maxB            
 
-
         # Find how many SA devices are contained in the range
         if g.checkSA==False:
             for w in range(minW,maxW+1):
@@ -958,7 +948,7 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
     # FUNCTION FOR OPENING FILE BROWSER - UNDER CONSTRUCTION.
     def findUDPMAPfile(self):
-        path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Open file', "*.txt"))
+        path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open file', "*.txt"))
         #path=fname.getOpenFileName()
 
         customArray = []
@@ -984,11 +974,11 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
         # check if positions read are correct
         if (error==1):
-            #self.errorMessage=QtGui.QErrorMessage()
+            #self.errorMessage=QtWidgets.QErrorMessage()
             #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")
-            errMessage = QtGui.QMessageBox()
+            errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Device to synapse mapping file formatted incorrectly, or selected devices outside of array range!")
-            errMessage.setIcon(QtGui.QMessageBox.Critical)
+            errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
             return False
@@ -1004,13 +994,4 @@ class UDPmod(QtGui.QWidget): #Define new module class inheriting from QtGui.QWid
 
             #print(g.ConnMat)
             return True
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = UDPmod()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

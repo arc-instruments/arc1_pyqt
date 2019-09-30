@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
@@ -39,15 +39,15 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             endCommand=0
@@ -86,7 +86,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class SwitchSeeker(QtGui.QWidget):
+class SwitchSeeker(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(SwitchSeeker, self).__init__()
@@ -95,11 +95,12 @@ class SwitchSeeker(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('SwitchSeeker')
+        titleLabel = QtWidgets.QLabel('SwitchSeeker')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('State-of-art analogue resistive switching parameter finder.')
+        descriptionLabel = \
+            QtWidgets.QLabel('State-of-art analogue resistive switching parameter finder.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -131,13 +132,12 @@ class SwitchSeeker(QtGui.QWidget):
         rightLabels=[]
         self.rightEdits=[]
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
         gridLayout.setColumnStretch(3,1)
         gridLayout.setColumnStretch(4,3)
-        
         
         if self.short==False:
             gridLayout.setColumnStretch(5,1)
@@ -146,63 +146,62 @@ class SwitchSeeker(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.VLine); 
-        lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        lineRight=QtWidgets.QFrame()
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 10, 1)
         if self.short==False:
             gridLayout.addWidget(lineRight, 0, 6, 10, 1)
 
-
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
 
-        self.checkRead=QtGui.QCheckBox(self)
+        self.checkRead=QtWidgets.QCheckBox(self)
         self.checkRead.setText("Read after pulse?")
         gridLayout.addWidget(self.checkRead,3,4)
 
-        gridLayout.addWidget(QtGui.QLabel("Seeker algorithm"),0,4)
-        self.modeSelectionCombo=QtGui.QComboBox()
+        gridLayout.addWidget(QtWidgets.QLabel("Seeker algorithm"),0,4)
+        self.modeSelectionCombo=QtWidgets.QComboBox()
         # SwitchSeeker_1 has id 15
         self.modeSelectionCombo.addItem("Fast",15)
         # SwitchSeeker_2 has id 152
         self.modeSelectionCombo.addItem("Slow",152)
         gridLayout.addWidget(self.modeSelectionCombo,0,5)
 
-        gridLayout.addWidget(QtGui.QLabel("Stage II polarity"),1,4)
-        self.polarityCombo=QtGui.QComboBox()
+        gridLayout.addWidget(QtWidgets.QLabel("Stage II polarity"),1,4)
+        self.polarityCombo=QtWidgets.QComboBox()
         self.polarityCombo.addItem("(+) Positive",1)
         self.polarityCombo.addItem("(-) Negative",-1)
         self.polarityCombo.setEnabled(False)
         gridLayout.addWidget(self.polarityCombo,1,5)
 
-        self.skipICheckBox=QtGui.QCheckBox(self)
+        self.skipICheckBox=QtWidgets.QCheckBox(self)
         self.skipICheckBox.setText("Skip Stage I")
         def skipIChecked(state):
             if state == QtCore.Qt.Checked:
@@ -215,11 +214,11 @@ class SwitchSeeker(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -231,11 +230,11 @@ class SwitchSeeker(QtGui.QWidget):
         vbox1.addStretch()
 
         if self.short==False:
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -261,11 +260,11 @@ class SwitchSeeker(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
@@ -275,17 +274,11 @@ class SwitchSeeker(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
-
-
-
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
@@ -293,18 +286,18 @@ class SwitchSeeker(QtGui.QWidget):
         return False
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[2].text())/1000)+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[4].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[5].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[8].text())/1000)+"\n")
-        g.ser.write(str(float(self.leftEdits[9].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text())/1000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[4].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[5].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[8].text())/1000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[9].text()))+"\n")
         time.sleep(0.01)
-        g.ser.write(str(int(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[1].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[6].text()))+"\n")
-        g.ser.write(str(int(self.leftEdits[7].text()))+"\n")
-        g.ser.write(str(int(self.checkRead.isChecked()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[0].text()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[1].text()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[6].text()))+"\n")
+        g.ser.write_b(str(int(self.leftEdits[7].text()))+"\n")
+        g.ser.write_b(str(int(self.checkRead.isChecked()))+"\n")
 
         # Check if Stage I should be skipped
         if self.skipICheckBox.isChecked():
@@ -312,18 +305,17 @@ class SwitchSeeker(QtGui.QWidget):
             # -1 -> negative polarity for Stage II
             #  1 -> positive polarity for Stage II
             polarityIndex = self.polarityCombo.currentIndex()
-            skipStageI = str(self.polarityCombo.itemData(polarityIndex).toInt()[0])
+            skipStageI = str(self.polarityCombo.itemData(polarityIndex))
         else:
             # if 0 then Stage I will not be skipped
             skipStageI = str(0)
 
-        g.ser.write(skipStageI+"\n")
+        g.ser.write_b(skipStageI+"\n")
 
     def programOne(self):
         if g.ser.port != None:
             job="%d"%self.getJobCode()
-            g.ser.write(job+"\n")   # sends the job
-            print self.getJobCode()
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -345,7 +337,7 @@ class SwitchSeeker(QtGui.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             job="%d"%self.getJobCode()
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -360,7 +352,7 @@ class SwitchSeeker(QtGui.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="%d"%self.getJobCode()
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -383,7 +375,6 @@ class SwitchSeeker(QtGui.QWidget):
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
-
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
         rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
@@ -398,7 +389,6 @@ class SwitchSeeker(QtGui.QWidget):
             maxW=g.maxW
             minB=g.minB
             maxB=g.maxB            
-
 
         # Find how many SA devices are contained in the range
         if g.checkSA==False:
@@ -417,15 +407,5 @@ class SwitchSeeker(QtGui.QWidget):
         
     def getJobCode(self):
         job=self.modeSelectionCombo.itemData(self.modeSelectionCombo.currentIndex())
-        return job.toInt()[0]
+        return job
 
-
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = SwitchSeeker()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

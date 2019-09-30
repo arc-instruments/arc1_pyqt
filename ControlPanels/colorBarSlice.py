@@ -7,9 +7,9 @@
 
 ####################################
 
-from PyQt4 import QtGui
+from PyQt5 import QtGui, QtWidgets
 
-class colorBarSlice(QtGui.QWidget):
+class colorBarSlice(QtWidgets.QWidget):
     
     def __init__(self):
         super(colorBarSlice, self).__init__()

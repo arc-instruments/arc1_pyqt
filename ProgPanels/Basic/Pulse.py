@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 #import Queue
@@ -44,12 +44,12 @@ class getData(QtCore.QObject):
 
         ser=g.ser                   # simplify the namespace
         job="3"                     # define job
-        ser.write(job+"\n")            # Send job followed by cell position and pulsing parameters
-        ser.write(str(g.w)+"\n")
-        ser.write(str(g.b)+"\n")
+        ser.write_b(job+"\n")            # Send job followed by cell position and pulsing parameters
+        ser.write_b(str(g.w)+"\n")
+        ser.write_b(str(g.b)+"\n")
 
-        ser.write(str(float(self.amplitude))+"\n")
-        ser.write(str(float(self.pw))+"\n")
+        ser.write_b(str(float(self.amplitude))+"\n")
+        ser.write_b(str(float(self.pw))+"\n")
 
         # Read the value of M after the pulse
         
@@ -67,7 +67,7 @@ class getData(QtCore.QObject):
         
         self.finished.emit()
 
-class Pulse(QtGui.QWidget):
+class Pulse(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(Pulse, self).__init__()
@@ -76,11 +76,11 @@ class Pulse(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('Pulse')
+        titleLabel = QtWidgets.QLabel('Pulse')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Apply a voltage pulse.')
+        descriptionLabel = QtWidgets.QLabel('Apply a voltage pulse.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -88,7 +88,7 @@ class Pulse(QtGui.QWidget):
         isFloat=QtGui.QDoubleValidator()
 
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -101,15 +101,15 @@ class Pulse(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 2, 1)
 
-        self.pulse_V = QtGui.QLineEdit()
-        self.pulse_pw = QtGui.QLineEdit()
+        self.pulse_V = QtWidgets.QLineEdit()
+        self.pulse_pw = QtWidgets.QLineEdit()
 
         self.pulse_V.setStyleSheet(s.entryStyle)
         self.pulse_pw.setStyleSheet(s.entryStyle)
@@ -122,7 +122,7 @@ class Pulse(QtGui.QWidget):
         self.pulse_V.setValidator(isFloat)
         self.pulse_pw.setValidator(isFloat)
 
-        self.pw_DropDown=QtGui.QComboBox()
+        self.pw_DropDown=QtWidgets.QComboBox()
         self.pw_DropDown.setStyleSheet(s.comboStylePulse)
 
         self.unitsFull=[['s',1],['ms',0.001],['us',0.000001],['ns',0.000000001]]
@@ -133,7 +133,7 @@ class Pulse(QtGui.QWidget):
         self.pw_DropDown.setCurrentIndex(2)
 
 
-        VoltageLabel=QtGui.QLabel("V   @ ")
+        VoltageLabel=QtWidgets.QLabel("V   @ ")
 
         gridLayout.addWidget(self.pulse_V,0,0)
         gridLayout.addWidget(VoltageLabel,0,1)
@@ -143,11 +143,11 @@ class Pulse(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -159,11 +159,11 @@ class Pulse(QtGui.QWidget):
         vbox1.addStretch()
 
         if self.short==False:
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -190,11 +190,11 @@ class Pulse(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
@@ -204,13 +204,10 @@ class Pulse(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
 
@@ -256,13 +253,3 @@ class Pulse(QtGui.QWidget):
             self.pw_DropDown.setCurrentIndex(0)
             self.pw=10
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = Pulse()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

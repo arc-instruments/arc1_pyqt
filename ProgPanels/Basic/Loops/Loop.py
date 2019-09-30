@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 
 import Globals.GlobalFonts as fonts
@@ -16,7 +16,7 @@ import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
 
-class Loop(QtGui.QWidget):
+class Loop(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(Loop, self).__init__()
@@ -27,11 +27,11 @@ class Loop(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('Start loop')
+        titleLabel = QtWidgets.QLabel('Start loop')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Standard loop iterator.')
+        descriptionLabel = QtWidgets.QLabel('Standard loop iterator.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -50,7 +50,7 @@ class Loop(QtGui.QWidget):
         rightInit= []
 
         # Setup the two combo boxes
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -63,13 +63,13 @@ class Loop(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.VLine); 
-        lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        lineRight=QtWidgets.QFrame()
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
@@ -81,24 +81,24 @@ class Loop(QtGui.QWidget):
 
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
@@ -109,11 +109,11 @@ class Loop(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        self.scrlArea=QtGui.QScrollArea()
+        self.scrlArea=QtWidgets.QScrollArea()
         self.scrlArea.setWidget(self.vW)
         self.scrlArea.setContentsMargins(0,0,0,0)
         self.scrlArea.setWidgetResizable(False)
@@ -127,11 +127,11 @@ class Loop(QtGui.QWidget):
 
         if self.short==False:
 
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -158,11 +158,11 @@ class Loop(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
@@ -172,26 +172,13 @@ class Loop(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
 
     def loopTimes(self):
         return int(self.leftEdits[0].text())
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = Loop()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

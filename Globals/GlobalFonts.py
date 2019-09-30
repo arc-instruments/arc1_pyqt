@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4.QtGui import QFont
+from PyQt5.QtGui import QFont
 
 font1 = QFont()
 font1.setPointSize(12)
@@ -41,3 +41,4 @@ history_top_underline.setUnderline(True)
 
 cbFont = QFont()
 cbFont.setPointSize(7)
+

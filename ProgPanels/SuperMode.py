@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import sys, os
 import pickle
 import importlib
@@ -130,7 +130,7 @@ class getData(QtCore.QObject):
         else:
             return True
 
-class draggableButton(QtGui.QPushButton):
+class draggableButton(QtWidgets.QPushButton):
 
     what="A Button"
 
@@ -158,9 +158,10 @@ class draggableButton(QtGui.QPushButton):
 
         ## selected is the relevant person object
         self.ID=str(globalID)
-        thisID=QtCore.QByteArray(self.ID)
+        #thisID=QtCore.QByteArray(self.ID)
+        thisID=self.ID.encode()
         module_id_dict[self.ID]=self.associate()
-        print "Placed with id ", self.ID, " associated with ", module_id_dict[self.ID]
+        print("Placed with id ", self.ID, " associated with ", module_id_dict[self.ID])
         globalID+=1
 
         mimeData = QtCore.QMimeData()
@@ -170,15 +171,11 @@ class draggableButton(QtGui.QPushButton):
         drag = QtGui.QDrag(self)
         drag.setMimeData(mimeData)
 
-        pixmap = QtGui.QPixmap()
-        pixmap = pixmap.grabWidget(self)
-        drag.setPixmap(pixmap)
+        pixmap = QtWidgets.QWidget.grab(self)
 
         drag.setHotSpot(QtCore.QPoint(pixmap.width()/2, pixmap.height()/2))
         drag.setPixmap(pixmap)
-        result = drag.start(QtCore.Qt.MoveAction)
-        #if result: # == QtCore.Qt.MoveAction:
-            #self.model().removeRow(index.row())
+        result = drag.exec_(QtCore.Qt.MoveAction)
 
     def mouseMoveEvent(self, event):
         self.startDrag(event)
@@ -189,9 +186,10 @@ class draggableButton(QtGui.QPushButton):
         thisModule = panel_class(short=True)
         return thisModule
 
-class draggableButtonPlaced(QtGui.QPushButton):
 
-    displayModule = QtCore.pyqtSignal(QtGui.QWidget)
+class draggableButtonPlaced(QtWidgets.QPushButton):
+
+    displayModule = QtCore.pyqtSignal(QtWidgets.QWidget)
     deleteContainer = QtCore.pyqtSignal()
     toggle_transparency=QtCore.pyqtSignal(bool)
     decrementCount=QtCore.pyqtSignal()
@@ -229,17 +227,14 @@ class draggableButtonPlaced(QtGui.QPushButton):
         drag = QtGui.QDrag(self)
         drag.setMimeData(mimeData)
 
-        pixmap = QtGui.QPixmap()
-        pixmap = pixmap.grabWidget(self)
-        drag.setPixmap(pixmap)
+        pixmap = QtWidgets.QWidget.grab(self)
 
         drag.setHotSpot(QtCore.QPoint(pixmap.width()/2, pixmap.height()/2))
         drag.setPixmap(pixmap)
-        result = drag.start(QtCore.Qt.MoveAction)
+        result = drag.exec_(QtCore.Qt.MoveAction)
 
         if result:
             pass
-            print "result exists"
         else:
             self.decrementCount.emit()
             self.setVisible(True)
@@ -255,7 +250,7 @@ class draggableButtonPlaced(QtGui.QPushButton):
             self.setStyleSheet(s.loop_style_bot_selected)
         else: 
             self.setStyleSheet(s.selectedStyle)
-        print self.module, " emitted"
+        print(self.module, " emitted")
 
 class draggableLoopPlaced(draggableButtonPlaced):
     def __init__(self, *args):
@@ -281,9 +276,9 @@ class draggableButtonPlacedDummy(draggableButtonPlaced):
         self.setStyleSheet(s.dummy_style)
         self.setFixedWidth(100)
 
-class dropZone(QtGui.QWidget):
+class dropZone(QtWidgets.QWidget):
 
-    routeModule = QtCore.pyqtSignal(QtGui.QWidget)
+    routeModule = QtCore.pyqtSignal(QtWidgets.QWidget)
 
     lastPosition=0
     def __init__(self):
@@ -295,7 +290,7 @@ class dropZone(QtGui.QWidget):
         self.initUI()
 
     def initUI(self):
-        self.vbox=QtGui.QVBoxLayout()
+        self.vbox=QtWidgets.QVBoxLayout()
         self.vbox.setAlignment(QtCore.Qt.Alignment(QtCore.Qt.AlignTop))
         self.vbox.setContentsMargins(0,0,0,0)
         self.vbox.setSpacing(0)
@@ -336,12 +331,12 @@ class dropZone(QtGui.QWidget):
                 index = self.vbox.indexOf(widg)
             elif isinstance(widg, centerWidget):
                 index = self.vbox.indexOf(widg)
-            elif isinstance(widg, QtGui.QWidget):
+            elif isinstance(widg, QtWidgets.QWidget):
                 pass
 
             if index!='':
 
-                print "Dummy at index ", index, " | widget ", widg
+                print("Dummy at index ", index, " | widget ", widg)
                 self.vbox.insertWidget(index, self.dummyBtn)
                 event.accept()
 
@@ -356,7 +351,9 @@ class dropZone(QtGui.QWidget):
             index = self.vbox.indexOf(self.dummyBtn)
             self.dummyBtn.deleteLater()
 
-            associatedModule=module_id_dict[str(data.data("application/x-module"))]
+            mod_key = data.data("application/x-module").data().decode()
+            #associatedModule=module_id_dict[str(data.data("application/x-module"))]
+            associatedModule=module_id_dict[mod_key]
             if data.text() not in ['Loop','End']:
                 newBtn=draggableButtonPlaced(data.text(), associatedModule)
                 newBtn.ID=data.data("application/x-module")
@@ -439,16 +436,16 @@ class dropZone(QtGui.QWidget):
             else:
                 btn.setStyleSheet(s.unselectedStyle)
 
-class centerWidget(QtGui.QWidget):
+class centerWidget(QtWidgets.QWidget):
     def __init__(self, btn):
-        super(QtGui.QWidget,self).__init__()
+        super(QtWidgets.QWidget,self).__init__()
         self.setFixedHeight(placed_module_height)
         self.setContentsMargins(0,0,0,0)
         self.btn=btn
         self.initUI()
 
     def initUI(self):
-        layout=QtGui.QHBoxLayout()
+        layout=QtWidgets.QHBoxLayout()
         layout.addStretch()
         layout.addWidget(self.btn)
         layout.addStretch()
@@ -461,7 +458,7 @@ class centerWidget(QtGui.QWidget):
         self.hide()
         self.deleteLater()
 
-class SuperMode(QtGui.QWidget):
+class SuperMode(QtWidgets.QWidget):
 
     def __init__(self):
         super(SuperMode, self).__init__()
@@ -470,31 +467,31 @@ class SuperMode(QtGui.QWidget):
     def initUI(self):   
         global EdgeBtn_style
 
-        mainLayout=QtGui.QVBoxLayout()
+        mainLayout=QtWidgets.QVBoxLayout()
 
-        #titleLabel = QtGui.QLabel('SuperMode')
+        #titleLabel = QtWidgets.QLabel('SuperMode')
         #titleLabel.setFont(fonts.font1)
 
-        hbox=QtGui.QHBoxLayout()
-        vboxLeft=QtGui.QVBoxLayout()
+        hbox=QtWidgets.QHBoxLayout()
+        vboxLeft=QtWidgets.QVBoxLayout()
         vboxLeft.setContentsMargins(0,0,0,0)
         vboxLeft.setSpacing(2)
 
-        self.vboxMid=QtGui.QVBoxLayout()
+        self.vboxMid=QtWidgets.QVBoxLayout()
         
         self.dropWidget=dropZone()
-        sizePolicy=QtGui.QSizePolicy()
-        sizePolicy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
+        sizePolicy=QtWidgets.QSizePolicy()
+        sizePolicy.setVerticalPolicy(QtWidgets.QSizePolicy.Expanding)
         self.dropWidget.setSizePolicy(sizePolicy)
 
-        self.moduleLayout=QtGui.QVBoxLayout()
+        self.moduleLayout=QtWidgets.QVBoxLayout()
 
-        moduleEdit=QtGui.QWidget()
+        moduleEdit=QtWidgets.QWidget()
         moduleEdit.setMinimumWidth(500)
         moduleEdit.setLayout(self.moduleLayout)
 
         
-        moduleViewscrlArea=QtGui.QScrollArea()
+        moduleViewscrlArea=QtWidgets.QScrollArea()
         moduleViewscrlArea.setWidget(moduleEdit)
         moduleViewscrlArea.setContentsMargins(0,0,0,0)
         moduleViewscrlArea.setWidgetResizable(True)
@@ -503,17 +500,16 @@ class SuperMode(QtGui.QWidget):
         moduleViewscrlArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         #moduleViewscrlArea.installEventFilter(self)
         
-
-        separator1=QtGui.QFrame()
-        separator1.setFrameShape(QtGui.QFrame.HLine); 
+        separator1=QtWidgets.QFrame()
+        separator1.setFrameShape(QtWidgets.QFrame.HLine);
         separator1.setLineWidth(2)
 
-        separator2=QtGui.QFrame()
-        separator2.setFrameShape(QtGui.QFrame.HLine); 
+        separator2=QtWidgets.QFrame()
+        separator2.setFrameShape(QtWidgets.QFrame.HLine);
         separator2.setLineWidth(2)
 
-        separator3=QtGui.QFrame()
-        separator3.setFrameShape(QtGui.QFrame.HLine); 
+        separator3=QtWidgets.QFrame()
+        separator3.setFrameShape(QtWidgets.QFrame.HLine);
         separator3.setLineWidth(2)
 
         for module in progPanelList:
@@ -539,14 +535,14 @@ class SuperMode(QtGui.QWidget):
 
         vboxLeft.addStretch()
 
-        push_save = QtGui.QPushButton("Save")
+        push_save = QtWidgets.QPushButton("Save")
         push_save.clicked.connect(self.savePickle)
         push_save.setStyleSheet(s.btnStyle2)
-        push_load = QtGui.QPushButton("Load")
+        push_load = QtWidgets.QPushButton("Load")
         push_load.clicked.connect(self.loadPickle)
         push_load.setStyleSheet(s.btnStyle2)
 
-        self.loaded_label = QtGui.QLabel()
+        self.loaded_label = QtWidgets.QLabel()
         self.loaded_label.setStyleSheet(s.style1)
 
         vboxLeft.addWidget(self.loaded_label)
@@ -555,11 +551,11 @@ class SuperMode(QtGui.QWidget):
 
         ###########################################
 
-        startBtn=QtGui.QPushButton("Start")
+        startBtn=QtWidgets.QPushButton("Start")
         startBtn.setStyleSheet(s.EdgeBtn_style)
         startWidg=centerWidget(startBtn)
 
-        stopBtn=QtGui.QPushButton("End")
+        stopBtn=QtWidgets.QPushButton("End")
         stopBtn.setStyleSheet(s.EdgeBtn_style)
         stopWidg=centerWidget(stopBtn)
 
@@ -570,12 +566,12 @@ class SuperMode(QtGui.QWidget):
 
         self.vboxMid.setAlignment(QtCore.Qt.Alignment(QtCore.Qt.AlignTop))
 
-        self.containerWidget=QtGui.QWidget()
+        self.containerWidget=QtWidgets.QWidget()
         self.containerWidget.setLayout(self.vboxMid)
         self.containerWidget.setSizePolicy(sizePolicy)
         #containerWidget.setSizePolicy(sizePolicy)
 
-        self.scrlArea=QtGui.QScrollArea()
+        self.scrlArea=QtWidgets.QScrollArea()
         self.scrlArea.setWidget(self.containerWidget)
         self.scrlArea.setContentsMargins(0,0,0,0)
         self.scrlArea.setWidgetResizable(True)
@@ -589,7 +585,7 @@ class SuperMode(QtGui.QWidget):
 
         vboxLeft.addStretch()
 
-        clearBtn=QtGui.QPushButton("Clear")
+        clearBtn=QtWidgets.QPushButton("Clear")
         clearBtn.setStyleSheet(s.btnStyle_clearChain)
         clearBtn.clicked.connect(self.clearChain)
 
@@ -597,11 +593,11 @@ class SuperMode(QtGui.QWidget):
 
         self.dropWidget.routeModule.connect(self.displayModule)
 
-        self.hboxProg=QtGui.QHBoxLayout()
+        self.hboxProg=QtWidgets.QHBoxLayout()
 
-        push_single=QtGui.QPushButton('Apply to One')
-        push_range=QtGui.QPushButton('Apply to Range')
-        push_all=QtGui.QPushButton('Apply to All')
+        push_single=QtWidgets.QPushButton('Apply to One')
+        push_range=QtWidgets.QPushButton('Apply to Range')
+        push_all=QtWidgets.QPushButton('Apply to All')
 
         push_single.setStyleSheet(s.btnStyle)
         push_range.setStyleSheet(s.btnStyle)
@@ -628,12 +624,12 @@ class SuperMode(QtGui.QWidget):
         result=self.checkLoopOrder(items)
         if result:
             if g.workingDirectory:
-                path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, 'Save File', g.workingDirectory, 'PKL(*.pkl)'))
+                path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', g.workingDirectory, 'PKL(*.pkl)'))
                 path=path_.filePath()
                 saveFileName=path_.fileName()
                 #g.workingDirectory=path_.filePath()
             else:
-                path_ = QtCore.QFileInfo(QtGui.QFileDialog.getSaveFileName(self, 'Save File', '', 'PKL(*.pkl)'))
+                path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '', 'PKL(*.pkl)'))
                 path=path_.filePath()
                 saveFileName=path_.fileName()
                 #g.workingDirectory=path_.filePath()     
@@ -659,13 +655,13 @@ class SuperMode(QtGui.QWidget):
         proceed=False
 
         if self.dropWidget.vbox.count()>0:
-            reply = QtGui.QMessageBox.question(self, "Load a measurement chain",
+            reply = QtWidgets.QMessageBox.question(self, "Load a measurement chain",
                 "Loading a measurement chain will replace the current one. Do you want to proceed?",
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
         else:
             proceed=True
 
-        if proceed or reply == QtGui.QMessageBox.Yes:
+        if proceed or reply == QtWidgets.QMessageBox.Yes:
             for i in reversed(range(self.dropWidget.vbox.count())): 
                 self.dropWidget.vbox.itemAt(i).widget().setParent(None)
 
@@ -674,9 +670,13 @@ class SuperMode(QtGui.QWidget):
             self.dropWidget.routerDisplayModule(None)
             self.dropWidget.update()
            # print self.dropWidget.vbox.count()
-            
 
-            path = QtCore.QFileInfo(QtGui.QFileDialog().getOpenFileName(self, 'Load file', "*.pkl"))
+            try:
+                path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
+                        getOpenFileName(self, 'Load file', "*.pkl")[0])
+            except IndexError: # nothing selected
+                return
+
             name=path.fileName()
             self.loaded_label.setText(name)
 
@@ -759,7 +759,7 @@ class SuperMode(QtGui.QWidget):
             return False
 
     def checkLoopOrder(self, items):
-        print "Checking loop order..."
+        print("Checking loop order...")
 
         # every loop start represents a 1
         # every loop end represents a -1
@@ -781,10 +781,10 @@ class SuperMode(QtGui.QWidget):
 
     def clearChain(self):
         if self.dropWidget.vbox.count()>0:
-            reply = QtGui.QMessageBox.question(self, "Clear chain",
+            reply = QtWidgets.QMessageBox.question(self, "Clear chain",
                 "Are you sure?",
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)
-        if reply == QtGui.QMessageBox.Yes:
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+        if reply == QtWidgets.QMessageBox.Yes:
             for i in reversed(range(self.dropWidget.vbox.count())): 
                 self.dropWidget.vbox.itemAt(i).widget().setParent(None)
 
@@ -794,9 +794,9 @@ class SuperMode(QtGui.QWidget):
             self.loaded_label.setText("")
 
     def throw_wrong_loops_dialogue(self):
-        reply = QtGui.QMessageBox.question(self, "Wrong chain loops",
+        reply = QtWidgets.QMessageBox.question(self, "Wrong chain loops",
             "There is something wrong with the ordering of the Start and End loops. Please check.",
-            QtGui.QMessageBox.Yes | QtGui.QMessageBox.Cancel)        
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
 
     def programOne(self):
         if g.ser.port != None:
@@ -891,12 +891,3 @@ class SuperMode(QtGui.QWidget):
 
         return rangeDev
 
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = SUperMode()
-    
-    sys.exit(app.exec_())
-
-if __name__ == '__main__':
-    main() 

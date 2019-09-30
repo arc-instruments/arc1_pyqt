@@ -8,7 +8,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
 import sys
 import os
@@ -159,21 +159,21 @@ def _curve_fit(func, x, y, **kwargs):
             kwargs.pop('method')
     return curve_fit(func, x, y, **kwargs)
 
-class ModelWidget(QtGui.QWidget):
+class ModelWidget(QtWidgets.QWidget):
 
     def __init__(self, parameters, func, expression="", parent=None):
         super(ModelWidget, self).__init__(parent=parent)
-        self.expressionLabel = QtGui.QLabel("Model expression: %s" % expression)
-        self.parameterTable = QtGui.QTableWidget(len(parameters), 2, parent=self)
+        self.expressionLabel = QtWidgets.QLabel("Model expression: %s" % expression)
+        self.parameterTable = QtWidgets.QTableWidget(len(parameters), 2, parent=self)
         self.parameterTable.horizontalHeader().setVisible(True)
         self.parameterTable.setVerticalHeaderLabels(parameters)
         self.parameterTable.setHorizontalHeaderLabels(["> 0 branch","< 0 branch"])
-        self.parameterTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.parameterTable.setSelectionMode(QtGui.QTableWidget.NoSelection)
+        self.parameterTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.parameterTable.setSelectionMode(QtWidgets.QTableWidget.NoSelection)
 
         self.func = func
 
-        container = QtGui.QVBoxLayout()
+        container = QtWidgets.QVBoxLayout()
         container.setContentsMargins(0, 0, 0, 0)
         container.addWidget(self.expressionLabel)
         container.addWidget(self.parameterTable)
@@ -181,22 +181,22 @@ class ModelWidget(QtGui.QWidget):
         self.setLayout(container)
 
         for (i, p) in enumerate(parameters):
-            pos = QtGui.QTableWidgetItem("1.0")
-            neg = QtGui.QTableWidgetItem("1.0")
+            pos = QtWidgets.QTableWidgetItem("1.0")
+            neg = QtWidgets.QTableWidgetItem("1.0")
             self.parameterTable.setItem(i, 0, pos)
             self.parameterTable.setItem(i, 1, neg)
 
 
     def updateValues(self, pPos, pNeg):
         for (i, val) in enumerate(pPos):
-            self.parameterTable.setItem(i, 0, QtGui.QTableWidgetItem(str(val)))
+            self.parameterTable.setItem(i, 0, QtWidgets.QTableWidgetItem(str(val)))
         for (i, val) in enumerate(pNeg):
-            self.parameterTable.setItem(i, 1, QtGui.QTableWidgetItem(str(val)))
+            self.parameterTable.setItem(i, 1, QtWidgets.QTableWidgetItem(str(val)))
 
     def modelFunc(self):
         return self.func
 
-class FitDialog(Ui_FitDialogParent, QtGui.QDialog):
+class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
 
     resistances = []
     voltages = []
@@ -630,25 +630,25 @@ class ThreadWrapper(QtCore.QObject):
 
     def curveTracer(self, w, b, vPos, vNeg, vStart, vStep, interpulse, pwstep, ctType, startTag, midTag, endTag):
         print("Sending CT data")
-        g.ser.write(str(201) + "\n")
+        g.ser.write_b(str(201) + "\n")
 
-        g.ser.write(str(vPos) + "\n")
-        g.ser.write(str(vNeg) + "\n")
-        g.ser.write(str(vStart) + "\n")
-        g.ser.write(str(vStep) + "\n")
-        g.ser.write(str(pwstep) + "\n")
-        g.ser.write(str(interpulse) + "\n")
+        g.ser.write_b(str(vPos) + "\n")
+        g.ser.write_b(str(vNeg) + "\n")
+        g.ser.write_b(str(vStart) + "\n")
+        g.ser.write_b(str(vStep) + "\n")
+        g.ser.write_b(str(pwstep) + "\n")
+        g.ser.write_b(str(interpulse) + "\n")
         time.sleep(0.01)
-        g.ser.write(str(10.1/1000000) + "\n") # CSp
-        g.ser.write(str(-10.1/1000000) + "\n") # CSn
-        g.ser.write(str(1) + "\n") # single cycle
-        g.ser.write(str(ctType) + "\n") # staircase or pulsed
-        g.ser.write(str(0) + "\n") # towards V+ always
-        g.ser.write(str(0) + "\n") # do not halt+return
+        g.ser.write_b(str(0.0) + "\n") # CSp
+        g.ser.write_b(str(0.0) + "\n") # CSn
+        g.ser.write_b(str(1) + "\n") # single cycle
+        g.ser.write_b(str(ctType) + "\n") # staircase or pulsed
+        g.ser.write_b(str(0) + "\n") # towards V+ always
+        g.ser.write_b(str(0) + "\n") # do not halt+return
 
-        g.ser.write(str(1) + "\n") # single device always
-        g.ser.write(str(int(w)) + "\n") # word line
-        g.ser.write(str(int(b)) + "\n") # bit line
+        g.ser.write_b(str(1) + "\n") # single device always
+        g.ser.write_b(str(int(w)) + "\n") # word line
+        g.ser.write_b(str(int(b)) + "\n") # bit line
 
         end = False
 
@@ -694,26 +694,26 @@ class ThreadWrapper(QtCore.QObject):
 
     def formFinder(self, w, b, V, pw, interpulse, nrPulses, startTag, midTag, endTag):
 
-        g.ser.write(str(14) + "\n") # job number, form finder
+        g.ser.write_b(str(14) + "\n") # job number, form finder
 
-        g.ser.write(str(V) + "\n") # Vmin == Vmax
+        g.ser.write_b(str(V) + "\n") # Vmin == Vmax
         if V > 0:
-            g.ser.write(str(0.1) + "\n") # no step, single voltage
+            g.ser.write_b(str(0.1) + "\n") # no step, single voltage
         else:
-            g.ser.write(str(-0.1) + "\n")
-        g.ser.write(str(V) + "\n") # Vmax == Vmin
-        g.ser.write(str(pw) + "\n") # pw_min == pw_max
-        g.ser.write(str(100.0) + "\n") # no pulse step
-        g.ser.write(str(pw) + "\n") # pw_max == pw_min
-        g.ser.write(str(interpulse) + "\n") # interpulse time
-        #g.ser.write(str(nrPulses) + "\n") # number of pulses
-        g.ser.write(str(10.0) + "\n") # 10 Ohms R threshold (ie no threshold)
-        g.ser.write(str(0.0) + "\n") # 0% R threshold (ie no threshold)
-        g.ser.write(str(7) + "\n") # 7 -> no series resistance
-        g.ser.write(str(nrPulses) + "\n") # number of pulses
-        g.ser.write(str(1) + "\n") # single device always
-        g.ser.write(str(int(w)) + "\n") # word line
-        g.ser.write(str(int(b)) + "\n") # bit line
+            g.ser.write_b(str(-0.1) + "\n")
+        g.ser.write_b(str(V) + "\n") # Vmax == Vmin
+        g.ser.write_b(str(pw) + "\n") # pw_min == pw_max
+        g.ser.write_b(str(100.0) + "\n") # no pulse step
+        g.ser.write_b(str(pw) + "\n") # pw_max == pw_min
+        g.ser.write_b(str(interpulse) + "\n") # interpulse time
+        #g.ser.write_b(str(nrPulses) + "\n") # number of pulses
+        g.ser.write_b(str(10.0) + "\n") # 10 Ohms R threshold (ie no threshold)
+        g.ser.write_b(str(0.0) + "\n") # 0% R threshold (ie no threshold)
+        g.ser.write_b(str(7) + "\n") # 7 -> no series resistance
+        g.ser.write_b(str(nrPulses) + "\n") # number of pulses
+        g.ser.write_b(str(1) + "\n") # single device always
+        g.ser.write_b(str(int(w)) + "\n") # word line
+        g.ser.write_b(str(int(b)) + "\n") # bit line
 
         end = False
 
@@ -758,7 +758,7 @@ class ThreadWrapper(QtCore.QObject):
             self.displayData.emit()
 
 
-class ParameterFit(Ui_PFParent, QtGui.QWidget):
+class ParameterFit(Ui_PFParent, QtWidgets.QWidget):
 
     PROGRAM_ONE = 0x1;
     PROGRAM_RANGE = 0x2;
@@ -842,7 +842,7 @@ class ParameterFit(Ui_PFParent, QtGui.QWidget):
         result["iv_interpulse"] = np.abs(float(self.IVInterpulseEdit.text()))/1000.0
         result["run_iv"] = (not self.noIVCheckBox.isChecked())
         result["ivpw"] = np.abs(float(self.IVPwEdit.text()))/1000.0
-        result["ivtype"] = self.IVTypeCombo.itemData(self.IVTypeCombo.currentIndex()).toInt()[0]
+        result["ivtype"] = int(self.IVTypeCombo.itemData(self.IVTypeCombo.currentIndex()))
 
         return result
 

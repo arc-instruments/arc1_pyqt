@@ -7,12 +7,13 @@
 
 ####################################
 
-import GlobalVars as g
-from PyQt4.QtCore import QObject, pyqtSignal
-from PyQt4 import QtGui
+from . import GlobalVars as g
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5 import QtGui, QtWidgets
 from time import sleep
 import numpy as np
 import collections
+import struct
 from virtualArC import virtualarc
 
 
@@ -168,10 +169,18 @@ def writeDelimitedData(data, dest, delimiter="\t"):
         print(exc)
 
 def saveFuncToFilename(func, title="", parent=None):
-    fname = QtGui.QFileDialog.getSaveFileName(parent, title)
+    fname = QtWidgets.QFileDialog.getSaveFileName(parent, title)
 
     if fname:
         func(fname)
+
+def gzipFileSize(fname):
+    with open(fname, 'rb') as f:
+        # gzip uncompressed file size is stored in the
+        # last 4 bytes of the file. This will roll over
+        # for files > 4 GB
+        f.seek(-4,2)
+        return struct.unpack('I', f.read(4))[0]
 
 ###########################################
 # UUpdate Hover panel
@@ -202,7 +211,8 @@ def getFloats(n):
         while g.ser.inWaiting()<n*4:
             pass
         values=g.ser.read(size=n*4) # read n * 4 bits of data (n floats) from the input serial
-        extracted=np.frombuffer(buffer(values), dtype=np.float32)
+        buf = memoryview(values)
+        extracted=np.frombuffer(buf, dtype=np.float32)
     else:
         extracted = g.ser.read(n)
     return extracted    # returns a list of these floats

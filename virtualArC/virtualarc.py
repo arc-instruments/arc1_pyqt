@@ -1,6 +1,6 @@
 import numpy as np
 #from biolek_device import BiolekDevice as memristor
-from parametric_device import ParametricDevice as memristor
+from .parametric_device import ParametricDevice as memristor
 from functools import partial
 import time
 from threading import Thread
@@ -8,7 +8,7 @@ from threading import Thread
 #from PIL import Image
 #import PIL
 
-import Queue
+import queue
 
 readNoise=0.01
 write_scheme={'V/2':0.5}
@@ -19,13 +19,12 @@ class virtualArC(object):
     def __init__(self, option):
         super(virtualArC, self).__init__()
         self.port="not none"
-        print "initialised"
         self.crossbar=[[] for x in range(33)]
         self.counter=0
         self.w=0
         self.b=0
-        self.q_in=Queue.Queue()
-        self.q_out=Queue.Queue()
+        self.q_in=queue.Queue()
+        self.q_out=queue.Queue()
         self.dt=1e-6
         self.Vread=0.5
         self.initialise()
@@ -41,7 +40,6 @@ class virtualArC(object):
                 self.crossbar[w].append(mx)
 
     def base_readline(self):
-        print "100\n"
         return "100\n"
         pass
 
@@ -83,9 +81,6 @@ class virtualArC(object):
         if job=="33":
             pass
 
-        print "Task received:", job
-
-
     def write(self,value):
         job=value.rstrip()
         if job=="1":
@@ -115,12 +110,12 @@ class virtualArC(object):
         if job=="33":
             pass
 
-        print "Task received:",job
+    def write_b(self, value):
+        self.write(value)
 
     ################################################## CURVETRACER ####
     def get_formfinder(self, value):
         self.counter+=1
-        print "counter at: ", self.counter
         self.q_in.put(value.rstrip())
         if self.counter==12:
             #self.execute_endurance()
@@ -143,7 +138,6 @@ class virtualArC(object):
             self.nr_of_devices=int(float(self.q_in.get()))
 
             self.counter=0
-            print(pl)
             self.write = partial(self.get_formfinder_device, payload=pl)
 
     def get_formfinder_device(self, value, payload):
@@ -152,7 +146,6 @@ class virtualArC(object):
         if self.counter==2:
             self.w=int(float(self.q_in.get()))
             self.b=int(float(self.q_in.get()))
-            print "Executing for device: ", self.w, self.b
             self.counter=0
             target = partial(self.execute_formfinder, payload=payload)
             t = Thread(target=target)
@@ -179,8 +172,6 @@ class virtualArC(object):
 
         self.tripleSend(read(self.crossbar,self.w,self.b), 0.5, 0.0)
         Mstart=read(self.crossbar,self.w,self.b)
-
-        print Rthr_p, Mstart, Rthr
 
         if Rthr_p == 0 and Mstart < Rthr:
             exitFlag=1
@@ -220,7 +211,6 @@ class virtualArC(object):
     ################################################## CURVETRACER ####
     def get_curvetracer(self, value):
         self.counter+=1
-        print "counter at: ", self.counter
         self.q_in.put(value.rstrip())
         if self.counter==13:
             #self.execute_endurance()
@@ -243,7 +233,6 @@ class virtualArC(object):
 
             self.counter=0
             self.write=self.get_curvetracer_device
-            print "pwstep is: ", self.pwstep
     
     def get_curvetracer_device(self, value):
         self.counter+=1
@@ -251,7 +240,6 @@ class virtualArC(object):
         if self.counter==2:
             self.w=int(float(self.q_in.get()))
             self.b=int(float(self.q_in.get()))
-            print "Executing for device: ", self.w, self.b
             self.counter=0
             self.execute_curvetracer()
 
@@ -290,8 +278,6 @@ class virtualArC(object):
             firstV=int(abs(abs(Vneg_max)-Vstart)/Vstep)
             secondV=0
 
-        print "option is ", option
-        print firstV, secondV
         #First Ru
         for run in range(1,cycles+1):
             if option==0:
@@ -305,13 +291,11 @@ class virtualArC(object):
 
             for i in range(firstV+1):
                 Vread=(i*Vstep+Vstart)*polarity
-                print("pulsing %dx%d at %f V, pwstep: %f and dt: %f" % (self.w, self.b, self.Vread, self.pwstep, self.dt))
                 pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
                 self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
 
             for i in range(firstV,0,-1):
                 Vread=((i-1)*Vstep+Vstart)*polarity
-                print("pulsing %dx%d at %f V, pwstep: %f and dt: %f" % (self.w, self.b, self.Vread, self.pwstep, self.dt))
                 pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
                 self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
 
@@ -327,13 +311,11 @@ class virtualArC(object):
             if (option!=2 and option!=3):
                 for i in range(secondV+1):
                     Vread=(i*Vstep+Vstart)*polarity;
-                    print("pulsing %dx%d at %f V, pwstep: %f and dt: %f" % (self.w, self.b, self.Vread, self.pwstep, self.dt))
                     pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
                     self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
 
                 for i in range(secondV,0,-1):
                     Vread=((i-1)*Vstep+Vstart)*polarity
-                    print("pulsing %dx%d at %f V, pwstep: %f and dt: %f" % (self.w, self.b, self.Vread, self.pwstep, self.dt))
                     pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
                     self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
 
@@ -347,7 +329,6 @@ class virtualArC(object):
     ################################################## SWITCHSEEKER FAST ###
     def get_switchseeker_fast(self, value):
         self.counter+=1
-        print "counter at: ", self.counter
         self.q_in.put(value.rstrip())
         if self.counter==13:
             self.pw=float(self.q_in.get())
@@ -375,7 +356,6 @@ class virtualArC(object):
         if self.counter==2:
             self.w=int(float(self.q_in.get()))
             self.b=int(float(self.q_in.get()))
-            print "Executing for device: ", self.w, self.b
             self.counter=0
             self.execute_switchseeker_fast()
 
@@ -452,7 +432,6 @@ class virtualArC(object):
     ################################################## SWITCHSEEKER SLOW ###
     def get_switchseeker_slow(self, value):
         self.counter+=1
-        print "counter at: ", self.counter
         self.q_in.put(value.rstrip())
         if self.counter==13:
             #self.execute_endurance()
@@ -481,7 +460,6 @@ class virtualArC(object):
         if self.counter==2:
             self.w=int(float(self.q_in.get()))
             self.b=int(float(self.q_in.get()))
-            print "Executing for device: ", self.w, self.b
             self.counter=0
             self.execute_switchseeker_slow()
 
@@ -522,7 +500,6 @@ class virtualArC(object):
             while not exitFlag:
                 currR=self.SS_BasicUnit(self.reads_in_trailercard, self.pPulses, \
                                     Vbias, self.pw, self.checkRead, self.interpulse)
-                print "Read resistance is:",currR,self.tol/100.0
 
                 RES[0][0]=Vbias
                 RES[0][1]=self.pw
@@ -573,7 +550,6 @@ class virtualArC(object):
 
     def SS_BasicUnit(self, M, N, Vbias, T, rw, interpulse):
         outcome=0
-        print "Basic unitting..."
         for i in range(N):
             pulse(self.crossbar,self.w,self.b,Vbias,T,self.dt)
             if True:
@@ -617,8 +593,6 @@ class virtualArC(object):
                     if ((currR/baseline<=(1+self.tol/100.0)) and (currR > baseline)) or \
                         (((currR/baseline >= (1/(1+self.tol/100))) and (currR<baseline))):
                         Vbias+=Vstep*(Vbias/abs(Vbias))
-
-                        print "   - applied Vbias:",Vbias,Vmax
 
                         if abs(Vbias)>Vmax:
                             RES[n][2]=0
@@ -754,10 +728,10 @@ class virtualArC(object):
 def pulse(crossbar, w, b, ampl, pw, dt):
     global write_scheme
 
-    b_inactive=range(1,33)
+    b_inactive=list(range(1,33))
     b_inactive.remove(b)
 
-    w_inactive=range(1,33)
+    w_inactive=list(range(1,33))
     w_inactive.remove(w)
 
     for timestep in range(int(pw/dt)):

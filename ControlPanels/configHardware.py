@@ -7,9 +7,8 @@
 
 ####################################
 
-from PyQt4 import QtGui
-import cell as c
-
+from PyQt5 import QtGui, QtWidgets
+from . import cell as c
 
 import Globals.GlobalVars as g
 import Globals.GlobalFonts as fonts
@@ -17,7 +16,7 @@ import Globals.GlobalStyles as s
 import Globals.GlobalFunctions as f
 
 
-class configHardware(QtGui.QWidget):
+class configHardware(QtWidgets.QWidget):
     
     def __init__(self):
         super(configHardware, self).__init__()
@@ -25,7 +24,7 @@ class configHardware(QtGui.QWidget):
         self.initUI()
         
     def initUI(self):      
-        mainLayout=QtGui.QVBoxLayout()  # Set main vertical layout
+        mainLayout=QtWidgets.QVBoxLayout()  # Set main vertical layout
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
         # ============================
@@ -33,29 +32,29 @@ class configHardware(QtGui.QWidget):
         # Setup mCAT settings
         # ============================
 
-        self.hwSettings = QtGui.QGroupBox('Hardware Settings')
+        self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
         self.hwSettings.setStyleSheet(s.groupStyleNewSesh)
-        #palette=QtGui.QPalette()
+        #palette=QtWidgets.QPalette()
         self.hwSettings.setFont(fonts.font2)
 
 
-        hwSetLayout=QtGui.QGridLayout()
+        hwSetLayout=QtWidgets.QGridLayout()
         hwSetLayout.setContentsMargins(10,20,10,10)
 
-        readCyclesLabel=QtGui.QLabel(self)
+        readCyclesLabel=QtWidgets.QLabel(self)
         readCyclesLabel.setText("Reading Cycles:")
         readCyclesLabel.setFont(fonts.font3)
 
-        sneakLabel=QtGui.QLabel(self)
+        sneakLabel=QtWidgets.QLabel(self)
         sneakLabel.setText("Sneak Path Limiting:")
         sneakLabel.setFont(fonts.font3)
 
-        self.readCyclesEntry=QtGui.QLineEdit()
+        self.readCyclesEntry=QtWidgets.QLineEdit()
         self.readCyclesEntry.setFixedWidth(320)
         self.readCyclesEntry.setText(str(g.readCycles))
         self.readCyclesEntry.setFont(fonts.font3)
 
-        self.sneakCombo=QtGui.QComboBox(self)
+        self.sneakCombo=QtWidgets.QComboBox(self)
         self.sneakCombo.setMaximumWidth(320)
         self.sneakCombo.addItem("Write: V/3")
         self.sneakCombo.addItem("Write: V/2")
@@ -72,16 +71,16 @@ class configHardware(QtGui.QWidget):
 
 
         # Apply/Cancel buttons Layout
-        startLay_group=QtGui.QGroupBox()
+        startLay_group=QtWidgets.QGroupBox()
         startLay_group.setStyleSheet(s.groupStyle)
-        startLay=QtGui.QHBoxLayout()
+        startLay=QtWidgets.QHBoxLayout()
 
-        start_btn=QtGui.QPushButton('Apply')
+        start_btn=QtWidgets.QPushButton('Apply')
         start_btn.setStyleSheet(s.btnStyle2)
         start_btn.setMinimumWidth(100)
         start_btn.clicked.connect(self.updateHW)
 
-        cancel_btn=QtGui.QPushButton('Cancel')
+        cancel_btn=QtWidgets.QPushButton('Cancel')
         cancel_btn.setStyleSheet(s.btnStyle2)
         cancel_btn.setMinimumWidth(100)
         cancel_btn.clicked.connect(self.cancelUpdateHW)
@@ -94,9 +93,9 @@ class configHardware(QtGui.QWidget):
 
         #startLay_group.setLayout(startLay)
 
-        line=QtGui.QFrame()
-        line.setFrameShape(QtGui.QFrame.HLine)
-        line.setFrameShadow(QtGui.QFrame.Plain)
+        line=QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Plain)
         line.setStyleSheet(s.lineStyle)
         line.setLineWidth(1)
 
@@ -109,40 +108,23 @@ class configHardware(QtGui.QWidget):
 
         mainLayout.addLayout(startLay)
 
-        #spacer=QtGui.QSpacerItem(1,1)
+        #spacer=QtWidgets.QSpacerItem(1,1)
         #mainLayout.addWidget(spacer)
         #mainLayout.addSpacing(1)
 
         self.setContentsMargins(0,0,0,0)    # spacing of the full Layout to accomodate line numbers and colorbar on the right  
         self.setLayout(mainLayout)
 
-
     def updateHW(self):
 
         g.readCycles=int(self.readCyclesEntry.text())
         g.sneakPathOption=self.sneakCombo.currentIndex()
 
-        # Browse label and browse button
-        #wDirBrowse=QtGui.
-        print g.readCycles
-        print g.sneakPathOption
-
         f.interfaceAntenna.updateHW.emit()
 
         self.close()
 
-        pass
-
     def cancelUpdateHW(self):
         self.close()
         pass
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = configHardware()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

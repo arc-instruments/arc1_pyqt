@@ -9,8 +9,7 @@
 
 import sys
 import os
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
 
 import pyqtgraph as pg
@@ -23,7 +22,7 @@ import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 
 
-class history_panel(QtGui.QWidget):
+class history_panel(QtWidgets.QWidget):
     
     def __init__(self):
         super(history_panel, self).__init__()
@@ -31,11 +30,11 @@ class history_panel(QtGui.QWidget):
         
     def initUI(self):   
 
-        self.dieName = QtGui.QLineEdit('Package1')
+        self.dieName = QtWidgets.QLineEdit('Package1')
         self.dieName.setFont(fonts.font1)
         self.dieName.textChanged.connect(self.changeSessionNameManualy)
 
-        self.historyTree = QtGui.QTreeWidget()
+        self.historyTree = QtWidgets.QTreeWidget()
         self.historyTree.setHeaderLabel('Device History')
         self.historyTree.itemClicked.connect(self.changeDisplayToSelectedItem)
         self.historyTree.itemDoubleClicked.connect(self.displayResults)
@@ -45,7 +44,7 @@ class history_panel(QtGui.QWidget):
         f.historyTreeAntenna.clearTree.connect(self.clearTree)
         f.historyTreeAntenna.changeSessionName.connect(self.changeSessionName)
 
-        mainLayout=QtGui.QVBoxLayout()
+        mainLayout=QtWidgets.QVBoxLayout()
         mainLayout.addWidget(self.dieName)
         mainLayout.addWidget(self.historyTree)
 
@@ -59,7 +58,6 @@ class history_panel(QtGui.QWidget):
 
     def changeSessionNameManualy(self, txt):
         g.sessionName=txt
-        print txt
 
     def changeSessionName(self):
         self.dieName.setText(g.sessionName)
@@ -76,7 +74,7 @@ class history_panel(QtGui.QWidget):
         if existingItem==[]:        # if no entry for that adress exists, make a new one
             newTag=self.formatItemText(w,b) # format the text of the new history entry item taken from the dictionary of the prog panels
             if newTag:
-                newTree=QtGui.QTreeWidgetItem(self.historyTree)
+                newTree=QtWidgets.QTreeWidgetItem(self.historyTree)
                 newTree.setText(0,"W=" + str(w) + " | B=" + str(b))
                 self.deunderline()                                  # deunderline every tree top level item
                 newTree.setFont(0,fonts.history_top_underline)      # underline the current one
@@ -86,7 +84,7 @@ class history_panel(QtGui.QWidget):
                 newTree.setWhatsThis(3,str(0))
                 newTree.setWhatsThis(4,str(0))
                 #newTree.itemClicked.connect(self.changeDisplayToSelectedItem)
-                newItem=QtGui.QTreeWidgetItem(newTree)
+                newItem=QtWidgets.QTreeWidgetItem(newTree)
                 newItem.setWhatsThis(0,str(w)+','+str(b))
 
                 newItem.setWhatsThis(1,newTag[0])
@@ -111,14 +109,12 @@ class history_panel(QtGui.QWidget):
                     if newTag[0] in existingItem[0].child(0).text(0):  # if previously the same operation has been performed
                         if newTag[0]=='Read' or newTag[0]=='Pulse':       # for Read and Pulse special cases, add the trailing integer by +1
                             string=str(existingItem[0].child(0).text(0))
-                            #print string
                             nr=[int(s) for s in string.split(' ') if s.isdigit()][-1]
-                            #print nr
                             nr=nr+1
                             newTag[0]=newTag[0]+' x '+str(nr)
                             existingItem[0].child(0).setText(0,newTag[0])
                         else:                                   # if it's not pulse or read, add a new item
-                            newItem=QtGui.QTreeWidgetItem()
+                            newItem=QtWidgets.QTreeWidgetItem()
                             newItem.setWhatsThis(0,str(w)+','+str(b))
                             newItem.setWhatsThis(1,newTag[0])
                             newItem.setWhatsThis(2,newTag[1])
@@ -131,7 +127,7 @@ class history_panel(QtGui.QWidget):
                             newItem.setFont(0,fonts.history_child)
 
                     else:
-                        newItem=QtGui.QTreeWidgetItem()
+                        newItem=QtWidgets.QTreeWidgetItem()
                         newItem.setWhatsThis(0,str(w)+','+str(b))
                         newItem.setWhatsThis(1,newTag[0])
                         newItem.setWhatsThis(2,newTag[1])
@@ -231,7 +227,7 @@ class history_panel(QtGui.QWidget):
                 #print voltage
 
                 # setup display
-                self.resultWindow.append(QtGui.QWidget())
+                self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,400)
                 self.resultWindow[-1].setWindowTitle("Curve Tracer: W="+ str(w) + " | B=" + str(b))
                 self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
@@ -276,7 +272,7 @@ class history_panel(QtGui.QWidget):
                 self.plot_R.getAxis('left').setGrid(50)
                 self.plot_R.getAxis('bottom').setGrid(50)
 
-                resLayout = QtGui.QVBoxLayout()
+                resLayout = QtWidgets.QVBoxLayout()
                 resLayout.addWidget(view)
                 resLayout.setContentsMargins(0,0,0,0)
 
@@ -391,7 +387,7 @@ class history_panel(QtGui.QWidget):
                 confY=[-max_dR, max_dR] 
 
                 # setup display
-                self.resultWindow.append(QtGui.QWidget())
+                self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,500)
                 self.resultWindow[-1].setWindowTitle("SwitchSeeker: W="+ str(w) + " | B=" + str(b))
                 self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
@@ -424,7 +420,7 @@ class history_panel(QtGui.QWidget):
                 #self.plot_3D.getAxis('left').setGrid(50)
                 #self.plot_3D.getAxis('bottom').setGrid(50) 
 
-                resLayout = QtGui.QHBoxLayout()
+                resLayout = QtWidgets.QHBoxLayout()
                 resLayout.addWidget(view)
                 resLayout.setContentsMargins(0,0,0,0)
 
@@ -472,11 +468,11 @@ class history_panel(QtGui.QWidget):
                 self.plot_ret.getAxis('left').setGrid(50)
                 self.plot_ret.getAxis('bottom').setGrid(50)
 
-                resLayout = QtGui.QHBoxLayout()
+                resLayout = QtWidgets.QHBoxLayout()
                 resLayout.addWidget(view)
                 resLayout.setContentsMargins(0,0,0,0)
 
-                self.resultWindow.append(QtGui.QWidget())
+                self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,400)
                 self.resultWindow[-1].setWindowTitle("Retention: W="+ str(w) + " | B=" + str(b))
                 self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
@@ -493,14 +489,11 @@ class history_panel(QtGui.QWidget):
                 self.resultWindow[-1].update()
 
             if tagKey=='VOL':
-                print "VolatilityRead"
                 pass
 
             if tagKey=='stdp':
 
                 reg=re.compile(r'-?[0-9\.]+')
-                # for line in raw:
-                #     print line
 
                 i=0
                 list_dt=[]
@@ -522,7 +515,7 @@ class history_panel(QtGui.QWidget):
 
 
                 # setup display
-                self.resultWindow.append(QtGui.QWidget())
+                self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,500,500)
                 self.resultWindow[-1].setWindowTitle("STDP: W="+ str(w) + " | B=" + str(b))
                 self.resultWindow[-1].setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png')) 
@@ -542,7 +535,7 @@ class history_panel(QtGui.QWidget):
                 self.plot_stdp.getAxis('bottom').setGrid(50)
                 self.curve_stdp.setData(np.asarray(list_dt),np.asarray(dG))
 
-                resLayout = QtGui.QHBoxLayout()
+                resLayout = QtWidgets.QHBoxLayout()
                 resLayout.addWidget(view)
                 resLayout.setContentsMargins(0,0,0,0)
 
@@ -556,7 +549,6 @@ class history_panel(QtGui.QWidget):
                 self.resultWindow.append(widget)
                 widget.show()
                 widget.update()
-        pass
 
     def min_without_inf(self, lst, exclude):
         maxim=1e100
@@ -658,14 +650,4 @@ class history_panel(QtGui.QWidget):
             tag.append(str(currentTagKey))
 
         return tag
-     
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = history_panel()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main()  

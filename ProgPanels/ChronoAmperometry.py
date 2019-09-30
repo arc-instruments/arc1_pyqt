@@ -23,7 +23,7 @@ cut off.
 """
 
 from __future__ import print_function
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtWidgets, QtCore
 from functools import partial
 import sys
 import os
@@ -89,15 +89,15 @@ class ThreadWrapper(QtCore.QObject):
         """ Transfer the parameters to ArC ONE """
 
         self.log("Initiating ChronoAmperometry (job 220)")
-        g.ser.write(str(220) + "\n")
+        g.ser.write_b(str(220) + "\n")
 
         p = self.params # shorthand; `self.params` is too long!
 
         self.log("Sending ChronoAmperometry params:", p)
-        g.ser.write("%.3e\n" % p["bias"])
-        g.ser.write("%.3e\n" % p["pw"])
-        g.ser.write("%d\n" % p["num_reads"])
-        g.ser.write(str(len(self.deviceList)) + "\n")
+        g.ser.write_b("%.3e\n" % p["bias"])
+        g.ser.write_b("%.3e\n" % p["pw"])
+        g.ser.write_b("%d\n" % p["num_reads"])
+        g.ser.write_b(str(len(self.deviceList)) + "\n")
         self.log("Parameters written")
 
     def run(self):
@@ -123,8 +123,8 @@ class ThreadWrapper(QtCore.QObject):
     def chronoamperometry(self, w, b):
 
         self.log("Running ChronoAmperometry on (W=%d, B=%d)" % (w, b))
-        g.ser.write("%d\n" % int(w)) # word line
-        g.ser.write("%d\n" % int(b)) # bit line
+        g.ser.write_b("%d\n" % int(w)) # word line
+        g.ser.write_b("%d\n" % int(b)) # bit line
 
         # Read the first batch of values
         global tag
@@ -158,7 +158,7 @@ class ThreadWrapper(QtCore.QObject):
         self.log("ChronoAmperometry on (W=%d, B=%d) finished..." % (w, b))
 
 
-class ChronoAmperometry(Ui_ChronoAmpParent, QtGui.QWidget):
+class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
 
     PROGRAM_ONE = 0x1;
     PROGRAM_RANGE = 0x2;
@@ -209,9 +209,9 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtGui.QWidget):
 
     @staticmethod
     def display(w, b, data, parent=None):
-        dialog = QtGui.QDialog(parent, QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowSystemMenuHint)
+        dialog = QtWidgets.QDialog(parent)
 
-        containerLayout = QtGui.QVBoxLayout()
+        containerLayout = QtWidgets.QVBoxLayout()
         dialog.setWindowTitle("Chronoamperometry W=%d | B=%d" % (w, b))
 
         R = np.empty(len(data))
@@ -247,13 +247,13 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtGui.QWidget):
         VTplot.setXLink("resistance")
         containerLayout.addWidget(gv)
 
-        saveButton = QtGui.QPushButton("Export data")
+        saveButton = QtWidgets.QPushButton("Export data")
 
         saveCb = partial(f.writeDelimitedData, np.column_stack((T, V, R, I)))
         saveButton.clicked.connect(partial(f.saveFuncToFilename, saveCb, "Save data to...", parent))
 
-        bottomLayout = QtGui.QHBoxLayout()
-        bottomLayout.addItem(QtGui.QSpacerItem(40, 10, QtGui.QSizePolicy.Expanding))
+        bottomLayout = QtWidgets.QHBoxLayout()
+        bottomLayout.addItem(QtWidgets.QSpacerItem(40, 10, QtWidgets.QSizePolicy.Expanding))
         bottomLayout.addWidget(saveButton)
         containerLayout.addItem(bottomLayout)
 

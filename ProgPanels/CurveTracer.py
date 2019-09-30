@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
@@ -45,15 +45,15 @@ class getData(QtCore.QObject):
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             for cycle in range(1,self.totalCycles+1):
@@ -111,7 +111,7 @@ class getData(QtCore.QObject):
         
         self.finished.emit()
 
-class CurveTracer(QtGui.QWidget):
+class CurveTracer(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(CurveTracer, self).__init__()
@@ -122,11 +122,11 @@ class CurveTracer(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('CurveTracer')
+        titleLabel = QtWidgets.QLabel('CurveTracer')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Standard IV measurement module with current cut-off.')
+        descriptionLabel = QtWidgets.QLabel('Standard IV measurement module with current cut-off.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -161,8 +161,8 @@ class CurveTracer(QtGui.QWidget):
         IVtypes=['Staircase', 'Pulsed']
         IVoptions=['Start towards V+', 'Start towards V-', 'Only V+', 'Only V-']
 
-        self.combo_IVtype=QtGui.QComboBox()
-        self.combo_IVoption=QtGui.QComboBox()
+        self.combo_IVtype=QtWidgets.QComboBox()
+        self.combo_IVoption=QtWidgets.QComboBox()
 
         self.combo_IVtype.insertItems(1,IVtypes)
         self.combo_IVoption.insertItems(1,IVoptions)
@@ -172,7 +172,7 @@ class CurveTracer(QtGui.QWidget):
 
 
         # Setup the two combo boxes
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -186,13 +186,13 @@ class CurveTracer(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.VLine); 
-        lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        lineRight=QtWidgets.QFrame()
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 7, 1)
@@ -204,24 +204,24 @@ class CurveTracer(QtGui.QWidget):
 
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
@@ -232,17 +232,17 @@ class CurveTracer(QtGui.QWidget):
         self.leftEdits[4].editingFinished.connect(self.imposeLimitsOnStepWidth)
 
 
-        returnCheckBox = QtGui.QCheckBox("Halt and return.")
+        returnCheckBox = QtWidgets.QCheckBox("Halt and return.")
         returnCheckBox.stateChanged.connect(self.toggleReturn)
         self.returnCheck=0
         gridLayout.addWidget(returnCheckBox, 4, 5)
         #Position the combo boxes and respective labels
 
-        lineLabel=QtGui.QLabel()
+        lineLabel=QtWidgets.QLabel()
         lineLabel.setText('Bias type:')
         gridLayout.addWidget(lineLabel,5,4)
 
-        lineLabel=QtGui.QLabel()
+        lineLabel=QtWidgets.QLabel()
         lineLabel.setText('IV span:')
         gridLayout.addWidget(lineLabel,6,4)
 
@@ -254,11 +254,11 @@ class CurveTracer(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        self.scrlArea=QtGui.QScrollArea()
+        self.scrlArea=QtWidgets.QScrollArea()
         self.scrlArea.setWidget(self.vW)
         self.scrlArea.setContentsMargins(0,0,0,0)
         self.scrlArea.setWidgetResizable(False)
@@ -272,11 +272,11 @@ class CurveTracer(QtGui.QWidget):
 
         if self.short==False:
 
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -293,7 +293,7 @@ class CurveTracer(QtGui.QWidget):
 
             vbox1.addLayout(self.hboxProg)
 
-            push_live=QtGui.QPushButton("LIVE")
+            push_live=QtWidgets.QPushButton("LIVE")
             push_live.setStyleSheet("background-color: red")
             push_live.clicked.connect(self.goLive)
             gridLayout.addWidget(push_live,len(self.leftEdits),0)
@@ -303,7 +303,6 @@ class CurveTracer(QtGui.QWidget):
         self.gridLayout=gridLayout
 
     def goLive(self):
-        print "Going Live!"
         moduleName="CT_LIVE"   # format module name from drop down
         thisPanel = importlib.import_module(moduleName)     # import the module
         panel_class = getattr(thisPanel, moduleName)        # get it's main class    
@@ -347,11 +346,11 @@ class CurveTracer(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         #self.setPanelParameters(layoutWidgets)
@@ -359,39 +358,34 @@ class CurveTracer(QtGui.QWidget):
 
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                #print i, type, value
+            if type == 'QLineEdit':
                 self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                #print i, type, value
+            if type == 'QComboBox':
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                #print i, type, value
+            if type == 'QCheckBox':
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def updateIVtype(self, event):
-        #print event
         pass   
 
     def updateIVoption(self, event):
-        #print event 
         pass
 
     def eventFilter(self, object, event):
-        #print object
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         return False
+
     def resizeWidget(self,event):
         pass
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
-        g.ser.write(str(float(self.rightEdits[1].text())/1000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[1].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
+        g.ser.write_b(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
+        g.ser.write_b(str(float(self.rightEdits[1].text())/1000)+"\n")
         time.sleep(0.01)
         CSp=float(self.rightEdits[2].text())
         CSn=float(self.rightEdits[3].text())
@@ -402,18 +396,18 @@ class CurveTracer(QtGui.QWidget):
             CSn=10.1
 
 
-        g.ser.write(str(CSp/1000000)+"\n")
-        g.ser.write(str(CSn/-1000000)+"\n")
+        g.ser.write_b(str(CSp/1000000)+"\n")
+        g.ser.write_b(str(CSn/-1000000)+"\n")
 
-        g.ser.write(str(int(self.rightEdits[0].text()))+"\n")
-        g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
-        g.ser.write(str(int(self.combo_IVoption.currentIndex()))+"\n")
-        g.ser.write(str(int(self.returnCheck))+"\n")
+        g.ser.write_b(str(int(self.rightEdits[0].text()))+"\n")
+        g.ser.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.returnCheck))+"\n")
 
     def programOne(self):
         if g.ser.port != None:
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             totalCycles=int(self.rightEdits[0].text())
             
@@ -425,8 +419,6 @@ class CurveTracer(QtGui.QWidget):
 
             self.thread.start()
 
-
-
     def programRange(self):
         if g.ser.port != None:
             totalCycles=int(self.rightEdits[0].text())
@@ -434,7 +426,7 @@ class CurveTracer(QtGui.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -443,7 +435,6 @@ class CurveTracer(QtGui.QWidget):
             self.finalise_thread_initialisation()
 
             self.thread.start()
-        
 
     def programAll(self):
         if g.ser.port != None:
@@ -451,7 +442,7 @@ class CurveTracer(QtGui.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
             self.thread=QtCore.QThread()
@@ -504,13 +495,4 @@ class CurveTracer(QtGui.QWidget):
                             rangeDev.append(cell)
 
         return rangeDev
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = CurveTracer()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 

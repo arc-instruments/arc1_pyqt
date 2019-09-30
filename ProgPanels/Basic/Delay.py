@@ -7,7 +7,7 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 #import Queue
@@ -41,7 +41,7 @@ class getData(QtCore.QObject):
         
         self.finished.emit()
 
-class Delay(QtGui.QWidget):
+class Delay(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(Delay, self).__init__()
@@ -50,18 +50,18 @@ class Delay(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('Delay')
+        titleLabel = QtWidgets.QLabel('Delay')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('A time delay.')
+        descriptionLabel = QtWidgets.QLabel('A time delay.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
 
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -74,9 +74,9 @@ class Delay(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 2, 1)
@@ -84,10 +84,10 @@ class Delay(QtGui.QWidget):
 
         # ========== ComboBox ===========
         
-        self.delay_mag=QtGui.QLineEdit()
+        self.delay_mag=QtWidgets.QLineEdit()
         self.delay_mag.setValidator(isFloat)
         self.delay_mag.setText("1")
-        self.delay_DropDown=QtGui.QComboBox()
+        self.delay_DropDown=QtWidgets.QComboBox()
         self.delay_DropDown.setStyleSheet(s.comboStylePulse)
 
         self.unitsFull=[['s',1],['ms',0.001]]
@@ -104,11 +104,11 @@ class Delay(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        scrlArea=QtGui.QScrollArea()
+        scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
@@ -120,11 +120,11 @@ class Delay(QtGui.QWidget):
         vbox1.addStretch()
 
         if self.short==False:
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -151,11 +151,11 @@ class Delay(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
         
@@ -165,13 +165,10 @@ class Delay(QtGui.QWidget):
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
 
@@ -209,13 +206,3 @@ class Delay(QtGui.QWidget):
             self.delay_DropDown.setCurrentIndex(0)
             self.delay=10
 
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = Delay()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main() 

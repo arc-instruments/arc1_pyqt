@@ -42,7 +42,7 @@ Please note that Ro is defined again after each failure.
 """
 
 from __future__ import print_function
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
 import sys
 import os
@@ -108,25 +108,25 @@ class ThreadWrapper(QtCore.QObject):
         """ Transfer the parameters to ArC ONE """
 
         self.log("Initiating ConvergeToState (job 21)")
-        g.ser.write(str(21) + "\n") # job number, converge to state
+        g.ser.write_b(str(21) + "\n") # job number, converge to state
 
         p = self.params # shorthand; `self.params` is too long!
 
         self.log("Sending ConvergeToState params")
-        g.ser.write("%.3e\n" % p["vmin"])
-        g.ser.write("%.3e\n" % p["vstep"])
-        g.ser.write("%.3e\n" % p["vmax"])
-        g.ser.write("%.3e\n" % p["pwmin"])
-        g.ser.write("%.3e\n" % p["pwstep"])
-        g.ser.write("%.3e\n" % p["pwmax"])
-        g.ser.write("%.3e\n" % p["interpulse"])
-        g.ser.write("%.3e\n" % p["res_target"])
-        g.ser.write("%.3e\n" % p["res_target_tolerance"])
-        g.ser.write("%.3e\n" % p["res_initial_tolerance"])
+        g.ser.write_b("%.3e\n" % p["vmin"])
+        g.ser.write_b("%.3e\n" % p["vstep"])
+        g.ser.write_b("%.3e\n" % p["vmax"])
+        g.ser.write_b("%.3e\n" % p["pwmin"])
+        g.ser.write_b("%.3e\n" % p["pwstep"])
+        g.ser.write_b("%.3e\n" % p["pwmax"])
+        g.ser.write_b("%.3e\n" % p["interpulse"])
+        g.ser.write_b("%.3e\n" % p["res_target"])
+        g.ser.write_b("%.3e\n" % p["res_target_tolerance"])
+        g.ser.write_b("%.3e\n" % p["res_initial_tolerance"])
 
-        g.ser.write("%d\n" % p["pulses"])
-        g.ser.write("%d\n" % p["init_pol"])
-        g.ser.write(str(len(self.deviceList)) + "\n")
+        g.ser.write_b("%d\n" % p["pulses"])
+        g.ser.write_b("%d\n" % p["init_pol"])
+        g.ser.write_b(str(len(self.deviceList)) + "\n")
 
     def run(self):
 
@@ -151,8 +151,8 @@ class ThreadWrapper(QtCore.QObject):
     def convergeToState(self, w, b):
 
         self.log("Running ConvergeToState on (W=%d, B=%d)" % (w, b))
-        g.ser.write("%d\n" % int(w)) # word line
-        g.ser.write("%d\n" % int(b)) # bit line
+        g.ser.write_b("%d\n" % int(w)) # word line
+        g.ser.write_b("%d\n" % int(b)) # bit line
 
         # Read the first batch of values
         global tag
@@ -186,7 +186,7 @@ class ThreadWrapper(QtCore.QObject):
         self.log("ConvergeToState on (W=%d, B=%d) finished..." % (w, b))
 
 
-class ConvergeToState(Ui_CTSParent, QtGui.QWidget):
+class ConvergeToState(Ui_CTSParent, QtWidgets.QWidget):
 
     PROGRAM_ONE = 0x1;
     PROGRAM_RANGE = 0x2;
@@ -250,7 +250,7 @@ class ConvergeToState(Ui_CTSParent, QtGui.QWidget):
         result["pwmax"] = float(self.pwMaxEdit.text())/1000.0
 
         idx = self.polarityCombo.currentIndex()
-        result["init_pol"] = int(self.polarityCombo.itemData(idx).toInt()[0])
+        result["init_pol"] = int(self.polarityCombo.itemData(idx))
 
         return result
 

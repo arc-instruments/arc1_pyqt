@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
@@ -42,15 +42,15 @@ class getData(QtCore.QObject):
         self.changeArcStatus.emit('Busy')
         global tag
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             Mnow = f.getFloats(1)
             self.sendData.emit(w,b,Mnow,self.A,self.pw,tag+'_s')
@@ -78,10 +78,10 @@ class getData(QtCore.QObject):
                 if self.stopOpt == 'FixTime':
                     if (timeNow-start)>=self.stopTime:       # if more than stopTime has elapsed, do not request a new batch
                         stop=1
-                        g.ser.write(str(int(stop))+"\n")
+                        g.ser.write_b(str(int(stop))+"\n")
                     else:
                         stop=0
-                        g.ser.write(str(int(stop))+"\n")
+                        g.ser.write_b(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'LinearFit':
                     if self.B > 1: #Check that there are at least 2 points in batch, or no linear fit possible.
@@ -101,14 +101,14 @@ class getData(QtCore.QObject):
                         # or time limit exceeded stop procedure.
                         if abs(relslope)<=self.stopTol or (timeNow-start)>=self.stopTime:
                             stop=1
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
                         else:
                             stop=0
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
 
                     else: #If the batch is not large enough just end it there.
                         stop=1
-                        g.ser.write(str(int(stop))+"\n")
+                        g.ser.write_b(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'T-Test':
                     if self.B >= self.ttestsamp*2: #Check that the batch is actually large enough to carry out a stat-test.
@@ -118,20 +118,20 @@ class getData(QtCore.QObject):
                         if tmet < self.stopConf or (timeNow-start)>=self.stopTime: #If probability (loosely speaking) of null hypothesis being true is below our confidence tolerance...
                             #... stop requestiong batches. Also have a max time-check.
                             stop=1
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
                         else:
                             stop=0
-                            g.ser.write(str(int(stop))+"\n")
+                            g.ser.write_b(str(int(stop))+"\n")
 
                     else: #If the batch is not large enough just end it there.
                         stop=1
-                        g.ser.write(str(int(stop))+"\n")
-                        print('WARNING: Batch not long enough to support this operation. Minimum batch length required is '+str(2*self.ttestsamp)+'.')
+                        g.ser.write_b(str(int(stop))+"\n")
+                        print('WARNING: Batch not long enough to support this oepration. Minimum batch length required is '+str(2*self.ttestsamp)+'.')
 
                 #DEFAULT case - something went wrong so just stop the text after 1 batch.
                 else:
                     stop=1
-                    g.ser.write(str(int(stop))+"\n")
+                    g.ser.write_b(str(int(stop))+"\n")
 
             Mnow = f.getFloats(1)   # get first read value
             self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_e')
@@ -145,7 +145,7 @@ class getData(QtCore.QObject):
         self.finished.emit()
 
 
-class VolatilityRead(QtGui.QWidget):
+class VolatilityRead(QtWidgets.QWidget):
     
     def __init__(self, short=False):
         super(VolatilityRead, self).__init__()
@@ -154,11 +154,11 @@ class VolatilityRead(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtGui.QLabel('VolatilityRead')
+        titleLabel = QtWidgets.QLabel('VolatilityRead')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Measurement protocol for volatile memristors.')
+        descriptionLabel = QtWidgets.QLabel('Measurement protocol for volatile memristors.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -190,13 +190,13 @@ class VolatilityRead(QtGui.QWidget):
         stopOptions=['LinearFit', 'T-Test', 'FixTime']
                     #     0     ,     1   ,     2
 
-        self.combo_stopOptions=QtGui.QComboBox()
+        self.combo_stopOptions=QtWidgets.QComboBox()
         self.combo_stopOptions.insertItems(1,stopOptions)
         self.combo_stopOptions.currentIndexChanged.connect(self.updateStopOptions)
 
 
         # Setup the two combo boxes
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -209,13 +209,13 @@ class VolatilityRead(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.VLine); 
-        lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        lineRight=QtWidgets.QFrame()
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
@@ -227,24 +227,24 @@ class VolatilityRead(QtGui.QWidget):
 
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtGui.QLineEdit()
+            lineEdit=QtWidgets.QLineEdit()
             lineEdit.setText(rightInit[i])
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
@@ -252,7 +252,7 @@ class VolatilityRead(QtGui.QWidget):
 
         #Position the combo boxes and respective labels
 
-        lineLabel=QtGui.QLabel()
+        lineLabel=QtWidgets.QLabel()
         lineLabel.setText('Stop Option:')
         gridLayout.addWidget(lineLabel,3,4)
 
@@ -263,11 +263,11 @@ class VolatilityRead(QtGui.QWidget):
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        self.scrlArea=QtGui.QScrollArea()
+        self.scrlArea=QtWidgets.QScrollArea()
         self.scrlArea.setWidget(self.vW)
         self.scrlArea.setContentsMargins(0,0,0,0)
         self.scrlArea.setWidgetResizable(False)
@@ -280,11 +280,11 @@ class VolatilityRead(QtGui.QWidget):
         vbox1.addStretch()
 
         if self.short==False:
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -311,29 +311,24 @@ class VolatilityRead(QtGui.QWidget):
         layoutWidgets=[]
 
         for i,item in layoutItems:
-            if isinstance(item, QtGui.QLineEdit):
+            if isinstance(item, QtWidgets.QLineEdit):
                 layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtGui.QComboBox):
+            if isinstance(item, QtWidgets.QComboBox):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtGui.QCheckBox):
+            if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
         #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
         for i,type,value in layoutWidgets:
             if type=='QLineEdit':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setText(value)
             if type=='QComboBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
             if type=='QCheckBox':
-                print i, type, value
                 self.gridLayout.itemAt(i).widget().setChecked(value)
-
 
     def updateStopOptions(self, event):
         if self.combo_stopOptions.currentText() == 'FixTime':
@@ -349,25 +344,23 @@ class VolatilityRead(QtGui.QWidget):
             self.rightEdits[1].setStyleSheet("border: 1px solid red;")
             self.rightEdits[2].setStyleSheet("border: 1px solid grey;")
 
-        print event   
-
     def eventFilter(self, object, event):
-        #print object
+        #print(object)
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         #if event.type()==QtCore.QEvent.Paint:
         #    self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #print self.vW.size().width()
+        #print(self.vW.size().width())
         return False
 
     def resizeWidget(self,event):
         pass
 
     def sendParams(self):
-        g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[1].text())/1000000)+"\n")
-        g.ser.write(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write(str(float(self.leftEdits[3].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
 
     def programOne(self):
         if g.ser.port != None:
@@ -380,7 +373,7 @@ class VolatilityRead(QtGui.QWidget):
             pw=float(self.leftEdits[1].text())/1000000
 
             job="33"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
             
             self.sendParams()
 
@@ -411,7 +404,7 @@ class VolatilityRead(QtGui.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             job="33"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
@@ -420,7 +413,6 @@ class VolatilityRead(QtGui.QWidget):
             self.finalise_thread_initialisation()
 
             self.thread.start()
-        
 
     def programAll(self):
         if g.ser.port != None:
@@ -435,14 +427,13 @@ class VolatilityRead(QtGui.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="33"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
 
             self.sendParams()
 
             self.thread=QtCore.QThread()
             self.getData=getData(rangeDev, A, pw, B, stopTime, stopConf, stopTol, self.combo_stopOptions.currentText())
             self.finalise_thread_initialisation()
-
 
             self.thread.start()
 
@@ -489,13 +480,3 @@ class VolatilityRead(QtGui.QWidget):
                             rangeDev.append(cell)
 
         return rangeDev
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = VolatilityRead()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()

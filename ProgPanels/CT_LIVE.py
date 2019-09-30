@@ -7,13 +7,13 @@
 
 ####################################
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
 import pyqtgraph as pg
 import numpy as np
-import Queue
+import queue
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
@@ -79,7 +79,7 @@ class getData(QtCore.QObject):
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
 
-        g.ser.write(str(int(len(self.deviceList)))+"\n")
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
 
@@ -87,8 +87,8 @@ class getData(QtCore.QObject):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write(str(int(w))+"\n")
-            g.ser.write(str(int(b))+"\n")
+            g.ser.write_b(str(int(w))+"\n")
+            g.ser.write_b(str(int(b))+"\n")
 
             firstPoint=1
             for cycle in range(1,self.totalCycles+1):
@@ -124,16 +124,10 @@ class getData(QtCore.QObject):
                         endCommand=1
             #self.getStopSignal()
 
-
-
-        #self.updateTree.emit(w,b)
-
-        #self.disableInterface.emit(False)
-        
         self.finished.emit()
 
 
-class CT_LIVE(QtGui.QWidget):
+class CT_LIVE(QtWidgets.QWidget):
     global global_stop
     stop_signal=QtCore.pyqtSignal()
 
@@ -147,7 +141,7 @@ class CT_LIVE(QtGui.QWidget):
         
     def initUI(self):      
 
-        vbox1=QtGui.QVBoxLayout()
+        vbox1=QtWidgets.QVBoxLayout()
 
         self.view=pg.GraphicsLayoutWidget()
         label_style = {'color': '#000000', 'font-size': '10pt'}
@@ -160,9 +154,9 @@ class CT_LIVE(QtGui.QWidget):
 
         vbox1.addWidget(self.view)
 
-        titleLabel = QtGui.QLabel('CurveTracer')
+        titleLabel = QtWidgets.QLabel('CurveTracer')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtGui.QLabel('Standard IV measurement module with current cut-off.')
+        descriptionLabel = QtWidgets.QLabel('Standard IV measurement module with current cut-off.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -205,8 +199,8 @@ class CT_LIVE(QtGui.QWidget):
         IVtypes=['Staircase', 'Pulsed']
         IVoptions=['Start towards V+', 'Start towards V-', 'Only V+', 'Only V-']
 
-        self.combo_IVtype=QtGui.QComboBox()
-        self.combo_IVoption=QtGui.QComboBox()
+        self.combo_IVtype=QtWidgets.QComboBox()
+        self.combo_IVoption=QtWidgets.QComboBox()
 
         self.combo_IVtype.insertItems(1,IVtypes)
         self.combo_IVoption.insertItems(1,IVoptions)
@@ -216,7 +210,7 @@ class CT_LIVE(QtGui.QWidget):
 
 
         # Setup the two combo boxes
-        gridLayout=QtGui.QGridLayout()
+        gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
         gridLayout.setColumnStretch(1,1)
         gridLayout.setColumnStretch(2,1)
@@ -230,25 +224,25 @@ class CT_LIVE(QtGui.QWidget):
         #gridLayout.setSpacing(2)
 
         #setup a line separator
-        lineLeft=QtGui.QFrame()
-        lineLeft.setFrameShape(QtGui.QFrame.VLine); 
-        lineLeft.setFrameShadow(QtGui.QFrame.Raised);
+        lineLeft=QtWidgets.QFrame()
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
         lineLeft.setLineWidth(1)
-        lineRight=QtGui.QFrame()
-        lineRight.setFrameShape(QtGui.QFrame.VLine); 
-        lineRight.setFrameShadow(QtGui.QFrame.Raised);
+        lineRight=QtWidgets.QFrame()
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 7, 1)
         gridLayout.addWidget(lineRight, 0, 6, 7, 1)
 
         for i in range(len(leftLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
             lineLabel.setText(leftLabels[i])
             gridLayout.addWidget(lineLabel, i,0)
 
-            spinEdit=QtGui.QDoubleSpinBox()
+            spinEdit=QtWidgets.QDoubleSpinBox()
             spinEdit.setMinimum(spinbox_params[i][0])
             spinEdit.setMaximum(spinbox_params[i][1])
             spinEdit.setSingleStep(spinbox_params[i][2])
@@ -257,8 +251,8 @@ class CT_LIVE(QtGui.QWidget):
             self.leftEdits.append(spinEdit)
 
 
-        gridLayout.addWidget(QtGui.QLabel("Buffer size:"),6,0)
-        edit_buffSize=QtGui.QDoubleSpinBox()
+        gridLayout.addWidget(QtWidgets.QLabel("Buffer size:"),6,0)
+        edit_buffSize=QtWidgets.QDoubleSpinBox()
         edit_buffSize.setMinimum(10)
         edit_buffSize.setMaximum(100)
         edit_buffSize.setSingleStep(10)
@@ -269,19 +263,19 @@ class CT_LIVE(QtGui.QWidget):
 
 
         for i in range(len(rightLabels)):
-            lineLabel=QtGui.QLabel()
+            lineLabel=QtWidgets.QLabel()
             lineLabel.setText(rightLabels[i])
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
             if i<2:
-                lineEdit=QtGui.QLineEdit()
+                lineEdit=QtWidgets.QLineEdit()
                 lineEdit.setText(rightInit[i])
                 lineEdit.setValidator(isFloat)
                 self.rightEdits.append(lineEdit)
                 gridLayout.addWidget(lineEdit, i,5)
             else:
-                spinEdit=QtGui.QDoubleSpinBox()
+                spinEdit=QtWidgets.QDoubleSpinBox()
                 spinEdit.setMinimum(spinbox_cutoff_params[0])
                 spinEdit.setMaximum(spinbox_cutoff_params[1])
                 spinEdit.setSingleStep(spinbox_cutoff_params[2])
@@ -303,17 +297,17 @@ class CT_LIVE(QtGui.QWidget):
         self.rightEdits[2].valueChanged.connect(self.update_c_p) 
         self.rightEdits[3].valueChanged.connect(self.update_c_n)            
 
-        returnCheckBox = QtGui.QCheckBox("Halt and return.")
+        returnCheckBox = QtWidgets.QCheckBox("Halt and return.")
         returnCheckBox.stateChanged.connect(self.toggleReturn)
         self.returnCheck=0
         gridLayout.addWidget(returnCheckBox, 4, 5)
         #Position the combo boxes and respective labels
 
-        lineLabel=QtGui.QLabel()
+        lineLabel=QtWidgets.QLabel()
         lineLabel.setText('Bias type:')
         gridLayout.addWidget(lineLabel,5,4)
 
-        lineLabel=QtGui.QLabel()
+        lineLabel=QtWidgets.QLabel()
         lineLabel.setText('IV span:')
         gridLayout.addWidget(lineLabel,6,4)
 
@@ -327,11 +321,11 @@ class CT_LIVE(QtGui.QWidget):
 
         # ==============================================
 
-        self.vW=QtGui.QWidget()
+        self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
         self.vW.setContentsMargins(0,0,0,0)
 
-        self.scrlArea=QtGui.QScrollArea()
+        self.scrlArea=QtWidgets.QScrollArea()
         self.scrlArea.setWidget(self.vW)
         self.scrlArea.setContentsMargins(0,0,0,0)
         self.scrlArea.setWidgetResizable(False)
@@ -345,11 +339,11 @@ class CT_LIVE(QtGui.QWidget):
 
         if self.short==False:
 
-            self.hboxProg=QtGui.QHBoxLayout()
+            self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtGui.QPushButton('Apply to One')
-            push_range=QtGui.QPushButton('Apply to Range')
-            push_all=QtGui.QPushButton('Apply to All')
+            push_single=QtWidgets.QPushButton('Apply to One')
+            push_range=QtWidgets.QPushButton('Apply to Range')
+            push_all=QtWidgets.QPushButton('Apply to All')
 
             push_single.setStyleSheet(s.btnStyle)
             push_range.setStyleSheet(s.btnStyle)
@@ -366,7 +360,7 @@ class CT_LIVE(QtGui.QWidget):
 
             vbox1.addLayout(self.hboxProg)
 
-            push_live=QtGui.QPushButton("LIVE")
+            push_live=QtWidgets.QPushButton("LIVE")
             push_live.setStyleSheet("background-color: red")
             push_live.clicked.connect(self.goLive)
             gridLayout.addWidget(push_live,len(self.leftEdits),0)
@@ -377,16 +371,16 @@ class CT_LIVE(QtGui.QWidget):
         self.gridLayout=gridLayout
 
 
-        btn_widget=QtGui.QWidget()
-        hbox=QtGui.QHBoxLayout(self)
-        self.push_live=QtGui.QPushButton("GO LIVE!")
+        btn_widget=QtWidgets.QWidget()
+        hbox=QtWidgets.QHBoxLayout(self)
+        self.push_live=QtWidgets.QPushButton("GO LIVE!")
         self.push_live.clicked.connect(self.live)
         self.push_live.setStyleSheet(s.btnStyle)
-        self.push_one=QtGui.QPushButton("Apply to One")
+        self.push_one=QtWidgets.QPushButton("Apply to One")
         self.push_one.clicked.connect(self.start_programOne)
         self.push_one.setStyleSheet(s.btnStyle)
 
-        self.push_save=QtGui.QPushButton("Save Data")
+        self.push_save=QtWidgets.QPushButton("Save Data")
         self.push_save.clicked.connect(self.saveQueue)
         self.push_save.setStyleSheet(s.btnStyle2)
 
@@ -408,29 +402,27 @@ class CT_LIVE(QtGui.QWidget):
         # What to do when the user closer the window and there's either
         # a live measurement run in progress or there is unsaved data
         if self.live_thread.isRunning():
-            reply = QtGui.QMessageBox.question(self, "Error",
+            reply = QtWidgets.QMessageBox.question(self, "Error",
                 "Live measurement in progress. Stop it and try again.",
-                QtGui.QMessageBox.Ok)
+                QtWidgets.QMessageBox.Ok)
             event.ignore()
         else:
             if self.data_queue.qsize()>0:
-                reply = QtGui.QMessageBox.question(self, "Unsaved Data",
+                reply = QtWidgets.QMessageBox.question(self, "Unsaved Data",
                     "You have about "+str(self.data_queue.qsize())+" unsaved I-V cycles. Do you want to save them?",
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-                if reply==QtGui.QMessageBox.Yes:
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                if reply==QtWidgets.QMessageBox.Yes:
                     event.ignore()
                     self.saveQueue()
 
                 else:
                     event.accept()
 
-            
-
     def initialise_variables(self):
         self.is_live=False        
         self.voltage=[]
         self.current=[]
-        self.data_queue=Queue.Queue(maxsize=100)
+        self.data_queue=queue.Queue(maxsize=100)
         self.bufferSize=50
 
         self.pens=[]
@@ -457,7 +449,6 @@ class CT_LIVE(QtGui.QWidget):
 
     def start_programOne(self):
         self.programOne(int(self.rightEdits[0].text()))
-
 
     def live(self):
         if self.is_live==False:
@@ -503,8 +494,7 @@ class CT_LIVE(QtGui.QWidget):
             self.returnCheck=1
 
     def eventFilter(self, object, event):
-        #print object
-        if event.type()==QtCore.QEvent.Resize:
+        if event.type() == QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         return False
     def resizeWidget(self,event):
@@ -512,29 +502,29 @@ class CT_LIVE(QtGui.QWidget):
 
     def sendParams(self, totalCycles):
         # try:
-        #g.ser.write(str(float(self.leftEdits[0].text()))+"\n")
+        #g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
         # except:
-        g.ser.write(str(self.v_pmax)+"\n")
-        g.ser.write(str(self.v_nmax)+"\n")
-        g.ser.write(str(self.v_start)+"\n")
-        g.ser.write(str(self.v_step)+"\n")
-        g.ser.write(str((float(self.pw-2)/1000))+"\n")
-        g.ser.write(str(float(self.interpulse/1000))+"\n")
+        g.ser.write_b(str(self.v_pmax)+"\n")
+        g.ser.write_b(str(self.v_nmax)+"\n")
+        g.ser.write_b(str(self.v_start)+"\n")
+        g.ser.write_b(str(self.v_step)+"\n")
+        g.ser.write_b(str((float(self.pw-2)/1000))+"\n")
+        g.ser.write_b(str(float(self.interpulse/1000))+"\n")
         time.sleep(0.01)
-        g.ser.write(str((self.c_p)/1000000)+"\n")
-        g.ser.write(str((self.c_n)/-1000000)+"\n")
+        g.ser.write_b(str((self.c_p)/1000000)+"\n")
+        g.ser.write_b(str((self.c_n)/-1000000)+"\n")
 
-        g.ser.write(str(totalCycles)+"\n")
-        g.ser.write(str(int(self.combo_IVtype.currentIndex()))+"\n")
-        g.ser.write(str(int(self.combo_IVoption.currentIndex()))+"\n")
-        g.ser.write(str(int(self.returnCheck))+"\n")
+        g.ser.write_b(str(totalCycles)+"\n")
+        g.ser.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        g.ser.write_b(str(int(self.returnCheck))+"\n")
 
     def programOne(self, totalCycles):
         if g.ser.port != None:
             self.wi=g.w
             self.bi=g.b
             job="201"
-            g.ser.write(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")   # sends the job
             
             self.sendParams(totalCycles)
 
@@ -661,13 +651,4 @@ class CT_LIVE(QtGui.QWidget):
             self.c_n=float(value)
         except:
             pass
-        
-def main():
-    
-    app = QtGui.QApplication(sys.argv)
-    ex = CT_LIVE()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main() 
