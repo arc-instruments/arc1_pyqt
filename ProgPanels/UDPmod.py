@@ -17,6 +17,21 @@ import Globals.GlobalStyles as s
 tag="UDP" #Tag this module as... System will know how to handle it then.
 g.tagDict.update({tag:"UDPconn"})
 
+####################################
+# UDP module globals.
+# ConnMat(x,y,z): x-> input neuron, y-> output neuron,
+# z-> =1: connection exists (1/0),
+#     =2: w address,
+#     =3: b address,
+#     =4: last operation pre? (0) or post? (1)
+ConnMat = np.zeros((1,1,1))
+# LTP/LTD parameter list.
+opEdits = []
+# Holds decimanl values of ASCII characters 'a' (axon), 'd' (dendrite) and 's' (synapse).
+partcode = (65, 68, 83)
+# Flag showing whether the UDP module should continue processing packets or simply exit.
+UDPampel = 0
+
 class getData(QtCore.QObject):
 
     #Define signals to be used throughout module.
@@ -58,13 +73,14 @@ class getData(QtCore.QObject):
         self.Neurdt = 4097 * [[- self.LTPwin - 1]] #Matrix holding absolute times of spikes of any type. Mat(x,y): x-> Neuron ID. y-> =0: last absolute time of firing for neuron x.
 
     def runUDP(self):
+        global UDPampel
         #First, set the green light for the UDP protocol.
-        g.UDPampel = 1
+        UDPampel = 1
 
         #Operational parameters.
         maxtime = 110 #Maximum time allowed for UDP operation before returning control (s).
-        Rmin = float(g.opEdits[5].text()) #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
-        Rmax = float(g.opEdits[4].text())
+        Rmin = float(opEdits[5].text()) #Min. and max. RS levels corresponding to weights 0 and 1. Set once only.
+        Rmax = float(opEdits[4].text())
         maxlisten = 20 #Maximum time to listen on socket for events.
 
         #Define socket object, set-up local server to receive data coming from other computers and bind socket to local server.
@@ -80,7 +96,7 @@ class getData(QtCore.QObject):
         #Prepare instrument for operation.
         #self.disableInterface.emit(True)
         self.changeArcStatus.emit('Busy')
-        global tag, packnum
+        global tag, packnum, ConnMat
 
         ### ESTABLISH CONNECTIONS WITH SENDER AND RECEIVER ###
 
@@ -114,7 +130,7 @@ class getData(QtCore.QObject):
 
             #Initialise helper variables.
             packnum = 0
-            while (time.clock()-tstart) <= maxtime and ready[0] and g.UDPampel:
+            while (time.clock()-tstart) <= maxtime and ready[0] and UDPampel:
                 data, addr = sock.recvfrom(1024)
                 packnum += 1 #Count arriving packets (total regardless of direction).
                 unpacked_data = packer.unpack(data)
@@ -127,16 +143,16 @@ class getData(QtCore.QObject):
                 print("---------------------------------------------------------------")
                 print("Received ", id_res_in, " ", id_in, " ", tst_res_in, " ", tst_in, " from ", addr)
 
-                if(id_res_in == g.partcode[0]):
+                if(id_res_in == partcode[0]):
                     print("(P1)") #Partner 1
-                elif(id_res_in == g.partcode[1]):
+                elif(id_res_in == partcode[1]):
                     print("(P2)") #Partner 2
 
-                #if id_res_in == g.partcode[0] and (np.sum(g.ConnMat[id_in,:,0] > 0)): #Recognise input as presynaptic.  # PRE # ...and check it actually connects to something.
+                #if id_res_in == partcode[0] and (np.sum(ConnMat[id_in,:,0] > 0)): #Recognise input as presynaptic.  # PRE # ...and check it actually connects to something.
 
                 ######################### P1 #####################
 
-                if id_res_in == g.partcode[0]: #Recognise input as coming from P1.
+                if id_res_in == partcode[0]: #Recognise input as coming from P1.
 
                     # Absolute time clock.
                     tabs += tst_in  # Update absolute time clock.
@@ -147,10 +163,10 @@ class getData(QtCore.QObject):
                     self.Neurdt[id_in] = self.Neurdt[id_in] + [tabs]
 
                     ###### PRE ######
-                    if (np.sum(g.ConnMat[id_in, :, 0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
+                    if (np.sum(ConnMat[id_in, :, 0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
 
                         #Decide which post-neurons to look at based on post neuron id.
-                        postNeurIdx = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
+                        postNeurIdx = np.where(ConnMat[id_in, :, 0] == 1)[0]
 
                         postNeurLookup = [-1]
                         for i in postNeurIdx:
@@ -198,8 +214,8 @@ class getData(QtCore.QObject):
                         for elem in range(len(id_out)): #For every synapse that the incoming pre-synaptic spike affects...
 
                             #Determine physical device that corresponds to affected synapse.
-                            w_tar = g.ConnMat[id_in, id_out[elem], 1] #Capture w-line & b-line.
-                            b_tar = g.ConnMat[id_in, id_out[elem], 2]
+                            w_tar = ConnMat[id_in, id_out[elem], 1] #Capture w-line & b-line.
+                            b_tar = ConnMat[id_in, id_out[elem], 2]
 
                             #Display updates.
                             f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
@@ -228,7 +244,7 @@ class getData(QtCore.QObject):
                             print('--')
 
                             #Prepare to send response via UDP.
-                            id_res = g.partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
+                            id_res = partcode[2] #Identify sender of this packet as SOTON (d83, ASCII 'S')
                             id = int(id_out[elem])
                             tst_res = int(np.round(np.clip((255.0/(Rmax-Rmin))*(result-Rmin), 0, 255))) #Clip & round - pretty self-explanatory.
                             tst = tabs #Send to post side absolute time when this neuron fires.
@@ -245,13 +261,13 @@ class getData(QtCore.QObject):
 
                         #ready = select.select([sock], [], [], maxlisten)
 
-                    #elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
+                    #elif id_res_in == partcode[1] and (np.sum(ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
 
                     ###### POST ######
-                    if (np.sum(g.ConnMat[:, id_in, 0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
+                    if (np.sum(ConnMat[:, id_in, 0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
 
                         #Decide which pre-neurons to look at based on post neuron id.
-                        preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
+                        preNeurIdx = np.where(ConnMat[:, id_in, 0] == 1)[0]
 
                         preNeurLookup = [-1]
                         for i in preNeurIdx:
@@ -298,8 +314,8 @@ class getData(QtCore.QObject):
                         for elem in range(len(id_out)):
 
                             #Determine physical device that corresponds to affected synapse.
-                            w_tar = g.ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
-                            b_tar = g.ConnMat[id_out[elem], id_in, 2]
+                            w_tar = ConnMat[id_out[elem], id_in, 1] #Capture w-line & b-line.
+                            b_tar = ConnMat[id_out[elem], id_in, 2]
 
                             #Display updates.
                             f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))       # signal the crossbar antenna that this device has been selected
@@ -333,9 +349,9 @@ class getData(QtCore.QObject):
 
                 ######################### P2 #####################
 
-                if id_res_in == g.partcode[1]:  # Recognise input as coming from P2.
+                if id_res_in == partcode[1]:  # Recognise input as coming from P2.
                     # Determine whether firing neuron is post-synaptic to anything.
-                    preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
+                    preNeurIdx = np.where(ConnMat[:, id_in, 0] == 1)[0]
 
                     if len(preNeurIdx) != 0: #If it is post-synaptic to something...
                         lastspks = [] #Hold last spikes from each pre-synaptic neuyron in this list.
@@ -362,10 +378,10 @@ class getData(QtCore.QObject):
                         self.Neurdt[id_in] = self.Neurdt[id_in] + [tabs_in]
 
                     ###### PRE ######
-                    if (np.sum(g.ConnMat[id_in, :,0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
+                    if (np.sum(ConnMat[id_in, :,0] > 0)):  # Parse input as presynaptic.  # PRE # ...and check it actually connects to something.
 
                         # Decide which post-neurons to look at based on post neuron id.
-                        postNeurIdx = np.where(g.ConnMat[id_in, :, 0] == 1)[0]
+                        postNeurIdx = np.where(ConnMat[id_in, :, 0] == 1)[0]
 
                         postNeurLookup = [-1]
                         for i in postNeurIdx:
@@ -413,8 +429,8 @@ class getData(QtCore.QObject):
                         for elem in range(len(id_out)):  # For every synapse that the incoming pre-synaptic spike affects...
 
                             # Determine physical device that corresponds to affected synapse.
-                            w_tar = g.ConnMat[id_in, id_out[elem], 1]  # Capture w-line & b-line.
-                            b_tar = g.ConnMat[id_in, id_out[elem], 2]
+                            w_tar = ConnMat[id_in, id_out[elem], 1]  # Capture w-line & b-line.
+                            b_tar = ConnMat[id_in, id_out[elem], 2]
 
                             # Display updates.
                             f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))  # signal the crossbar antenna that this device has been selected
@@ -443,7 +459,7 @@ class getData(QtCore.QObject):
                             print('--')
 
                             # Prepare to send response via UDP.
-                            id_res = g.partcode[2]  # Identify sender of this packet as SOTON (d83, ASCII 'S')
+                            id_res = partcode[2]  # Identify sender of this packet as SOTON (d83, ASCII 'S')
                             id = int(id_out[elem])
                             tst_res = int(np.round(np.clip((255.0 / (Rmax - Rmin)) * (result - Rmin), 0, 255)))  # Clip & round - pretty self-explanatory.
                             tst = tabs  # Send to post side absolute time when this neuron fires.
@@ -460,13 +476,13 @@ class getData(QtCore.QObject):
 
                             # ready = select.select([sock], [], [], maxlisten)
 
-                    # elif id_res_in == g.partcode[1] and (np.sum(g.ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
+                    # elif id_res_in == partcode[1] and (np.sum(ConnMat[:,id_in,0] > 0)): #Recognise input as post-synaptic. # POST # ...and check it actually conects to something.
 
                     ###### POST ######
-                    if (np.sum(g.ConnMat[:, id_in,0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
+                    if (np.sum(ConnMat[:, id_in,0] > 0)):  # Parse input as post-synaptic. # POST # ...and check it actually conects to something.
 
                         # Decide which pre-neurons to look at based on post neuron id.
-                        preNeurIdx = np.where(g.ConnMat[:, id_in, 0] == 1)[0]
+                        preNeurIdx = np.where(ConnMat[:, id_in, 0] == 1)[0]
 
                         preNeurLookup = [-1]
                         for i in preNeurIdx:
@@ -519,8 +535,8 @@ class getData(QtCore.QObject):
                         for elem in range(len(id_out)):
 
                             # Determine physical device that corresponds to affected synapse.
-                            w_tar = g.ConnMat[id_out[elem], id_in, 1]  # Capture w-line & b-line.
-                            b_tar = g.ConnMat[id_out[elem], id_in, 2]
+                            w_tar = ConnMat[id_out[elem], id_in, 1]  # Capture w-line & b-line.
+                            b_tar = ConnMat[id_out[elem], id_in, 2]
 
                             # Display updates.
                             f.cbAntenna.selectDeviceSignal.emit(int(w_tar), int(b_tar))  # signal the crossbar antenna that this device has been selected
@@ -568,8 +584,8 @@ class getData(QtCore.QObject):
         print('No. of packets throughout session: ' + str(packnum)) #Display number of packets received throughout session.
         print('Total runtime: ' + str(time.clock() - tstart)) #Display time elapsed during UDP run.
         print('Average packet rate: ' + str(packnum/(time.clock() - tstart))) #Display packets/second.
-        print('Bias parameters: '+ str(float(g.opEdits[0].text())) + '    ' + str(float(g.opEdits[1].text())) + '    ' + str(float(g.opEdits[2].text())) + '    ' + str(float(g.opEdits[3].text())))
-        print('RS-weight mapping (min,max): ' + str(float(g.opEdits[5].text())) + '    ' + str(float(g.opEdits[4].text())))
+        print('Bias parameters: '+ str(float(opEdits[0].text())) + '    ' + str(float(opEdits[1].text())) + '    ' + str(float(opEdits[2].text())) + '    ' + str(float(opEdits[3].text())))
+        print('RS-weight mapping (min,max): ' + str(float(opEdits[5].text())) + '    ' + str(float(opEdits[4].text())))
 
         return 0
 
@@ -578,18 +594,18 @@ class getData(QtCore.QObject):
 
         if plastdir:
             g.ser.write_b("04\n") #Select device operation.
-            g.ser.write_b(str(float(g.opEdits[0].text()))+"\n") #Send amplitude (V).
+            g.ser.write_b(str(float(opEdits[0].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
-            g.ser.write_b(str(float(g.opEdits[1].text()))+"\n") #Send duration (s).
+            g.ser.write_b(str(float(opEdits[1].text()))+"\n") #Send duration (s).
             #time.sleep(0.005)
             #g.ser.write_b(str(float("0.0"))+"\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
             #print(result)
         else:
             g.ser.write_b("04\n") #Select device operation.
-            g.ser.write_b(str(float(g.opEdits[2].text()))+"\n") #Send amplitude (V).
+            g.ser.write_b(str(float(opEdits[2].text()))+"\n") #Send amplitude (V).
             time.sleep(0.005)
-            g.ser.write_b(str(float(g.opEdits[3].text()))+"\n") #Send duration (s).
+            g.ser.write_b(str(float(opEdits[3].text()))+"\n") #Send duration (s).
             #time.sleep(0.005)
             #g.ser.write_b("0.0\n") #ICC setting. Set to 0 for we are not using compliance current.
             #result=g.ser.readline().rstrip()     # currentline contains the new Mnow value followed by 2 \n characters
@@ -639,7 +655,8 @@ class UDPstopper(QtCore.QObject):
     finished=QtCore.pyqtSignal()
 
     def runSTOP(self):
-        g.UDPampel = 0 #Set the UDP traffic light to 0.
+        global UDPampel
+        UDPampel = 0 #Set the UDP traffic light to 0.
         self.finished.emit()
 
 class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidgets.QWidget.
@@ -650,6 +667,8 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
         self.initUI()
         
     def initUI(self):      
+
+        global opEdits
 
         ### Define GUI elements ###
         #Define module as a QVBox.
@@ -672,7 +691,7 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
         self.btmEdits=[]
 
         opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)', 'Rmax (Ohms)', 'Rmin Ohms']
-        g.opEdits=[]
+        opEdits=[]
 
         leftInit=  ['192.168.10.1', '10000']
         rightInit= ['192.162.10.2', '25003']
@@ -743,7 +762,7 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
             opEdit=QtWidgets.QLineEdit()
             opEdit.setText(opInit[i])
             opEdit.setValidator(isFloat)
-            g.opEdits.append(opEdit)
+            opEdits.append(opEdit)
             gridLayout.addWidget(opEdit, 8+i,1)
 
         # ============================================== #
@@ -948,6 +967,9 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
 
     # FUNCTION FOR OPENING FILE BROWSER - UNDER CONSTRUCTION.
     def findUDPMAPfile(self):
+
+        global ConnMat
+
         path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open file', "*.txt"))
         #path=fname.getOpenFileName()
 
@@ -987,11 +1009,11 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
 
             #Create connectivity matrix from list.
             customArray = np.array(customArray)
-            g.ConnMat = np.zeros((np.max(customArray[:,0])+1, np.max(customArray[:,1])+1, 4)) #See globals file for  documentation.
+            ConnMat = np.zeros((np.max(customArray[:,0])+1, np.max(customArray[:,1])+1, 4)) #See globals file for  documentation.
 
             for element in range(len(customArray[:,0])):
-                g.ConnMat[customArray[element, 0], customArray[element, 1], :] = [1, customArray[element, 2], customArray[element, 3], 0]
+                ConnMat[customArray[element, 0], customArray[element, 1], :] = [1, customArray[element, 2], customArray[element, 3], 0]
 
-            #print(g.ConnMat)
+            #print(ConnMat)
             return True
 
