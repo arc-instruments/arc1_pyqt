@@ -96,10 +96,13 @@ class device(QtWidgets.QWidget):
 
     def recolor(self,M):
 
+        minMlog=np.log10(g.minM)
+        normMlog=np.log10(g.maxM) - minMlog
+
         if M>0:
             try:
                 # get the log index out of 255 max values
-                idx = int((np.log10(M)-g.minMlog)*255/(g.normMlog))
+                idx = int((np.log10(M)-minMlog)*255/(normMlog))
                 color = g.qColorList[idx]
             except OverflowError:
                 # Inf

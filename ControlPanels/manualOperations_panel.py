@@ -93,12 +93,12 @@ class manualOperations_panel(QtWidgets.QWidget):
         ######################################
         # Setup position and resistance labels
         self.position = QtWidgets.QLabel(self)
-        self.position.setText(g.Mnow_position_str)
+        self.position.setText('W=0 | B=0')
         self.position.setFont(fonts.font2)
         self.position.setStyleSheet(s.style1)
 
         self.resistance = QtWidgets.QLabel(self)
-        self.resistance.setText(g.Mnow_str)
+        self.resistance.setText(str(g.Mnow))
         self.resistance.setFont(fonts.font1)
         self.resistance.setStyleSheet(s.style1)
 

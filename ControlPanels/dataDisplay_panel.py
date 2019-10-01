@@ -253,7 +253,7 @@ class dataDisplay_panel(QtWidgets.QWidget):
     def max_without_inf(self, lst):
         maxim=0
         for value in lst:
-            if value>maxim and value!=g.inf:
+            if value>maxim and value!=np.inf:
                 maxim=value
 
         return maxim

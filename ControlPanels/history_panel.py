@@ -302,8 +302,8 @@ class history_panel(QtWidgets.QWidget):
                     aux3=self.plot_R.plot(pen=(cycle,totalCycles), symbolPen=None, symbolBrush=(cycle,totalCycles), symbol='s', symbolSize=5, pxMode=True, name='Cycle '+str(cycle))
                     aux3.setData(np.asarray(voltage[cycle-1]),np.asarray(resistance[cycle-1]))
                     #aux3.setYRange(max(resistance[cycle-1]), self.max_without_inf(resistance[cycle-1]))
-                
-                self.plot_R.setYRange(np.log10(self.min_without_inf(resistance, g.inf)),np.log10(self.max_without_inf(resistance, g.inf)))
+
+                self.plot_R.setYRange(np.log10(self.min_without_inf(resistance, np.inf)),np.log10(self.max_without_inf(resistance, np.inf)))
                 self.plot_abs.setYRange(np.log10(self.min_without_inf(abs_current, 0.0)),np.log10(self.max_without_inf(abs_current, 0.0)))
 
 
