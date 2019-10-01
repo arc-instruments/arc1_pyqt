@@ -46,6 +46,7 @@ exe = EXE(pyz,
         debug=False,
         strip=False,
         upx=True,
+        icon=os.path.join('Graphics', 'applogo.ico'),
         console=CONSOLE)
 
 coll = COLLECT(exe,
