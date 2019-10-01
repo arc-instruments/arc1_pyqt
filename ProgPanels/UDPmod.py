@@ -674,8 +674,8 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
         opLabels=['LTP voltage (V)', 'LTP duration (s)','LTD voltage (V)', 'LTD duration (s)', 'Rmax (Ohms)', 'Rmin Ohms']
         g.opEdits=[]
 
-        leftInit=  ['25.56.39.168', '10000']
-        rightInit= ['25.31.209.234', '25003']
+        leftInit=  ['192.168.10.1', '10000']
+        rightInit= ['192.162.10.2', '25003']
         #leftInit = ['152.78.67.67', '5005']
         #rightInit = ['10.9.167.3', '5005']
         opInit=['4.0', '0.0001', '-4.0', '0.0001', '9000.0', '4000.0']
