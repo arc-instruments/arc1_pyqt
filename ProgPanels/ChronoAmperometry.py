@@ -22,7 +22,6 @@ at the start as the voltage is applied and the last just before bias is
 cut off.
 """
 
-from __future__ import print_function
 from PyQt5 import QtGui, QtWidgets, QtCore
 from functools import partial
 import sys

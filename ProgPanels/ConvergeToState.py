@@ -41,7 +41,6 @@ Please note that Ro is defined again after each failure.
 * Pulses: Number of pulses at each (V, PW) step.
 """
 
-from __future__ import print_function
 from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
 import sys
