@@ -9,7 +9,6 @@
 
 import sys
 import os
-sys.path.append(os.path.abspath(os.getcwd()+'/Graphics/'))
 
 style1="background-color: rgb(245,245,245); \
  margin:0px; \

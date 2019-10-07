@@ -22,6 +22,7 @@ import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
+import Graphics
 from GeneratedUiElements.mss import Ui_MSSParent
 
 tag="MSS"
@@ -706,7 +707,7 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
         topLayout.addItem(bottomLayout)
         dialog.setGeometry(100,100,600,400)
         dialog.setWindowTitle("Multistate report for W=%d | B=%d" % (w, b))
-        dialog.setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png'))
+        dialog.setWindowIcon(Graphics.getIcon('icon3'))
         tab1.setLayout(topLayout)
         tabs.addTab(tab1, "Data")
 

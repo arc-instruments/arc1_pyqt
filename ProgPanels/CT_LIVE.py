@@ -19,6 +19,7 @@ import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
+import Graphics
 
 mutex = QtCore.QMutex()
 global_stop=False
@@ -392,7 +393,7 @@ class CT_LIVE(QtWidgets.QWidget):
         vbox1.addWidget(btn_widget)
 
         self.setWindowTitle("CurveTracer: LIVE!")
-        self.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png')) 
+        self.setWindowIcon(Graphics.getIcon('icon3'))
 
         self.initialise_variables()
 

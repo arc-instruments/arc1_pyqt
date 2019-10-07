@@ -16,6 +16,7 @@ import Globals.GlobalVars as g
 import Globals.GlobalFonts as fonts
 import Globals.GlobalStyles as s
 import Globals.GlobalFunctions as f
+import Graphics
 
 
 class aboutSection(QtWidgets.QWidget):
@@ -36,7 +37,7 @@ class aboutSection(QtWidgets.QWidget):
         mainLayout.setContentsMargins(0,0,0,0)
 
         logoTop=QtWidgets.QLabel()
-        logoTop.setPixmap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'aboutSection.png'))
+        logoTop.setPixmap(Graphics.getPixmap('aboutSection'))
         mainLayout.addWidget(logoTop)
 
         botHLay=QtWidgets.QHBoxLayout()

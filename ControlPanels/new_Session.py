@@ -12,6 +12,8 @@ import sys
 import os
 from . import cell as c
 
+import Graphics
+
 import Globals.GlobalVars as g
 import Globals.GlobalFonts as fonts
 import Globals.GlobalStyles as s
@@ -33,7 +35,7 @@ class new_Session(QtWidgets.QWidget):
         # Setup top logo
         # ============================
         logoTop=QtWidgets.QLabel()
-        logoTop.setPixmap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'NewSeshLogoDrawing2.png'))
+        logoTop.setPixmap(Graphics.getPixmap('NewSeshLogoDrawing2'))
         mainLayout.addWidget(logoTop)
         # ============================
 

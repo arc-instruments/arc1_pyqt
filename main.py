@@ -26,6 +26,7 @@ import types
 from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
 from virtualArC import virtualarc
+import Graphics
 import ctypes
 import semver
 myappid = 'ArC ONE Control' # arbitrary string
@@ -78,7 +79,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         ##########################
         # SPLASH SCREEN #
-        pixmap = QtGui.QPixmap(os.getcwd()+"/Graphics/"+'splash2.png')
+        pixmap = Graphics.getPixmap('splash2')
         splashScreen=QtWidgets.QSplashScreen(pixmap)
         splashScreen.show()
         ##########################
@@ -96,23 +97,23 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         # Define the actions of each menu item before adding them to the menu
         # 1) File Menu
-        self.newAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'new.png'),'New Session', self)
+        self.newAction = QtWidgets.QAction(Graphics.getIcon('new'), 'New Session', self)
         self.newAction.setShortcut('Ctrl+N')
         self.newAction.setStatusTip('Start a new session')
         self.newAction.triggered.connect(self.newSession)
 
 
-        self.openAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'open.png'),'Open', self)
+        self.openAction = QtWidgets.QAction(Graphics.getIcon('open'), 'Open', self)
         self.openAction.setShortcut('Ctrl+O')
         self.openAction.setStatusTip('Open a previous session')
         self.openAction.triggered.connect(self.openSession)
 
-        self.clearAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'clear.png'), 'Clear', self)
+        self.clearAction = QtWidgets.QAction(Graphics.getIcon('clear'), 'Clear', self)
         self.clearAction.setShortcut('Ctrl+D')
         self.clearAction.setStatusTip('Clear all data')
         self.clearAction.triggered.connect(self.clearSession)
 
-        self.saveAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'save.png'),'Save', self)
+        self.saveAction = QtWidgets.QAction(Graphics.getIcon('save'), 'Save', self)
         self.saveAction.setShortcut('Ctrl+S')
         self.saveAction.setStatusTip('Save session')
         self.saveAction.triggered.connect(partial(self.saveSession, new=False))
@@ -151,11 +152,11 @@ class Arcontrol(QtWidgets.QMainWindow):
         fileMenu.addAction(exitAction)
 
         # 2) Settings Menu
-        self.updateAction = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Update available', self)
+        self.updateAction = QtWidgets.QAction(Graphics.getIcon('platform_manager'), 'Update available', self)
         self.updateAction.setStatusTip('Update available')
         self.updateAction.triggered.connect(self.launch_manager)
 
-        self.updateAction_menu = QtWidgets.QAction(QtGui.QIcon(os.getcwd()+"/Graphics/"+'platform_manager.png'),'Check for updates', self)
+        self.updateAction_menu = QtWidgets.QAction(Graphics.getIcon('platform_manager'), 'Check for updates', self)
         self.updateAction_menu.setStatusTip('Check for updates')
         self.updateAction_menu.triggered.connect(self.launch_manager)
 
@@ -352,7 +353,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         # Setup main window geometry
         self.setGeometry(100, 100, g.scaling_factor*1500, g.scaling_factor*800)
         self.setWindowTitle('ArC One - Control Panel')
-        self.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png'))
+        self.setWindowIcon(Graphics.getIcon('icon3'))
 
         self.show()
 
@@ -423,7 +424,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.cfgHW.move(frameGm.topLeft())
 
         self.cfgHW.setWindowTitle("Modify Hardware Settings")
-        self.cfgHW.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png'))
+        self.cfgHW.setWindowIcon(Graphics.getIcon('icon3'))
         self.cfgHW.show()
 
     def updateHW(self):
@@ -446,7 +447,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.aboutSesh.move(frameGm.topLeft())
 
         self.aboutSesh.setWindowTitle("About ArC Instruments Ltd.")
-        self.aboutSesh.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png'))
+        self.aboutSesh.setWindowIcon(Graphics.getIcon('icon3'))
 
         self.aboutSesh.show()
 
@@ -574,7 +575,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.newSesh.move(frameGm.topLeft())
 
         self.newSesh.setWindowTitle("New Session")
-        self.newSesh.setWindowIcon(QtGui.QIcon(os.getcwd()+"/Graphics/"+'icon3.png'))
+        self.newSesh.setWindowIcon(Graphics.getIcon('icon3'))
         g.ser.close()
         g.ser.port=None
         #f.interfaceAntenna.changeArcStatus.emit('Disc')
@@ -938,6 +939,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 def main():
 
     app = QtWidgets.QApplication(sys.argv)
+    Graphics.initialise()
 
     # Determine the scaling factor
     if sys.platform == "win32":

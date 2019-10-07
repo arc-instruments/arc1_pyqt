@@ -136,7 +136,6 @@ class manualOperations_panel(QtWidgets.QWidget):
         # Read-out type options drop-down.
         combo_readType=QtWidgets.QComboBox()
         combo_readType.setStyleSheet(s.comboStyle)
-        #combo_readType.down-arrow.setPixMap(QtGui.QPixmap(os.getcwd()+"/Graphics/"+'newSeshLogo.png'))
         combo_readType.insertItems(1,g.readOptions)
         combo_readType.currentIndexChanged.connect(self.updateReadType) #In-built signal for class QComboBox
         combo_readType.setCurrentIndex(2)

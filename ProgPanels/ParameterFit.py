@@ -24,6 +24,7 @@ import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
+import Graphics
 
 from GeneratedUiElements.pf import Ui_PFParent
 from GeneratedUiElements.fitdialog import Ui_FitDialogParent
@@ -208,7 +209,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
         super(FitDialog, self).__init__(parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Parameter fit for W=%d | B=%d" % (w, b))
-        self.setWindowIcon(QtGui.QIcon(os.getcwd()+'/Graphics/'+'icon3.png'))
+        self.setWindowIcon(Graphics.getIcon('icon3'))
 
         self.numPulsesEdit.setValidator(QtGui.QIntValidator())
 
