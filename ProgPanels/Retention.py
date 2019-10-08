@@ -10,10 +10,11 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
-#import Queue
-
 import time
+import numpy as np
+import pyqtgraph as pg
 
+import Graphics
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -395,3 +396,52 @@ class Retention(QtWidgets.QWidget):
 
         return rangeDev
 
+    @staticmethod
+    def display(w, b, data, parent=None):
+        timePoints = []
+        m = []
+
+        for point in data:
+            tag = str(point[3])
+            tagCut = tag[4:]
+            try:
+                timePoint = float(tagCut)
+                timePoints.append(timePoint)
+                m.append(point[0])
+            except ValueError:
+                pass
+
+        # subtract the first point from all timepoints
+        firstPoint = timePoints[0]
+        for i in range(len(timePoints)):
+            timePoints[i] = timePoints[i] - firstPoint
+
+        view = pg.GraphicsLayoutWidget()
+        label_style = {'color': '#000000', 'font-size': '10pt'}
+
+        retentionPlot = view.addPlot()
+        retentionCurve = retentionPlot.plot(symbolPen=None,
+                symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
+        retentionPlot.getAxis('left').setLabel('Resistance', units='Ohms', **label_style)
+        retentionPlot.getAxis('bottom').setLabel('Time', units='s', **label_style)
+        retentionPlot.getAxis('left').setGrid(50)
+        retentionPlot.getAxis('bottom').setGrid(50)
+
+        resLayout = QtWidgets.QHBoxLayout()
+        resLayout.addWidget(view)
+        resLayout.setContentsMargins(0, 0, 0, 0)
+
+        resultWindow = QtWidgets.QWidget()
+        resultWindow.setGeometry(100,100,1000*g.scaling_factor, 400)
+        resultWindow.setWindowTitle("Retention: W="+ str(w) + " | B=" + str(b))
+        resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
+        resultWindow.show()
+        resultWindow.setLayout(resLayout)
+
+        retentionPlot.setYRange(min(m)/1.5, max(m)*1.5)
+        retentionCurve.setData(np.asarray(timePoints),np.asarray(m))
+        resultWindow.update()
+
+        return resultWindow
+
+g.DispCallbacks[tag] = Retention.display

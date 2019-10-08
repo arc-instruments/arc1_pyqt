@@ -433,62 +433,6 @@ class history_panel(QtWidgets.QWidget):
                 #self.curveR.setData(np.asarray(V),np.asarray(R))
                 self.resultWindow[-1].update()
 
-
-            # Retention data processing and display
-            if tagKey=='RET':
-
-                lastRun=raw
-                timePoints=[]
-                m=[]
-
-                for point in raw:
-                    tag=str(point[3]) 
-                    tagCut=tag[4:]
-                    try:
-                        timePoint=float(tagCut)
-                        timePoints.append(timePoint)
-                        m.append(point[0])
-                    except ValueError:
-                        pass
-
-                # subtract the first point from all timepoints
-                firstPoint=timePoints[0]
-                for i in range(len(timePoints)):
-                    timePoints[i]=timePoints[i]-firstPoint
-
-                view=pg.GraphicsLayoutWidget()
-                label_style = {'color': '#000000', 'font-size': '10pt'}
-
-                #pen1=QtGui.QPen()
-                #pen1.setColor(QtCore.Qt.blue)
-
-                self.plot_ret=view.addPlot()
-                self.curveRet=self.plot_ret.plot(symbolPen=None, symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
-                self.plot_ret.getAxis('left').setLabel('Resistance', units='Ohms', **label_style)
-                self.plot_ret.getAxis('bottom').setLabel('Time', units='s', **label_style)
-                self.plot_ret.getAxis('left').setGrid(50)
-                self.plot_ret.getAxis('bottom').setGrid(50)
-
-                resLayout = QtWidgets.QHBoxLayout()
-                resLayout.addWidget(view)
-                resLayout.setContentsMargins(0,0,0,0)
-
-                self.resultWindow.append(QtWidgets.QWidget())
-                self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,400)
-                self.resultWindow[-1].setWindowTitle("Retention: W="+ str(w) + " | B=" + str(b))
-                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('appicon'))
-                self.resultWindow[-1].show()
-
-
-                self.resultWindow[-1].setLayout(resLayout)
-
-                self.plot_ret.setYRange(min(m)/1.5,max(m)*1.5)
-                self.curveRet.setData(np.asarray(timePoints),np.asarray(m))
-                #self.curve3D.setData(np.asarray(ampl),np.asarray(initR),np.asarray(deltaR))
-                #self.curveIV.setData(np.asarray(V),np.asarray(C))
-                #self.curveR.setData(np.asarray(V),np.asarray(R))
-                self.resultWindow[-1].update()
-
             if tagKey=='VOL':
                 pass
 
