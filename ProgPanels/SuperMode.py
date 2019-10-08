@@ -503,15 +503,15 @@ class SuperMode(QtWidgets.QWidget):
         #moduleViewscrlArea.installEventFilter(self)
         
         separator1=QtWidgets.QFrame()
-        separator1.setFrameShape(QtWidgets.QFrame.HLine);
+        separator1.setFrameShape(QtWidgets.QFrame.HLine)
         separator1.setLineWidth(2)
 
         separator2=QtWidgets.QFrame()
-        separator2.setFrameShape(QtWidgets.QFrame.HLine);
+        separator2.setFrameShape(QtWidgets.QFrame.HLine)
         separator2.setLineWidth(2)
 
         separator3=QtWidgets.QFrame()
-        separator3.setFrameShape(QtWidgets.QFrame.HLine);
+        separator3.setFrameShape(QtWidgets.QFrame.HLine)
         separator3.setLineWidth(2)
 
         for module in progPanelList:
@@ -865,7 +865,7 @@ class SuperMode(QtWidgets.QWidget):
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
         rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0;
+        #rangeMax=0
         if isRange==False:
             minW=1
             maxW=g.wline_nr

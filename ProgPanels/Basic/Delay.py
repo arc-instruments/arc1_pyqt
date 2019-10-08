@@ -75,8 +75,8 @@ class Delay(QtWidgets.QWidget):
 
         #setup a line separator
         lineLeft=QtWidgets.QFrame()
-        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
-        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
         lineLeft.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 2, 1)

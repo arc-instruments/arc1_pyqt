@@ -159,9 +159,9 @@ class ThreadWrapper(QtCore.QObject):
 
 class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
 
-    PROGRAM_ONE = 0x1;
-    PROGRAM_RANGE = 0x2;
-    PROGRAM_ALL = 0x3;
+    PROGRAM_ONE = 0x1
+    PROGRAM_RANGE = 0x2
+    PROGRAM_ALL = 0x3
 
     def __init__(self, short=False):
         super(ChronoAmperometry, self).__init__()

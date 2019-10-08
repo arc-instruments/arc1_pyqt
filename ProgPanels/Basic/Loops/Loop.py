@@ -64,12 +64,12 @@ class Loop(QtWidgets.QWidget):
 
         #setup a line separator
         lineLeft=QtWidgets.QFrame()
-        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
-        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
         lineLeft.setLineWidth(1)
         lineRight=QtWidgets.QFrame()
-        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
-        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine)
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised)
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 5, 1)

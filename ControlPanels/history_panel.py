@@ -199,7 +199,7 @@ class history_panel(QtWidgets.QWidget):
                 #print resistance
                 #for line in range(1,len(lastRun)):  # take all data lines without the first and last one (which are _s and _e)
                 while lineNr<len(lastRun)-1:
-                    currentRunTag=lastRun[lineNr][3];
+                    currentRunTag=lastRun[lineNr][3]
 
                     while (currentRunTag == lastRun[lineNr][3]):
                         resistance[totalCycles].append(lastRun[lineNr][0])
@@ -207,10 +207,10 @@ class history_panel(QtWidgets.QWidget):
                         current[totalCycles].append(lastRun[lineNr][1]/lastRun[lineNr][0])
                         abs_current[totalCycles].append(abs(current[totalCycles][-1]))
 
-                        lineNr+=1;
+                        lineNr+=1
                         if lineNr==len(lastRun):
                             break
-                    totalCycles+=1;
+                    totalCycles+=1
                     resistance.append([])
                     voltage.append([])
                     current.append([])

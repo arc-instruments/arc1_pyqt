@@ -60,7 +60,7 @@ class getData(QtCore.QObject):
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
             else:
-                endCommand=1;
+                endCommand=1
 
             while(endCommand==0):
                 valuesOld=valuesNew
@@ -146,12 +146,12 @@ class Endurance(QtWidgets.QWidget):
 
         #setup a line separator
         lineLeft=QtWidgets.QFrame()
-        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
-        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
         lineLeft.setLineWidth(1)
         #lineRight=QtWidgets.QFrame()
-        #lineRight.setFrameShape(QtWidgets.QFrame.VLine);
-        #lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
+        #lineRight.setFrameShape(QtWidgets.QFrame.VLine)
+        #lineRight.setFrameShadow(QtWidgets.QFrame.Raised)
         #lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 6, 1)
@@ -386,7 +386,7 @@ class Endurance(QtWidgets.QWidget):
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
         rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0;
+        #rangeMax=0
         if isRange==False:
             minW=1
             maxW=g.wline_nr

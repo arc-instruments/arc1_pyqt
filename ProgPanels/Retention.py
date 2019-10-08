@@ -150,8 +150,8 @@ class Retention(QtWidgets.QWidget):
 
         #setup a line separator
         lineLeft=QtWidgets.QFrame()
-        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
-        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
         lineLeft.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 2, 1)
@@ -367,7 +367,7 @@ class Retention(QtWidgets.QWidget):
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
         rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0;
+        #rangeMax=0
         if isRange==False:
             minW=1
             maxW=g.wline_nr

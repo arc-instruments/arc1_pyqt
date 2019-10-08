@@ -80,7 +80,6 @@ class cbContainer(QtWidgets.QWidget):
         #self.highlightBox.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
 
         self.dragging=False
-        #self.rectWidget.setStyleSheet("border: 3px solid red");
 
 
     def disableCell(self, w, b):

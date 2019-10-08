@@ -198,7 +198,7 @@ class crossbar_panel(QtWidgets.QWidget):
         except OverflowError:
             self.mLabel.setText("Inf")
 
-        newX=self.cb.geometry().x()+x+w;
+        newX=self.cb.geometry().x()+x+w
         newY=y+self.cb.geometry().y()-50
 
         if (newY<0):

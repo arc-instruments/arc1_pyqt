@@ -707,16 +707,16 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
 
         #Setup the line separators
         lineLeft=QtWidgets.QFrame()
-        lineLeft.setFrameShape(QtWidgets.QFrame.HLine);
-        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineLeft.setFrameShape(QtWidgets.QFrame.HLine)
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
         lineLeft.setLineWidth(1)
         lineRight=QtWidgets.QFrame()
-        lineRight.setFrameShape(QtWidgets.QFrame.HLine);
-        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineRight.setFrameShape(QtWidgets.QFrame.HLine)
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised)
         lineRight.setLineWidth(1)
         lineOps=QtWidgets.QFrame()
-        lineOps.setFrameShape(QtWidgets.QFrame.HLine);
-        lineOps.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineOps.setFrameShape(QtWidgets.QFrame.HLine)
+        lineOps.setFrameShadow(QtWidgets.QFrame.Raised)
         lineOps.setLineWidth(1)
 
 
@@ -938,7 +938,7 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
     def makeDeviceList(self,isRange):
         #if g.checkSA=False:
         rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0;
+        #rangeMax=0
         if isRange==False:
             minW=1
             maxW=g.wline_nr

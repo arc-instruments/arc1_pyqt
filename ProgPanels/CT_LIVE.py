@@ -104,7 +104,7 @@ class getData(QtCore.QObject):
                         tag_=tag+'_i_'+str(cycle)
 
                 else:
-                    endCommand=1;
+                    endCommand=1
 
                 while(endCommand==0):
                     valuesOld=valuesNew
@@ -226,12 +226,12 @@ class CT_LIVE(QtWidgets.QWidget):
 
         #setup a line separator
         lineLeft=QtWidgets.QFrame()
-        lineLeft.setFrameShape(QtWidgets.QFrame.VLine);
-        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
+        lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
         lineLeft.setLineWidth(1)
         lineRight=QtWidgets.QFrame()
-        lineRight.setFrameShape(QtWidgets.QFrame.VLine);
-        lineRight.setFrameShadow(QtWidgets.QFrame.Raised);
+        lineRight.setFrameShape(QtWidgets.QFrame.VLine)
+        lineRight.setFrameShadow(QtWidgets.QFrame.Raised)
         lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 7, 1)

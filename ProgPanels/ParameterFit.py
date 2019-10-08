@@ -771,9 +771,9 @@ class ThreadWrapper(QtCore.QObject):
 
 class ParameterFit(Ui_PFParent, QtWidgets.QWidget):
 
-    PROGRAM_ONE = 0x1;
-    PROGRAM_RANGE = 0x2;
-    PROGRAM_ALL = 0x3;
+    PROGRAM_ONE = 0x1
+    PROGRAM_RANGE = 0x2
+    PROGRAM_ALL = 0x3
 
     def __init__(self, short=False):
         super(ParameterFit, self).__init__()

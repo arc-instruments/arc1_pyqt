@@ -249,11 +249,6 @@ class new_Session(QtWidgets.QWidget):
         line.setStyleSheet(s.lineStyle)
         line.setLineWidth(1)
 
-        #QFrame *line = new QFrame(this);
-        #line->setFrameShape(QFrame::HLine); // Horizontal line
-        #line->setFrameShadow(QFrame::Sunken);
-        #line->setLineWidth(1);
-
         mainLayout.addWidget(line)
 
         mainLayout.addLayout(startLay)

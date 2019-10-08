@@ -310,7 +310,7 @@ class virtualArC(object):
 
             if (option!=2 and option!=3):
                 for i in range(secondV+1):
-                    Vread=(i*Vstep+Vstart)*polarity;
+                    Vread=(i*Vstep+Vstart)*polarity
                     pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
                     self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
 
