@@ -16,6 +16,7 @@ Main module of ArC One Control Panel
 import sys
 import os
 import serial
+import pkgutil
 import importlib
 import csv
 import time
@@ -27,6 +28,7 @@ from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
 from virtualArC import virtualarc
 import Graphics
+import ProgPanels
 import ctypes
 import semver
 myappid = 'ArC ONE Control' # arbitrary string
@@ -693,12 +695,13 @@ class Arcontrol(QtWidgets.QMainWindow):
     def findAndLoadFile(self):
 
         # Import all programming panels in order to get all tags
-        files = [fls for fls in os.listdir('ProgPanels') if fls.endswith(".py")]
-        for fls in files:
+        for (_, modname, ispkg) in pkgutil.iter_modules(ProgPanels.__path__):
+            if ispkg:
+                continue
             try:
-                importlib.import_module(fls[:-3])     # import the module
-            except:
-                print("WARNING - Could not load libraries related to module:", fls[:-3])
+                importlib.import_module(".".join([ProgPanels.__name__, modname]))
+            except ModuleNotFoundError as exc:
+                print("Could not load module %s: %s" % (modname, exc))
 
         path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
                 getOpenFileName(self, 'Open file','', g.OPEN_FI_PATTERN)[0])
