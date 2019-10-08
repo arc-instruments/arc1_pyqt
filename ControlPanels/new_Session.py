@@ -35,7 +35,7 @@ class new_Session(QtWidgets.QWidget):
         # Setup top logo
         # ============================
         logoTop=QtWidgets.QLabel()
-        logoTop.setPixmap(Graphics.getPixmap('NewSeshLogoDrawing2'))
+        logoTop.setPixmap(Graphics.getPixmap('new-session-banner'))
         mainLayout.addWidget(logoTop)
         # ============================
 

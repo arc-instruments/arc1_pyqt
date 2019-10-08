@@ -79,7 +79,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         ##########################
         # SPLASH SCREEN #
-        pixmap = Graphics.getPixmap('splash2')
+        pixmap = Graphics.getPixmap('splash')
         splashScreen=QtWidgets.QSplashScreen(pixmap)
         splashScreen.show()
         ##########################
@@ -152,11 +152,11 @@ class Arcontrol(QtWidgets.QMainWindow):
         fileMenu.addAction(exitAction)
 
         # 2) Settings Menu
-        self.updateAction = QtWidgets.QAction(Graphics.getIcon('platform_manager'), 'Update available', self)
+        self.updateAction = QtWidgets.QAction(Graphics.getIcon('platform-manager'), 'Update available', self)
         self.updateAction.setStatusTip('Update available')
         self.updateAction.triggered.connect(self.launch_manager)
 
-        self.updateAction_menu = QtWidgets.QAction(Graphics.getIcon('platform_manager'), 'Check for updates', self)
+        self.updateAction_menu = QtWidgets.QAction(Graphics.getIcon('platform-manager'), 'Check for updates', self)
         self.updateAction_menu.setStatusTip('Check for updates')
         self.updateAction_menu.triggered.connect(self.launch_manager)
 
@@ -353,7 +353,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         # Setup main window geometry
         self.setGeometry(100, 100, g.scaling_factor*1500, g.scaling_factor*800)
         self.setWindowTitle('ArC One - Control Panel')
-        self.setWindowIcon(Graphics.getIcon('icon3'))
+        self.setWindowIcon(Graphics.getIcon('appicon'))
 
         self.show()
 
@@ -425,7 +425,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.cfgHW.move(frameGm.topLeft())
 
         self.cfgHW.setWindowTitle("Modify Hardware Settings")
-        self.cfgHW.setWindowIcon(Graphics.getIcon('icon3'))
+        self.cfgHW.setWindowIcon(Graphics.getIcon('appicon'))
         self.cfgHW.show()
 
     def updateHW(self):
@@ -448,7 +448,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.aboutSesh.move(frameGm.topLeft())
 
         self.aboutSesh.setWindowTitle("About ArC Instruments Ltd.")
-        self.aboutSesh.setWindowIcon(Graphics.getIcon('icon3'))
+        self.aboutSesh.setWindowIcon(Graphics.getIcon('appicon'))
 
         self.aboutSesh.show()
 
@@ -576,7 +576,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.newSesh.move(frameGm.topLeft())
 
         self.newSesh.setWindowTitle("New Session")
-        self.newSesh.setWindowIcon(Graphics.getIcon('icon3'))
+        self.newSesh.setWindowIcon(Graphics.getIcon('appicon'))
         g.ser.close()
         g.ser.port=None
         #f.interfaceAntenna.changeArcStatus.emit('Disc')

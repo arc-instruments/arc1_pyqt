@@ -37,7 +37,7 @@ class aboutSection(QtWidgets.QWidget):
         mainLayout.setContentsMargins(0,0,0,0)
 
         logoTop=QtWidgets.QLabel()
-        logoTop.setPixmap(Graphics.getPixmap('aboutSection'))
+        logoTop.setPixmap(Graphics.getPixmap('about-banner'))
         mainLayout.addWidget(logoTop)
 
         botHLay=QtWidgets.QHBoxLayout()

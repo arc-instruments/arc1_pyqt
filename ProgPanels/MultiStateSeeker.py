@@ -707,7 +707,7 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
         topLayout.addItem(bottomLayout)
         dialog.setGeometry(100,100,600,400)
         dialog.setWindowTitle("Multistate report for W=%d | B=%d" % (w, b))
-        dialog.setWindowIcon(Graphics.getIcon('icon3'))
+        dialog.setWindowIcon(Graphics.getIcon('appicon'))
         tab1.setLayout(topLayout)
         tabs.addTab(tab1, "Data")
 

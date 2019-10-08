@@ -209,7 +209,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
         super(FitDialog, self).__init__(parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Parameter fit for W=%d | B=%d" % (w, b))
-        self.setWindowIcon(Graphics.getIcon('icon3'))
+        self.setWindowIcon(Graphics.getIcon('appicon'))
 
         self.numPulsesEdit.setValidator(QtGui.QIntValidator())
 

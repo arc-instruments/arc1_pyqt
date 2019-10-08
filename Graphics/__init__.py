@@ -4,16 +4,15 @@ from PyQt5 import QtCore, QtGui
 
 
 _pixmap_files = [
-    'aboutSection.png',
+    'about-banner.png',
     'clear.png',
-    'icon3.png',
+    'appicon.png',
     'new.png',
-    'NewSeshLogoDrawing2.png',
-    'newSeshLogo.png',
+    'new-session-banner.png',
     'open.png',
-    'platform_manager.png',
+    'platform-manager.png',
     'save.png',
-    'splash2.png'
+    'splash.png'
 ]
 
 

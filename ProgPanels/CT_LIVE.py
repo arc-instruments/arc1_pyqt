@@ -393,7 +393,7 @@ class CT_LIVE(QtWidgets.QWidget):
         vbox1.addWidget(btn_widget)
 
         self.setWindowTitle("CurveTracer: LIVE!")
-        self.setWindowIcon(Graphics.getIcon('icon3'))
+        self.setWindowIcon(Graphics.getIcon('appicon'))
 
         self.initialise_variables()
 

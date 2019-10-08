@@ -231,7 +231,7 @@ class history_panel(QtWidgets.QWidget):
                 self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,400)
                 self.resultWindow[-1].setWindowTitle("Curve Tracer: W="+ str(w) + " | B=" + str(b))
-                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('icon3'))
+                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('appicon'))
                 self.resultWindow[-1].show()
 
                 pen1=QtGui.QPen()
@@ -391,7 +391,7 @@ class history_panel(QtWidgets.QWidget):
                 self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,500)
                 self.resultWindow[-1].setWindowTitle("SwitchSeeker: W="+ str(w) + " | B=" + str(b))
-                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('icon3'))
+                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('appicon'))
                 self.resultWindow[-1].show()
 
                 pen1=QtGui.QPen()
@@ -476,7 +476,7 @@ class history_panel(QtWidgets.QWidget):
                 self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,1000*g.scaling_factor,400)
                 self.resultWindow[-1].setWindowTitle("Retention: W="+ str(w) + " | B=" + str(b))
-                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('icon3'))
+                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('appicon'))
                 self.resultWindow[-1].show()
 
 
@@ -519,7 +519,7 @@ class history_panel(QtWidgets.QWidget):
                 self.resultWindow.append(QtWidgets.QWidget())
                 self.resultWindow[-1].setGeometry(100,100,500,500)
                 self.resultWindow[-1].setWindowTitle("STDP: W="+ str(w) + " | B=" + str(b))
-                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('icon3'))
+                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('appicon'))
                 self.resultWindow[-1].show()
 
                 view=pg.GraphicsLayoutWidget()
