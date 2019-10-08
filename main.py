@@ -404,7 +404,8 @@ class Arcontrol(QtWidgets.QMainWindow):
                 "This will delete all saved data and proceed with a platform update.",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
         if reply==QtWidgets.QMessageBox.Yes:
-            directory=os.path.join(os.getcwd(),os.pardir,"ArC Platform Manager")
+            directory=os.path.abspath(os.path.join(os.path.dirname(__file__),
+                os.pardir, "ArC Platform Manager"))
             os.chdir(directory)
             launcher_path=os.path.join(directory,"ArC Platform Manager.exe")# + g.local_version)
             subprocess.Popen([launcher_path, g.local_version])
