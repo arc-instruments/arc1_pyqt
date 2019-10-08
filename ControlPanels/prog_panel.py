@@ -10,20 +10,20 @@
 import sys
 import os
 import importlib
+import pkgutil
 from PyQt5 import QtGui, QtCore, QtWidgets
 
+import ProgPanels
 import Globals.GlobalStyles as s
 import Globals.GlobalVars as g
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
-
 
 class prog_panel(QtWidgets.QWidget):
-    
+
     def __init__(self):
         super(prog_panel, self).__init__()
         self.initUI()
-        
+
     def initUI(self):   
         mainLayout=QtWidgets.QVBoxLayout()
 
@@ -36,10 +36,13 @@ class prog_panel(QtWidgets.QWidget):
         self.prog_panelList.setStyleSheet(s.comboStyle)
         self.prog_panelList.setMinimumWidth(150*g.scaling_factor)
 
-        files = [f for f in os.listdir('ProgPanels') if f.endswith(".py")]  # populate prog panel dropbox
-        for f in files:
-            if (f[:-3]!="CT_LIVE"):
-                self.prog_panelList.addItem(f[:-3])
+        # List all non-package modules in `ProgPanels`
+        for (_, modname, ispkg) in pkgutil.iter_modules(ProgPanels.__path__):
+            if ispkg:
+                continue
+            name = modname.split(".")[-1]
+            if name != "CT_LIVE":
+                self.prog_panelList.addItem(name)
 
         boldFont=QtGui.QFont("FontFamily")
         boldFont.setBold(True)
@@ -83,11 +86,12 @@ class prog_panel(QtWidgets.QWidget):
 
     def addPanel(self):
 
-        moduleName=str(self.prog_panelList.currentText())   # format module name from drop down
-        thisPanel = importlib.import_module(moduleName)     # import the module
-        panel_class = getattr(thisPanel, moduleName)        # get it's main class    
-        widg=panel_class()                    
-        self.tabFrame.addTab(widg,moduleName) # instantiate it and add to tabWidget
+        baseModule = str(self.prog_panelList.currentText())
+        moduleName = ".".join([ProgPanels.__name__, baseModule])
+        thisPanel = importlib.import_module(moduleName)
+        panel_class = getattr(thisPanel, baseModule)
+        widg=panel_class()
+        self.tabFrame.addTab(widg, baseModule)
 
         self.tabFrame.setCurrentWidget(widg)
 

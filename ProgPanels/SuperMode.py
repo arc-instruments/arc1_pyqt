@@ -1,59 +1,59 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys, os
 import pickle
+import pkgutil
 import importlib
 import pickle
 import time
 import threading
 
-sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/Basic/'))
-sys.path.append(os.path.abspath(os.getcwd()+'/ProgPanels/Basic/Loops'))
-
-import Loop
-import End
-
+import ProgPanels
+import ProgPanels.Basic
+import ProgPanels.Basic.Loops
+from ProgPanels.Basic.Loops import Loop, End
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
+
 progPanelList=[]
 progPanelList_basic=[]
 progPanelList_basic_loops=[]
 
+
 mutex = QtCore.QMutex()
 
 
-def loadProgModules():
-    files = [f for f in os.listdir('ProgPanels') if f.endswith(".py")]  # populate prog panel dropbox
-    for f in files:
-        progPanelList.append(f[:-3])
-    progPanelList.remove("SuperMode")
-    progPanelList.remove("CT_LIVE")
-    progPanelList.remove("MultiBias")
-    #print progPanelList
-loadProgModules()
+def _load_modules(mod):
 
-def loadProgModules_basic():
-    files = [f for f in os.listdir('ProgPanels/Basic/') if f.endswith(".py")]  # populate prog panel dropbox
-    for f in files:
-        progPanelList_basic.append(f[:-3])
-    #print progPanelList_basic
-loadProgModules_basic()
+    mods = []
+    # List all non-package modules in `ProgPanels`
+    for (_, modname, ispkg) in pkgutil.iter_modules(mod.__path__):
+        if ispkg:
+            continue
+        mods.append(".".join([mod.__name__, modname]))
 
-def loadProgModules_basic_loops():
-    files = [f for f in os.listdir('ProgPanels/Basic/Loops') if f.endswith(".py")]  # populate prog panel dropbox
-    for f in files:
-        progPanelList_basic_loops.append(f[:-3])
-    #print progPanelList_basic_loops
-loadProgModules_basic_loops()
+    for x in ["ProgPanels.SuperMode", "ProgPanels.CT_LIVE", "ProgPanels.MultiBias"]:
+        try:
+            mods.remove(x)
+        except:
+            # that's fine; it probably isn't there
+            pass
+
+    return mods
+
+
+progPanelList = _load_modules(ProgPanels)
+progPanelList_basic = _load_modules(ProgPanels.Basic)
+progPanelList_basic_loops = _load_modules(ProgPanels.Basic.Loops)
+
 
 placed_module_height=20
 
+
 module_id_dict={}
 globalID=0
-
 
 
 tag="SM"
@@ -88,7 +88,7 @@ class getData(QtCore.QObject):
 
         self.globalDisableInterface.emit(False)
         self.disableInterface.emit(False)
-        
+
         self.finished.emit()
 
     def ping_and_resolveLoops(self, chain):
@@ -133,10 +133,12 @@ class getData(QtCore.QObject):
 class draggableButton(QtWidgets.QPushButton):
 
     what="A Button"
+    name="A Button"
 
     def __init__(self, moduleName):
-        super(draggableButton,self).__init__(moduleName)
-        self.what=moduleName
+        self.what = moduleName
+        self.name = self.what.split(".")[-1]
+        super(draggableButton,self).__init__(self.name)
         if moduleName=='Loop':
             self.setText("Start Loop")
         if moduleName=='End':
@@ -144,7 +146,6 @@ class draggableButton(QtWidgets.QPushButton):
 
         self.setFixedHeight(20)
         #super(draggableButton,self).setDragEnabled(True)
-        
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat("application/x-module"):
@@ -166,7 +167,8 @@ class draggableButton(QtWidgets.QPushButton):
 
         mimeData = QtCore.QMimeData()
         mimeData.setData("application/x-module", thisID)
-        mimeData.setText(self.what)
+        #mimeData.setText(self.what)
+        mimeData.setText(self.name)
 
         drag = QtGui.QDrag(self)
         drag.setMimeData(mimeData)
@@ -182,7 +184,7 @@ class draggableButton(QtWidgets.QPushButton):
 
     def associate(self):
         thisPanel = importlib.import_module(self.what)     # import the module
-        panel_class = getattr(thisPanel, self.what)        # get it's main class 
+        panel_class = getattr(thisPanel, self.name)        # get it's main class
         thisModule = panel_class(short=True)
         return thisModule
 
