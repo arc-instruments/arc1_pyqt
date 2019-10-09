@@ -24,6 +24,14 @@ progPanelList_basic_loops=[]
 
 mutex = QtCore.QMutex()
 
+# Modules that are not compatible with SuperMode or there
+# is no point in trying to run them withing that context.
+MODULE_BLACKLIST = [
+    "ProgPanels.SuperMode",
+    "ProgPanels.CT_LIVE",
+    "ProgPanels.MultiBias",
+    "ProgPanels.UDPmod",
+]
 
 def _load_modules(mod):
 
@@ -34,7 +42,7 @@ def _load_modules(mod):
             continue
         mods.append(".".join([mod.__name__, modname]))
 
-    for x in ["ProgPanels.SuperMode", "ProgPanels.CT_LIVE", "ProgPanels.MultiBias"]:
+    for x in MODULE_BLACKLIST:
         try:
             mods.remove(x)
         except:
