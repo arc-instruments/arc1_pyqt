@@ -211,9 +211,13 @@ class ConvergeToState(Ui_CTSParent, QtWidgets.QWidget):
 
         self.applyValidators()
 
-        self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
-        self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
-        self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
+        if not self.short:
+            self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
+            self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
+            self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
+        else:
+            for wdg in [self.applyOneButton, self.applyAllButton, self.applyRangeButton]:
+                wdg.hide()
 
     def applyValidators(self):
         floatValidator = QtGui.QDoubleValidator()

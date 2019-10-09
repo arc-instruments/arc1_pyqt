@@ -406,9 +406,13 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
         self.stateRetentionMultiplierComboBox.addItem("ms", 1)
         self.stateRetentionMultiplierComboBox.addItem("s", 1000)
 
-        self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
-        self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
-        self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
+        if not self.short:
+            self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
+            self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
+            self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
+        else:
+            for wdg in [self.applyOneButton, self.applyAllButton, self.applyRangeButton]:
+                wdg.hide()
 
         self.monotonicityComboBox.addItem(u"Ignore", 0)
         self.monotonicityComboBox.addItem(u"Stop on reversal", 1)
