@@ -13,6 +13,10 @@ import os
 import time
 import importlib
 
+import pyqtgraph as pg
+import numpy as np
+
+import Graphics
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -20,6 +24,36 @@ import Globals.GlobalStyles as s
 
 tag="CT"
 g.tagDict.update({tag:"CurveTracer*"})
+
+
+def _max_without_inf(lst, exclude):
+    maxim = 0
+    for value in lst:
+        if type(value) == list:
+            value = _max_without_inf(value, exclude)
+            if value > maxim:
+                maxim = value
+        else:
+            if value > maxim and value != exclude:
+                maxim = value
+
+    return maxim
+
+
+def _min_without_inf(lst, exclude):
+    maxim = 1e100
+    for value in lst:
+        if type(value) == list:
+            value = _min_without_inf(value, exclude)
+            if value < maxim:
+                maxim = value
+        else:
+            if value < maxim and value != exclude:
+                maxim = value
+
+    return maxim
+
+
 
 class getData(QtCore.QObject):
 
@@ -496,3 +530,136 @@ class CurveTracer(QtWidgets.QWidget):
 
         return rangeDev
 
+    @staticmethod
+    def display(w, b, raw, parent=None):
+
+        resistance = []
+        voltage = []
+        current = []
+        abs_current = []
+
+        # Find nr of cycles
+        lineNr = 1
+        totalCycles = 0
+        resistance.append([])
+        voltage.append([])
+        current.append([])
+        abs_current.append([])
+
+        resistance[totalCycles].append(raw[0][0])
+        voltage[totalCycles].append(raw[0][1])
+        current[totalCycles].append(raw[0][1]/raw[lineNr][0])
+        abs_current[totalCycles].append(abs(current[totalCycles][-1]))
+
+
+        # take all data lines without the first and last one (which are _s and _e)
+        while lineNr < len(raw)-1:
+            currentRunTag = raw[lineNr][3]
+
+            while (currentRunTag == raw[lineNr][3]):
+                resistance[totalCycles].append(raw[lineNr][0])
+                voltage[totalCycles].append(raw[lineNr][1])
+                current[totalCycles].append(raw[lineNr][1]/raw[lineNr][0])
+                abs_current[totalCycles].append(abs(current[totalCycles][-1]))
+
+                lineNr += 1
+                if lineNr == len(raw):
+                    break
+            totalCycles += 1
+            resistance.append([])
+            voltage.append([])
+            current.append([])
+            abs_current.append([])
+
+        resistance[totalCycles - 1].append(raw[-1][0])
+        voltage[totalCycles - 1].append(raw[-1][1])
+        current[totalCycles - 1].append(raw[-1][1]/raw[-1][0])
+        abs_current[totalCycles - 1].append(abs(current[totalCycles - 1][-1]))
+
+        # setup display
+        resultWindow = QtWidgets.QWidget()
+        resultWindow.setGeometry(100,100,1000*g.scaling_factor,400)
+        resultWindow.setWindowTitle("Curve Tracer: W="+ str(w) + " | B=" + str(b))
+        resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
+        resultWindow.show()
+
+        view=pg.GraphicsLayoutWidget()
+
+        label_style = {'color': '#000000', 'font-size': '10pt'}
+
+
+        plot_abs = view.addPlot()
+        plot_abs.getAxis('left').setLabel('Current', units='A', **label_style)
+        plot_abs.getAxis('bottom').setLabel('Voltage', units='V', **label_style)
+        plot_abs.setLogMode(False, True)
+        plot_abs.getAxis('left').setGrid(50)
+        plot_abs.getAxis('bottom').setGrid(50)
+
+        # go to next row and add the next plot
+        view.nextColumn()
+
+        plot_IV = view.addPlot()
+        plot_IV.addLegend()
+        plot_IV.getAxis('left').setLabel('Current', units='A', **label_style)
+        plot_IV.getAxis('bottom').setLabel('Voltage', units='V', **label_style)
+        plot_IV.getAxis('left').setGrid(50)
+        plot_IV.getAxis('bottom').setGrid(50)
+
+        # go to next row and add the next plot
+        view.nextColumn()
+
+        plot_R = view.addPlot()
+        plot_R.getAxis('left').setLabel('Resistance', units='Ohms',
+                **label_style)
+        plot_R.getAxis('bottom').setLabel('Voltage', units='V', **label_style)
+        plot_R.setLogMode(False, True)
+        plot_R.getAxis('left').setGrid(50)
+        plot_R.getAxis('bottom').setGrid(50)
+
+        resLayout = QtWidgets.QVBoxLayout()
+        resLayout.addWidget(view)
+        resLayout.setContentsMargins(0,0,0,0)
+
+        resultWindow.setLayout(resLayout)
+
+        # setup range for resistance plot
+        maxRes_arr = []
+        minRes_arr = []
+
+        for cycle in range(1, totalCycles + 1):
+            maxRes_arr.append(max(resistance[cycle - 1]))
+            minRes_arr.append(min(resistance[cycle - 1]))
+
+        maxRes = max(maxRes_arr)
+        minRes = max(minRes_arr)
+
+        for cycle in range(1,totalCycles+1):
+            aux1 = plot_abs.plot(pen=(cycle, totalCycles), symbolPen=None,
+                    symbolBrush=(cycle, totalCycles), symbol='s', symbolSize=5,
+                    pxMode=True, name='Cycle ' + str(cycle))
+            aux1.setData(np.asarray(voltage[cycle - 1]),
+                    np.asarray(abs_current[cycle - 1]))
+
+            aux2 = plot_IV.plot(pen=(cycle, totalCycles), symbolPen=None,
+                    symbolBrush=(cycle, totalCycles), symbol='s', symbolSize=5,
+                    pxMode=True, name='Cycle ' + str(cycle))
+            aux2.setData(np.asarray(voltage[cycle - 1]),
+                    np.asarray(current[cycle - 1]))
+
+            aux3 = plot_R.plot(pen=(cycle, totalCycles), symbolPen=None,
+                    symbolBrush=(cycle, totalCycles), symbol='s', symbolSize=5,
+                    pxMode=True, name='Cycle ' + str(cycle))
+            aux3.setData(np.asarray(voltage[cycle - 1]),
+                    np.asarray(resistance[cycle - 1]))
+
+        plot_R.setYRange(np.log10(_min_without_inf(resistance, np.inf)),
+                np.log10(_max_without_inf(resistance, np.inf)))
+        plot_abs.setYRange(np.log10(_min_without_inf(abs_current, 0.0)),
+                np.log10(_max_without_inf(abs_current, 0.0)))
+
+        resultWindow.update()
+
+        return resultWindow
+
+
+g.DispCallbacks[tag] = CurveTracer.display
