@@ -445,8 +445,9 @@ class STDP(QtWidgets.QWidget):
         pass
         print("Loading spike...")
 
-        path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open spike file', "*.txt"))
-        #path=fname.getOpenFileName()
+        openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
+                'Open spike file', "*.txt")[0]
+        path = QtCore.QFileInfo(openFileName)
 
         voltage=[]
         time=[]
@@ -492,8 +493,9 @@ class STDP(QtWidgets.QWidget):
         pass
         print("Loading spike...")
 
-        path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open spike file', "*.txt"))
-        #path=fname.getOpenFileName()
+        openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
+                'Open spike file', "*.txt")[0]
+        path = QtCore.QFileInfo(openFileName)
 
         voltage=[]
         time=[]
