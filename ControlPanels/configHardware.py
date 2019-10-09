@@ -20,23 +20,17 @@ class configHardware(QtWidgets.QWidget):
     
     def __init__(self):
         super(configHardware, self).__init__()
-        
         self.initUI()
-        
+
     def initUI(self):      
-        mainLayout=QtWidgets.QVBoxLayout()  # Set main vertical layout
+        mainLayout=QtWidgets.QVBoxLayout()
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
-        # ============================
 
         # Setup mCAT settings
-        # ============================
-
         self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
         self.hwSettings.setStyleSheet(s.groupStyleNewSesh)
-        #palette=QtWidgets.QPalette()
         self.hwSettings.setFont(fonts.font2)
-
 
         hwSetLayout=QtWidgets.QGridLayout()
         hwSetLayout.setContentsMargins(10,20,10,10)
@@ -69,7 +63,6 @@ class configHardware(QtWidgets.QWidget):
         self.hwSettings.setLayout(hwSetLayout)
         mainLayout.addWidget(self.hwSettings)
 
-
         # Apply/Cancel buttons Layout
         startLay_group=QtWidgets.QGroupBox()
         startLay_group.setStyleSheet(s.groupStyle)
@@ -91,8 +84,6 @@ class configHardware(QtWidgets.QWidget):
         startLay.setContentsMargins(5,5,5,5)
         startLay.setSpacing(2)
 
-        #startLay_group.setLayout(startLay)
-
         line=QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
         line.setFrameShadow(QtWidgets.QFrame.Plain)
@@ -103,11 +94,7 @@ class configHardware(QtWidgets.QWidget):
 
         mainLayout.addLayout(startLay)
 
-        #spacer=QtWidgets.QSpacerItem(1,1)
-        #mainLayout.addWidget(spacer)
-        #mainLayout.addSpacing(1)
-
-        self.setContentsMargins(0,0,0,0)    # spacing of the full Layout to accomodate line numbers and colorbar on the right  
+        self.setContentsMargins(0,0,0,0)
         self.setLayout(mainLayout)
 
     def updateHW(self):
@@ -121,5 +108,4 @@ class configHardware(QtWidgets.QWidget):
 
     def cancelUpdateHW(self):
         self.close()
-        pass
 

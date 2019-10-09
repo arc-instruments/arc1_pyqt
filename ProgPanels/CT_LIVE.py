@@ -48,7 +48,7 @@ class startLive(QtCore.QObject):
             mutex.unlock()
 
         self.disableInterface.emit(False)
-        
+
         self.finished.emit()
 
     def stop_live(self):
@@ -61,7 +61,6 @@ class getData(QtCore.QObject):
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
     highlight=QtCore.pyqtSignal(int,int)
     displayData=QtCore.pyqtSignal()
-    #updateTree=QtCore.pyqtSignal(int, int)
     disableInterface=QtCore.pyqtSignal(bool)
     getDevices=QtCore.pyqtSignal(int)
     changeArcStatus=QtCore.pyqtSignal(str)
@@ -74,8 +73,6 @@ class getData(QtCore.QObject):
 
     def getIt(self):
 
-        #self.disableInterface.emit(True)
-        #self.changeArcStatus.emit('Busy')
         global tag
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
@@ -108,7 +105,6 @@ class getData(QtCore.QObject):
 
                 while(endCommand==0):
                     valuesOld=valuesNew
-                    
                     valuesNew=f.getFloats(3)
 
                     if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
@@ -123,24 +119,23 @@ class getData(QtCore.QObject):
                         self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
                         self.displayData.emit()
                         endCommand=1
-            #self.getStopSignal()
 
         self.finished.emit()
 
 
 class CT_LIVE(QtWidgets.QWidget):
+
     global global_stop
     stop_signal=QtCore.pyqtSignal()
 
-    
     def __init__(self, short=False):
         super(CT_LIVE, self).__init__()
 
         self.short=short
-        
+
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -151,7 +146,7 @@ class CT_LIVE(QtWidgets.QWidget):
         self.plot_IV.getAxis('left').setLabel('Current', units='A', **label_style)
         self.plot_IV.getAxis('bottom').setLabel('Voltage', units='V', **label_style)
         self.plot_IV.getAxis('left').setGrid(50)
-        self.plot_IV.getAxis('bottom').setGrid(50) 
+        self.plot_IV.getAxis('bottom').setGrid(50)
 
         vbox1.addWidget(self.view)
 
@@ -206,10 +201,6 @@ class CT_LIVE(QtWidgets.QWidget):
         self.combo_IVtype.insertItems(1,IVtypes)
         self.combo_IVoption.insertItems(1,IVoptions)
 
-        #self.combo_IVtype.currentIndexChanged.connect(self.updateIVtype)
-        #self.combo_IVoption.currentIndexChanged.connect(self.updateIVoption)
-
-
         # Setup the two combo boxes
         gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
@@ -222,9 +213,7 @@ class CT_LIVE(QtWidgets.QWidget):
             gridLayout.setColumnStretch(5,1)
             gridLayout.setColumnStretch(6,1)
             gridLayout.setColumnStretch(7,2)
-        #gridLayout.setSpacing(2)
 
-        #setup a line separator
         lineLeft=QtWidgets.QFrame()
         lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
         lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -283,26 +272,23 @@ class CT_LIVE(QtWidgets.QWidget):
                 spinEdit.setValue(spinbox_cutoff_params[3])
                 spinEdit.setDecimals(0)
                 gridLayout.addWidget(spinEdit, i,5)
-                self.rightEdits.append(spinEdit)    
-
-
+                self.rightEdits.append(spinEdit)
 
         self.leftEdits[0].valueChanged.connect(self.update_v_pmax)
-        self.leftEdits[1].valueChanged.connect(self.update_v_nmax) 
-        self.leftEdits[2].valueChanged.connect(self.update_v_step) 
-        self.leftEdits[3].valueChanged.connect(self.update_v_start) 
-        self.leftEdits[4].valueChanged.connect(self.update_pw) 
+        self.leftEdits[1].valueChanged.connect(self.update_v_nmax)
+        self.leftEdits[2].valueChanged.connect(self.update_v_step)
+        self.leftEdits[3].valueChanged.connect(self.update_v_start)
+        self.leftEdits[4].valueChanged.connect(self.update_pw)
 
-        self.rightEdits[0].textChanged.connect(self.update_cycles) 
-        self.rightEdits[1].textChanged.connect(self.update_interpulse) 
-        self.rightEdits[2].valueChanged.connect(self.update_c_p) 
-        self.rightEdits[3].valueChanged.connect(self.update_c_n)            
+        self.rightEdits[0].textChanged.connect(self.update_cycles)
+        self.rightEdits[1].textChanged.connect(self.update_interpulse)
+        self.rightEdits[2].valueChanged.connect(self.update_c_p)
+        self.rightEdits[3].valueChanged.connect(self.update_c_n)
 
         returnCheckBox = QtWidgets.QCheckBox("Halt and return.")
         returnCheckBox.stateChanged.connect(self.toggleReturn)
         self.returnCheck=0
         gridLayout.addWidget(returnCheckBox, 4, 5)
-        #Position the combo boxes and respective labels
 
         lineLabel=QtWidgets.QLabel()
         lineLabel.setText('Bias type:')
@@ -315,12 +301,8 @@ class CT_LIVE(QtWidgets.QWidget):
         gridLayout.addWidget(self.combo_IVtype,5,5)
         gridLayout.addWidget(self.combo_IVoption,6,5)
 
-        # ==============================================
-
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
-
-        # ==============================================
 
         self.vW=QtWidgets.QWidget()
         self.vW.setLayout(gridLayout)
@@ -420,7 +402,7 @@ class CT_LIVE(QtWidgets.QWidget):
                     event.accept()
 
     def initialise_variables(self):
-        self.is_live=False        
+        self.is_live=False
         self.voltage=[]
         self.current=[]
         self.data_queue=queue.Queue(maxsize=100)
@@ -458,7 +440,7 @@ class CT_LIVE(QtWidgets.QWidget):
             self.push_live.setText("STOP!")
             self.push_one.setEnabled(False)
             self.push_save.setEnabled(False)
-            
+
             self.startLive=startLive()
             self.startLive.moveToThread(self.live_thread)
             self.live_thread.started.connect(self.startLive.getIt)
@@ -485,7 +467,7 @@ class CT_LIVE(QtWidgets.QWidget):
         try:
             self.bufferSize=int(value)
         except:
-            pass        
+            pass
 
 
     def toggleReturn(self, state):
@@ -502,9 +484,6 @@ class CT_LIVE(QtWidgets.QWidget):
         pass
 
     def sendParams(self, totalCycles):
-        # try:
-        #g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
-        # except:
         g.ser.write_b(str(self.v_pmax)+"\n")
         g.ser.write_b(str(self.v_nmax)+"\n")
         g.ser.write_b(str(self.v_start)+"\n")
@@ -525,8 +504,8 @@ class CT_LIVE(QtWidgets.QWidget):
             self.wi=g.w
             self.bi=g.b
             job="201"
-            g.ser.write_b(job+"\n")   # sends the job
-            
+            g.ser.write_b(job+"\n")
+
             self.sendParams(totalCycles)
 
             self.thread=QtCore.QThread()
@@ -547,8 +526,7 @@ class CT_LIVE(QtWidgets.QWidget):
         self.getData.displayData.connect(self.display_data)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
         self.getData.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)    
-
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def display_data(self):
         IV_curve=self.plot_IV.plot(pxMode=True)
@@ -561,7 +539,7 @@ class CT_LIVE(QtWidgets.QWidget):
             self.data_queue.put([self.voltage,self.current])
 
         self.voltage=[]
-        self.current=[]       
+        self.current=[]
 
         curves=self.plot_IV.items
 
@@ -572,7 +550,6 @@ class CT_LIVE(QtWidgets.QWidget):
             self.plot_IV.removeItem(curves[0])
 
         self.update()
-        #print "data_queue size is", self.data_queue.qsize()
 
     def saveQueue(self):
         tag="CT_i"
@@ -592,7 +569,6 @@ class CT_LIVE(QtWidgets.QWidget):
         g.Mhistory[self.wi][self.bi][firstPoint-1][3]="CT_s"
         g.Mhistory[self.wi][self.bi][-1][3]="CT_e"
         f.historyTreeAntenna.updateTree.emit(self.wi, self.bi)
-        pass
 
 
     def record_data(self, w,b, M, A, pw, tag):
@@ -652,4 +628,3 @@ class CT_LIVE(QtWidgets.QWidget):
             self.c_n=float(value)
         except:
             pass
-

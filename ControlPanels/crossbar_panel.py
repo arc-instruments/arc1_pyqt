@@ -29,9 +29,6 @@ class crossbar_panel(QtWidgets.QWidget):
         self.initUI()
         
     def initUI(self):      
-        #mainLayout=QtGui.QGridLayout()  # Set grid layout
-        #self.setLayout(mainLayout)
-        #mainLayout.setSpacing(0)
 
         f.hoverAntenna.displayHoverPanel.connect(self.displayHover)
         f.hoverAntenna.hideHoverPanel.connect(self.hideHover)
@@ -52,51 +49,25 @@ class crossbar_panel(QtWidgets.QWidget):
         bitH.addStretch()
 
         bitH.setSpacing(0)
-        #bitH.setAlignment(QtCore.Qt.AlignCenter)
 
         lay1=QtWidgets.QVBoxLayout()
         lay1.setSpacing(0)
 
         lay2=QtWidgets.QHBoxLayout()
-        #lay2.setAlignment(QtCore.Qt.AlignCenter)
         lay2.setSpacing(0)
 
-        #cbContainer=QtWidgets.QWidget(self)
         self.cb=cbContainer.cbContainer()
 
-        #lay1.setAlignment(QtCore.Qt.AlignCenter)
-
-        #lay1.addStretch()
-        #lay2.addStretch()
-
-        #factor=2
-        #lay2.insertStretch(0,factor)
         lay2.addStretch()
         lay2.addWidget(wordline)
         lay2.addWidget(self.cb)
         lay2.addStretch()
-        #lay2.insertStretch(-1,factor)
-        
-        #lay2.setStretch(2,10)
 
-        #factor=2
-        #lay1.insertStretch(0,factor)
         lay1.addStretch()
         lay1.addLayout(lay2)
         lay1.addLayout(bitH)
         lay1.addStretch()
         
-        #lay1.insertStretch(3,factor)
-        #lay1.setStretch(1,15)
-        #lay1.setStretch(0,1)
-
-
-        #lay2.setStretch(1,1)
-        #lay2.setAlignment(QtCore.Qt.AlignCenter)
-        
-        
-        #lay2.addStretch()
-
         # Colorbar setup
         colorBarLay=QtWidgets.QHBoxLayout()
         colorBarLeft=QtWidgets.QVBoxLayout()
@@ -117,7 +88,6 @@ class crossbar_panel(QtWidgets.QWidget):
             resTicksLabels.append(aux)
         colorBarLeft.setSpacing(0)
 
-
         # Add ticks
         colorBarRight=QtWidgets.QVBoxLayout()
         colorBarRight.addWidget(resTicksLabels[0])
@@ -137,15 +107,10 @@ class crossbar_panel(QtWidgets.QWidget):
         colorBarLay.addLayout(colorBarLeft)
         colorBarLay.addLayout(colorBarRight)
         colorBarLay.setContentsMargins(0,12,10,21)
-        #lay2.addLayout(colorBarLay)
 
         mainLayout.addLayout(lay1)
 
-        #self.hoverPanel=hP.hoverPanel()
-        #self.hoverPanel.setFixedSize(100,50)
-
-        # SETUP HOVER PANEL
-        #######################
+        # Setup hover panel
         hoverLayout=QtWidgets.QVBoxLayout()
         self.posLabel=QtWidgets.QLabel()
         self.posLabel.setText("W=10 | B=9 \n Mnow" )
@@ -160,22 +125,10 @@ class crossbar_panel(QtWidgets.QWidget):
 
         hoverLayout.setSpacing(0)
 
-        #container=QtWidgets.QVBoxLayout()
-         # Changed Here
-         # Container to create border around the CB
-        #self.mainPanel = QtWidgets.QGroupBox('')
-        #self.mainPanel.setStyleSheet(s.groupStyleCB)
-        #self.mainPanel.setLayout(lay1)
-
-        #container.addWidget(self.mainPanel)   
-        #container.setContentsMargins(0,0,0,0)    
-
-        #self.setLayout(lay1)
         mainLayout.addLayout(colorBarLay)
         self.setLayout(mainLayout)
-        #=====================================
 
-        self.setContentsMargins(0,0,0,0)    # spacing of the full Layout to accomodate line numbers and colorbar on the right  
+        self.setContentsMargins(0,0,0,0)
 
         self.hoverPanel=QtWidgets.QWidget(self)
 
@@ -184,7 +137,6 @@ class crossbar_panel(QtWidgets.QWidget):
         self.hoverPanel.setFixedSize(100,50)
         self.hoverPanel.setStyleSheet("background-color: rgb(0,32,87)")
         self.hoverPanel.setLayout(hoverLayout)
-        #self.hoverPanel.installEventFilter(self)
         self.hoverPanel.hide()
 
 

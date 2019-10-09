@@ -24,7 +24,7 @@ class prog_panel(QtWidgets.QWidget):
         super(prog_panel, self).__init__()
         self.initUI()
 
-    def initUI(self):   
+    def initUI(self):
         mainLayout=QtWidgets.QVBoxLayout()
 
         hbox_1=QtWidgets.QHBoxLayout()
@@ -62,27 +62,15 @@ class prog_panel(QtWidgets.QWidget):
         hbox_1.addWidget(self.prog_panelList)
         hbox_1.addWidget(self.push_add)
         hbox_1.addWidget(self.push_remove)
-        
+
         mainLayout.addLayout(hbox_1)
         mainLayout.addWidget(self.tabFrame)
-
-        mainLayout.setContentsMargins(10,10,10,0)   # no margin on the bottom
+        # no margin on the bottom
+        mainLayout.setContentsMargins(10,10,10,0)
 
         self.setContentsMargins(0,0,0,0)
 
-        #self.mainPanel = QtWidgets.QGroupBox('')
-        #self.mainPanel.setStyleSheet(s.groupStyleProg)
-        #self.mainPanel.setLayout(mainLayout)
-
-        #container=QtWidgets.QVBoxLayout()
-        #container.addWidget(self.mainPanel)   
-        #container.setContentsMargins(0,0,0,0)    
-
         self.setLayout(mainLayout)
-
-        #self.setLayout(mainLayout)
-
-        #self.show()
 
     def addPanel(self):
 

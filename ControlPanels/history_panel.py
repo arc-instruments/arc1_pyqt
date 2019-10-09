@@ -24,12 +24,12 @@ import Graphics
 
 
 class history_panel(QtWidgets.QWidget):
-    
+
     def __init__(self):
         super(history_panel, self).__init__()
         self.initUI()
-        
-    def initUI(self):   
+
+    def initUI(self):
 
         self.dieName = QtWidgets.QLineEdit('Package1')
         self.dieName.setFont(fonts.font1)
@@ -72,19 +72,24 @@ class history_panel(QtWidgets.QWidget):
     def updateTree(self,w,b):
         existingItem=self.historyTree.findItems("W=" + str(w) + " | B=" + str(b), QtCore.Qt.MatchExactly,0)
 
-        if existingItem==[]:        # if no entry for that adress exists, make a new one
-            newTag=self.formatItemText(w,b) # format the text of the new history entry item taken from the dictionary of the prog panels
+        # if no entry for that adress exists, make a new one
+        if existingItem==[]:
+            # format the text of the new history entry item taken from the
+            # dictionary of the prog panels
+            newTag=self.formatItemText(w,b)
             if newTag:
                 newTree=QtWidgets.QTreeWidgetItem(self.historyTree)
                 newTree.setText(0,"W=" + str(w) + " | B=" + str(b))
-                self.deunderline()                                  # deunderline every tree top level item
-                newTree.setFont(0,fonts.history_top_underline)      # underline the current one
-                newTree.setWhatsThis(0,str(w)+','+str(b))   # set a tag for the item
+                # deunderline every tree top level item
+                self.deunderline()
+                # underline the current one
+                newTree.setFont(0,fonts.history_top_underline)
+                # set a tag
+                newTree.setWhatsThis(0,str(w)+','+str(b))
                 newTree.setWhatsThis(1,str(-1))
                 newTree.setWhatsThis(2,str(0))
                 newTree.setWhatsThis(3,str(0))
                 newTree.setWhatsThis(4,str(0))
-                #newTree.itemClicked.connect(self.changeDisplayToSelectedItem)
                 newItem=QtWidgets.QTreeWidgetItem(newTree)
                 newItem.setWhatsThis(0,str(w)+','+str(b))
 
@@ -93,28 +98,38 @@ class history_panel(QtWidgets.QWidget):
                 newItem.setWhatsThis(3,newTag[2])
                 newItem.setWhatsThis(4,newTag[3])
                 newItem.setWhatsThis(5,newTag[4])
-                if newTag[0]=='Read':              # special cases of pulse and read are handlesd separately
+
+                # Special cases of pulse and read are handled separately
+                if newTag[0]=='Read':
                     newTag[0]='Read x 1'
                 if newTag[0]=='Pulse':
                     newTag[0]='Pulse x 1'
 
                 newItem.setText(0,newTag[0])
                 newItem.setFont(0,fonts.history_child)
-        else:                                       # if the CB crosspoint has been pulsed before, add in the reepctive tree stack
+        # if the CB crosspoint has been pulsed before, add in the reepctive
+        # tree stack
+        else:
             self.deunderline()
             existingItem[0].setFont(0,fonts.history_top_underline)
             newTag=self.formatItemText(w,b)
             if newTag:
 
-                if existingItem[0].child(0):            # if a child exists in the stack (which is always true, this function might be unecessary)
-                    if newTag[0] in existingItem[0].child(0).text(0):  # if previously the same operation has been performed
-                        if newTag[0]=='Read' or newTag[0]=='Pulse':       # for Read and Pulse special cases, add the trailing integer by +1
+                # if a child exists in the stack (which is always true, this
+                # function might be unecessary)
+                if existingItem[0].child(0):
+                    # if previously the same operation has been performed
+                    if newTag[0] in existingItem[0].child(0).text(0):
+                        # for Read and Pulse special cases, add the trailing
+                        # integer by +1
+                        if newTag[0]=='Read' or newTag[0]=='Pulse':
                             string=str(existingItem[0].child(0).text(0))
                             nr=[int(s) for s in string.split(' ') if s.isdigit()][-1]
                             nr=nr+1
                             newTag[0]=newTag[0]+' x '+str(nr)
                             existingItem[0].child(0).setText(0,newTag[0])
-                        else:                                   # if it's not pulse or read, add a new item
+                        # if it's not pulse or read, add a new item
+                        else:
                             newItem=QtWidgets.QTreeWidgetItem()
                             newItem.setWhatsThis(0,str(w)+','+str(b))
                             newItem.setWhatsThis(1,newTag[0])
@@ -146,7 +161,9 @@ class history_panel(QtWidgets.QWidget):
         self.update()
 
     def displayResults(self,item):
-        if item.whatsThis(2)=='1':  # if there are results to be displayed
+
+        # Results to be displayed
+        if item.whatsThis(2)=='1':
             pos=item.whatsThis(0).split(',')
             w=int(pos[0])
             b=int(pos[1])
@@ -155,10 +172,6 @@ class history_panel(QtWidgets.QWidget):
             startPoint=int(item.whatsThis(3))
             endPoint=int(item.whatsThis(4))
             tagKey=str(item.whatsThis(5))
-
-            #print "#########"
-            #print startPoint
-            #print endPoint
 
             raw=g.Mhistory[w][b][startPoint:endPoint+1]
 
@@ -200,9 +213,6 @@ class history_panel(QtWidgets.QWidget):
 
                 view=pg.GraphicsLayoutWidget()
                 label_style = {'color': '#000000', 'font-size': '10pt'}
-
-                #pen1=QtGui.QPen()
-                #pen1.setColor(QtCore.Qt.blue)
 
                 self.plot_stdp=view.addPlot()
                 self.curve_stdp=self.plot_stdp.plot(pen=None, symbolPen=None, symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
@@ -259,8 +269,9 @@ class history_panel(QtWidgets.QWidget):
                 break
 
 
-        # if the operation is a custom pulsing script (such as SS or CT or FF or STDP or Endurance),
-        # return also the start and stop indexes for the raw data
+        # if the operation is a custom pulsing script (such as SS or CT or FF
+        # or STDP or Endurance), return also the start and stop indexes for the
+        # raw data
         indexList=[0,0]
         results=0
 
@@ -271,7 +282,7 @@ class history_panel(QtWidgets.QWidget):
             tagList.append(str(point[3]))
 
 
-        if tag: # error catch
+        if tag:
 
             if tag[0]!='Read' and tag[0]!='Pulse':
                 results=1
@@ -294,7 +305,8 @@ class history_panel(QtWidgets.QWidget):
                 except ValueError:
                     pass
 
-            tag.append(str(results))     # marks if results can be displayed or not
+            # marks if results can be displayed or not
+            tag.append(str(results))
             tag.append(str(indexList[0]))
             tag.append(str(indexList[1]))
             tag.append(str(currentTagKey))

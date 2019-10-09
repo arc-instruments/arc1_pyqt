@@ -1,4 +1,3 @@
-
 ####################################
 
 # (c) Radu Berdan
@@ -79,22 +78,19 @@ class Arcontrol(QtWidgets.QMainWindow):
     def initUI(self):
 
 
-        ##########################
-        # SPLASH SCREEN #
+        # Splash Screen
         pixmap = Graphics.getPixmap('splash')
         splashScreen=QtWidgets.QSplashScreen(pixmap)
         splashScreen.show()
-        ##########################
 
         splashScreen.showMessage("Starting up...", alignment=QtCore.Qt.AlignBottom, color=QtCore.Qt.white)
 
 
-        ##########################
         # Setup menubar
         menuBar = self.menuBar()
 
         fileMenu = menuBar.addMenu('File')			# File menu
-        settingsMenu = menuBar.addMenu('Settings')	# Setting menu
+        settingsMenu = menuBar.addMenu('Settings')	# Settings menu
         helpMenu = menuBar.addMenu('Help')			# help menu
 
         # Define the actions of each menu item before adding them to the menu
@@ -125,14 +121,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.saveAsAction.setStatusTip('Save session as...')
         self.saveAsAction.triggered.connect(partial(self.saveSession, new=True))
 
-        #exportEPSAction = QtWidgets.QAction('As EPS', self)
-        #exportEPSAction.setStatusTip('Save current figure as EPS')
-        #exportEPSAction.triggered.connect(self.exportSession)
-
-        #exportPNGAction = QtWidgets.QAction('As PNG', self)
-        #exportPNGAction.setStatusTip('Save current figure as PNG')
-        #exportPNGAction.triggered.connect(self.exportSession)
-
         exitAction = QtWidgets.QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
@@ -146,10 +134,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         fileMenu.addAction(self.saveAction)
         fileMenu.addAction(self.saveAsAction)
         fileMenu.addSeparator()
-        #exportMenu = fileMenu.addMenu('Export figure')
-        #exportMenu.setStatusTip('Export figure...')
-        #exportMenu.addAction(exportEPSAction)
-        #exportMenu.addAction(exportPNGAction)
         fileMenu.addSeparator()
         fileMenu.addAction(exitAction)
 
@@ -191,7 +175,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         helpMenu.addAction(aboutAction)
 
 
-        #splashScreen.showMessage("Building menus...", alignment=QtCore.Qt.AlignBottom, color=QtCore.Qt.white)
         # Setup status bar
         self.statusBar()
         ##########################
@@ -202,24 +185,10 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         # Define custom actions/widgets for connecting to ArC
         # maybe here all need to be widgets to avoid icon issues
-        #connectAction = QtWidgets.QAction('Connect', self)
-
         self.connectBtn=QtWidgets.QPushButton('Connect')
         self.connectBtn.clicked.connect(self.connectArC)
         self.connectBtn.setStatusTip('Connect to ArC One')
         self.connectBtn.setStyleSheet(s.toolBtn)
-
-        #connectAction.setStyleSheet(s.btnStyle2)
-        #connectAction.setStatusTip('Connect to ArC One')
-        #connectAction.triggered.connect(self.connectArC)
-
-        #resetAction = QtWidgets.QAction('Reset', self)
-        #resetAction.setStatusTip('Reset ArC One')
-        #resetAction.triggered.connect(self.resetArC)
-
-        #discAction = QtWidgets.QAction('Disconnect', self)
-        #discAction.setStatusTip('Disconnect ArC One')
-        #discAction.triggered.connect(self.discArC)
 
         self.discBtn=QtWidgets.QPushButton('Disconnect')
         self.discBtn.clicked.connect(self.discArC)
@@ -230,8 +199,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.comPorts.setStyleSheet(s.toolCombo)
         self.comPorts.insertItems(1,self.scanSerials())
         self.comPorts.currentIndexChanged.connect(self.updateComPort)
-        #self.comPorts.view().clicked.connect(self.updateCOMList)
-        #self.comPorts.installEventFilter(self)
         g.COM=self.comPorts.currentText()
 
         self.refresh=QtWidgets.QPushButton('Refresh')
@@ -294,7 +261,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal) # toplevel divider
         splitter.setHandleWidth(5)
 
-        frameRight = QtWidgets.QWidget(self)	# define it as a widget; works also if it's defined as a frame
+        frameRight = QtWidgets.QWidget(self)
 
         layoutTop = QtWidgets.QHBoxLayout()
         layoutTop.addWidget(self.mo)
@@ -316,7 +283,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         splitter.setCollapsible(1,False)
 
         # Setup size constraints for each compartment of the UI
-        #splitter.setContentsMargins(0,0,0,0)
         hp.setMinimumWidth(150*g.scaling_factor)
         hp.setMaximumWidth(300*g.scaling_factor)
         hp.setMinimumHeight(700*g.scaling_factor)
@@ -324,10 +290,12 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.mo.setFixedWidth(300*g.scaling_factor)
         dd.setMinimumWidth(650*g.scaling_factor)
 
-        layoutRight.setStretchFactor(layoutTop, 5)	# define how scaling the window scales the two sections
+        # define how scaling the window scales the two sections
+        layoutRight.setStretchFactor(layoutTop, 5)
         layoutRight.setStretchFactor(self.layoutBot, 6)
 
-        self.layoutBot.setStretchFactor(self.pp, 6)			# define how scaling the window scales the two sections
+        # same
+        self.layoutBot.setStretchFactor(self.pp, 6)
         self.layoutBot.setStretchFactor(self.cp, 6)
 
         self.pp.setMinimumWidth(700*g.scaling_factor)
@@ -340,7 +308,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         self.mo.setContentsMargins(0,0,0,0)
 
-        self.setCentralWidget(splitter) 	# make the central widget the splitter
+        self.setCentralWidget(splitter)
         self.saveAction.setEnabled(False)
         # connect disable signal
         f.interfaceAntenna.disable.connect(self.toggleEnable)
@@ -383,7 +351,8 @@ class Arcontrol(QtWidgets.QMainWindow):
         except Exception as exc:
             pass
 
-        if connection: # if there is an internet connection and the remote version has been retrieved
+        # if there is an internet connection and the remote version has been retrieved
+        if connection:
             status = vercmp(g.local_version, g.remote_version)
             if status > 0:
                 self.updateAction.setEnabled(True)
@@ -409,11 +378,9 @@ class Arcontrol(QtWidgets.QMainWindow):
             directory=os.path.abspath(os.path.join(os.path.dirname(__file__),
                 os.pardir, "ArC Platform Manager"))
             os.chdir(directory)
-            launcher_path=os.path.join(directory,"ArC Platform Manager.exe")# + g.local_version)
+            launcher_path=os.path.join(directory,"ArC Platform Manager.exe")
             subprocess.Popen([launcher_path, g.local_version])
             QtCore.QCoreApplication.instance().quit()
-
-        # get current version
 
     def showConfig(self):
         from ControlPanels import configHardware
@@ -431,11 +398,13 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.cfgHW.show()
 
     def updateHW(self):
-        if g.ser.port != None:  # only connect if it's disconnected
+        # only connect if it's disconnected
+        if g.ser.port != None:
             job="011"
-            g.ser.write_b(job+"\n")                       # Send initial parameters
-            g.ser.write_b(str(int(g.readCycles))+"\n")         # readcycles and array size
-            g.ser.write_b(str(int(g.sneakPathOption))+"\n")           # send total nr of wordlines
+            # Initial parameters job
+            g.ser.write_b(job+"\n")
+            g.ser.write_b(str(int(g.readCycles))+"\n")
+            g.ser.write_b(str(int(g.sneakPathOption))+"\n")
 
     def showAbout(self):
         from ControlPanels import aboutSection
@@ -453,7 +422,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.aboutSesh.setWindowIcon(Graphics.getIcon('appicon'))
 
         self.aboutSesh.show()
-
 
     def updateCOMList(self):
         self.comPorts.clear()
@@ -497,7 +465,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.layoutBot.addWidget(self.cp)
 
         self.layoutBot.setStretchFactor(self.cp, 6)
-        #self.show()
 
     def setModeOffline(self):
         self.mo.readPanel.setEnabled(False)
@@ -548,14 +515,10 @@ class Arcontrol(QtWidgets.QMainWindow):
             reply = QtWidgets.QMessageBox.question(self, "Start a new session",
                     "Starting a new session will erase all recorded data. Do you want to proceed?",
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
-            if reply == QtWidgets.QMessageBox.Yes:
 
-                #print "Yes"
-                #clear mhistory
+            if reply == QtWidgets.QMessageBox.Yes:
                 self.newSessionStart()
 
-                #clear data display
-                #clear crossbar
             elif reply == QtWidgets.QMessageBox.No:
                 pass
             else:
@@ -581,20 +544,18 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.newSesh.setWindowIcon(Graphics.getIcon('appicon'))
         g.ser.close()
         g.ser.port=None
-        #f.interfaceAntenna.changeArcStatus.emit('Disc')
 
         self.newSesh.show()
 
-
     def reformatInterface(self):
         f.interfaceAntenna.disable.emit(False)
-        if g.sessionMode==0:        # if mode is Live: Local (Normal operation)
+        if g.sessionMode==0:  # mode is Live: Local (Normal operation)
             self.redrawCrossbar()
             f.historyTreeAntenna.changeSessionName.emit()
             f.interfaceAntenna.changeArcStatus.emit('Disc')
             f.interfaceAntenna.changeSessionMode.emit('Live: Local')
 
-        elif g.sessionMode==1:      # mode is Live: External BNC
+        elif g.sessionMode==1:  # mode is Live: External BNC
             self.replaceCBwithBNC()
             f.historyTreeAntenna.changeSessionName.emit()
             f.interfaceAntenna.changeArcStatus.emit('Disc')
@@ -606,19 +567,15 @@ class Arcontrol(QtWidgets.QMainWindow):
             g.b=1
             self.redrawCrossbar()
 
-        elif g.sessionMode==2:      # mode is Live: BNC to local
+        elif g.sessionMode==2:  # mode is Live: BNC to local
             f.historyTreeAntenna.changeSessionName.emit()
             f.interfaceAntenna.changeArcStatus.emit('Disc')
             f.interfaceAntenna.changeSessionMode.emit('Live: BNC to Local')
 
             self.setModeBNCtoLocal()
             self.redrawCrossbar()
-            pass
-            # restrict outputs on the mBED level
-            # disables the whole interface except for CB
-            # click on cb selects the device
 
-        elif g.sessionMode==3:     # mode is offline
+        elif g.sessionMode==3:  # mode is offline
             g.wline=32
             g.bline=32
             self.setModeOffline()
@@ -626,14 +583,6 @@ class Arcontrol(QtWidgets.QMainWindow):
             self.redrawCrossbar()
             f.interfaceAntenna.changeArcStatus.emit('Disc')
             f.interfaceAntenna.changeSessionMode.emit('Offline')
-
-            pass
-            # cannot connect to mBED
-            # open file works
-
-        #f.interfaceAntenna.reformat.emit()
-
-        pass
 
     def openSession(self):
 
@@ -644,8 +593,6 @@ class Arcontrol(QtWidgets.QMainWindow):
             self.deleteAllData()
             self.findAndLoadFile()
             f.interfaceAntenna.changeSessionMode.emit('Offline')
-        elif reply == QtWidgets.QMessageBox.No:
-            pass
         else:
             pass
 
@@ -677,7 +624,8 @@ class Arcontrol(QtWidgets.QMainWindow):
                         readVoltage = float(values[7])
                         g.Mhistory[w][b].append([m, a, pw, str(tag), readTag, readVoltage])
 
-                        if 'S R' in tag or tag[-1]=='e' or tag[0]=='P': # ignore read all points
+                        # ignore Read All points
+                        if 'S R' in tag or tag[-1]=='e' or tag[0]=='P':
                             f.historyTreeAntenna.updateTree.emit(w, b)
                     except ValueError:
                         error = 1
@@ -741,8 +689,8 @@ class Arcontrol(QtWidgets.QMainWindow):
             return True
 
     def deleteAllData(self):
-        g.Mhistory=[[[] for bit in range(33)] for word in range(33)]  # Main data container
-            #Clear History tree
+        g.Mhistory=[[[] for bit in range(33)] for word in range(33)]
+
         if g.customArray:
             for w in range(1,g.wline_nr+1):
                 for b in range(1,g.bline_nr+1):
@@ -765,8 +713,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         if reply == QtWidgets.QMessageBox.Yes:
             self.deleteAllData()
             g.saveFileName=[]
-            #clear data display
-            #clear crossbar
         else:
             pass
 
@@ -795,12 +741,14 @@ class Arcontrol(QtWidgets.QMainWindow):
 
             with opener(str(path), 'w', newline='') as stream:
                 writer = csv.writer(stream)
-                ######################
+
+                # Header
                 writer.writerow([g.sessionName])
                 writer.writerow([time.strftime("%c")])
-                ########################
+                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)',
+                    'Pulse width (s)', 'Tag', 'ReadTag', 'ReadVoltage'])
 
-                writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)', 'Pulse width (s)', 'Tag', 'ReadTag', 'ReadVoltage'])
+                # Actual data
                 for w in range(1,g.wline_nr+1):
                     for b in range(1,g.bline_nr+1):
                         for row in range(len(g.Mhistory[w][b])):
@@ -845,30 +793,36 @@ class Arcontrol(QtWidgets.QMainWindow):
             subprocess.run(['xdg-open', doc], check=True)
 
     def connectArC(self):
-        #g.ser=virtualarc.virtualArC([])
         if g.COM=="VirtualArC":
             g.ser=virtualarc.virtualArC([])
-        elif g.ser.port == None:  # only connect if it's disconnected
+        elif g.ser.port == None:  # only connect if disconnected
             job="0"
             try:
-                #g.ser=virtualarc.virtualArC([])
                 g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=7, parity=serial.PARITY_EVEN, \
-                                stopbits=serial.STOPBITS_ONE) # connect to the serial port
+                                stopbits=serial.STOPBITS_ONE)
                 g.ser.write_b = types.MethodType(write_b, g.ser)
 
-                g.ser.write_b("00\n") # initial reset of the mBED
+                # Reset mbed
+                g.ser.write_b("00\n")
 
                 time.sleep(1)
 
-                g.ser.write_b(job+"\n")                       # Send initial parameters
-                g.ser.write_b(str(float(g.readCycles))+"\n")         # readcycles and array size
-                g.ser.write_b(str(float(g.wline_nr))+"\n")           # send total nr of wordlines
-                g.ser.write_b(str(float(g.bline_nr))+"\n")           # send total nr of bitlines
+                # Send initial parameters
+                g.ser.write_b(job+"\n")
+                # Read Cycles and array size
+                g.ser.write_b(str(float(g.readCycles))+"\n")
+                # Word lines
+                g.ser.write_b(str(float(g.wline_nr))+"\n")
+                # Bit lines
+                g.ser.write_b(str(float(g.bline_nr))+"\n")
 
+                # Read mode
                 g.ser.write_b(str(float(g.readOption))+"\n")
-                g.ser.write_b(str(float(g.sessionMode))+"\n")        # send session mode
+                # Session type
+                g.ser.write_b(str(float(g.sessionMode))+"\n")
+                # Sneak path option
                 g.ser.write_b(str(float(g.sneakPathOption))+"\n")
-
+                # Read-out voltage
                 g.ser.write_b(str(float(g.Vread))+"\n")
 
 
@@ -921,7 +875,8 @@ class Arcontrol(QtWidgets.QMainWindow):
         job="00"
         g.ser.write_b(job+"\n")
 
-    def scanSerials(self):  # scan for available ports. returns a list of tuples (num, name)
+    # Scan for available ports. returns a list of tuples (num, name)
+    def scanSerials(self):
         available = []
         for i in range(256):
             try:

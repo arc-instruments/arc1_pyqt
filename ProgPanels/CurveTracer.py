@@ -21,6 +21,7 @@ import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
+import ProgPanels
 
 tag="CT"
 g.tagDict.update({tag:"CurveTracer*"})
@@ -52,7 +53,6 @@ def _min_without_inf(lst, exclude):
                 maxim = value
 
     return maxim
-
 
 
 class getData(QtCore.QObject):
@@ -91,18 +91,10 @@ class getData(QtCore.QObject):
 
             firstPoint=1
             for cycle in range(1,self.totalCycles+1):
-                
+
                 endCommand=0
 
-                #measurementResult=g.ser.readline().rstrip()
-                #print measurementResult
                 valuesNew=f.getFloats(3)
-                # valuesNew=[]
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-
-                #print valuesNew
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     if (firstPoint==1):
@@ -115,16 +107,7 @@ class getData(QtCore.QObject):
 
                 while(endCommand==0):
                     valuesOld=valuesNew
-
-                    #measurementResult=g.ser.readline().rstrip()
-                    #print measurementResult
-                    
                     valuesNew=f.getFloats(3)
-                    # valuesNew.append(float(g.ser.readline().rstrip()))
-                    # valuesNew.append(float(g.ser.readline().rstrip()))
-                    # valuesNew.append(float(g.ser.readline().rstrip()))
-                    #print valuesNew
-
 
                     if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                         self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -141,20 +124,17 @@ class getData(QtCore.QObject):
             self.updateTree.emit(w,b)
 
         self.disableInterface.emit(False)
-        #self.changeArcStatus.emit('Ready')
-        
         self.finished.emit()
 
 class CurveTracer(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super(CurveTracer, self).__init__()
 
         self.short=short
-        
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -231,11 +211,6 @@ class CurveTracer(QtWidgets.QWidget):
 
         gridLayout.addWidget(lineLeft, 0, 2, 7, 1)
         gridLayout.addWidget(lineRight, 0, 6, 7, 1)
-        #gridLayout.addWidget(line,1,2)
-        #gridLayout.addWidget(line,2,2)
-        #gridLayout.addWidget(line,3,2)
-        #gridLayout.addWidget(line,4,2)
-
 
         for i in range(len(leftLabels)):
             lineLabel=QtWidgets.QLabel()
@@ -270,7 +245,6 @@ class CurveTracer(QtWidgets.QWidget):
         returnCheckBox.stateChanged.connect(self.toggleReturn)
         self.returnCheck=0
         gridLayout.addWidget(returnCheckBox, 4, 5)
-        #Position the combo boxes and respective labels
 
         lineLabel=QtWidgets.QLabel()
         lineLabel.setText('Bias type:')
@@ -282,8 +256,6 @@ class CurveTracer(QtWidgets.QWidget):
 
         gridLayout.addWidget(self.combo_IVtype,5,5)
         gridLayout.addWidget(self.combo_IVoption,6,5)
-
-        # ==============================================
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -353,7 +325,7 @@ class CurveTracer(QtWidgets.QWidget):
                 self.rightEdits[2].setText("0")
             else:
                 self.rightEdits[2].setText("10")
-            
+
         if (currentText>1000):
             self.rightEdits[2].setText("1000")
 
@@ -375,7 +347,7 @@ class CurveTracer(QtWidgets.QWidget):
 
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
+
         layoutWidgets=[]
 
         for i,item in layoutItems:
@@ -386,7 +358,6 @@ class CurveTracer(QtWidgets.QWidget):
             if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
@@ -399,7 +370,7 @@ class CurveTracer(QtWidgets.QWidget):
                 self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def updateIVtype(self, event):
-        pass   
+        pass
 
     def updateIVoption(self, event):
         pass
@@ -440,10 +411,10 @@ class CurveTracer(QtWidgets.QWidget):
     def programOne(self):
         if g.ser.port != None:
             job="201"
-            g.ser.write_b(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")
 
             totalCycles=int(self.rightEdits[0].text())
-            
+
             self.sendParams()
 
             self.thread=QtCore.QThread()
@@ -496,12 +467,11 @@ class CurveTracer(QtWidgets.QWidget):
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
         self.getData.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)        
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def makeDeviceList(self,isRange):
-        #if g.checkSA=False:
-        rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0
+
+        rangeDev=[]
         if isRange==False:
             minW=1
             maxW=g.wline_nr
@@ -511,8 +481,7 @@ class CurveTracer(QtWidgets.QWidget):
             minW=g.minW
             maxW=g.maxW
             minB=g.minB
-            maxB=g.maxB            
-
+            maxB=g.maxB
 
         # Find how many SA devices are contained in the range
         if g.checkSA==False:
@@ -551,7 +520,8 @@ class CurveTracer(QtWidgets.QWidget):
         abs_current[totalCycles].append(abs(current[totalCycles][-1]))
 
 
-        # take all data lines without the first and last one (which are _s and _e)
+        # take all data lines without the first and last one (which are _s and
+        # _e)
         while lineNr < len(raw)-1:
             currentRunTag = raw[lineNr][3]
 

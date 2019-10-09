@@ -21,8 +21,10 @@ import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
+
 tag="SS2"
 g.tagDict.update({tag:"SwitchSeeker*"})
+
 
 class getData(QtCore.QObject):
 
@@ -57,9 +59,6 @@ class getData(QtCore.QObject):
             endCommand=0
 
             valuesNew=f.getFloats(3)
-            #valuesNew.append(float(g.ser.readline().rstrip()))
-            #valuesNew.append(float(g.ser.readline().rstrip()))
-            #valuesNew.append(float(g.ser.readline().rstrip()))
 
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
@@ -70,9 +69,6 @@ class getData(QtCore.QObject):
                 valuesOld=valuesNew
 
                 valuesNew=f.getFloats(3)
-                #valuesNew.append(float(g.ser.readline().rstrip()))
-                #valuesNew.append(float(g.ser.readline().rstrip()))
-                #valuesNew.append(float(g.ser.readline().rstrip()))
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -86,18 +82,18 @@ class getData(QtCore.QObject):
             self.updateTree.emit(w,b)
 
         self.disableInterface.emit(False)
-        
+
         self.finished.emit()
 
 
 class SwitchSeeker(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super(SwitchSeeker, self).__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -142,7 +138,7 @@ class SwitchSeeker(QtWidgets.QWidget):
         gridLayout.setColumnStretch(2,1)
         gridLayout.setColumnStretch(3,1)
         gridLayout.setColumnStretch(4,3)
-        
+
         if self.short==False:
             gridLayout.setColumnStretch(5,1)
             gridLayout.setColumnStretch(6,1)
@@ -260,7 +256,7 @@ class SwitchSeeker(QtWidgets.QWidget):
 
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
+
         layoutWidgets=[]
 
         for i,item in layoutItems:
@@ -271,8 +267,6 @@ class SwitchSeeker(QtWidgets.QWidget):
             if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
-        #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
@@ -349,7 +343,7 @@ class SwitchSeeker(QtWidgets.QWidget):
             self.getData=getData(rangeDev)
             self.finalise_thread_initialisation()
 
-            self.thread.start()  
+            self.thread.start()
 
     def programAll(self):
         if g.ser.port != None:
@@ -392,14 +386,13 @@ class SwitchSeeker(QtWidgets.QWidget):
             minW=g.minW
             maxW=g.maxW
             minB=g.minB
-            maxB=g.maxB            
+            maxB=g.maxB
 
         # Find how many SA devices are contained in the range
         if g.checkSA==False:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):
                     rangeDev.append([w,b])
-            #rangeMax=(wMax-wMin+1)*(bMax-bMin+1)
         else:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):

@@ -34,63 +34,50 @@ class readAllWorker(QtCore.QObject):
         self.b_old=g.b
         self.disableInterface.emit(True)
         job="2"
-        g.ser.write_b(job+"\n")   # sends the job
+        g.ser.write_b(job+"\n")
+
+        # Check for standalone/custom array
         if g.checkSA==False:
-            g.ser.write_b(str(1)+"\n")    # send the type of read - currently read All devices
+            # send the type of read - currently read All devices
+            g.ser.write_b(str(1)+"\n")
             g.ser.write_b(str(g.wline_nr)+"\n")
             g.ser.write_b(str(g.bline_nr)+"\n")
-            for word in range(1,g.wline_nr+1):    # perform standard read All
-                for bit in range(1,g.bline_nr+1):      
-                    #Mnow=float(g.ser.readline().rstrip())         # read the value
-                    Mnow=float(f.getFloats(1))
 
-                    #g.Mhistory[word][bit].append([g.Mnow,0,0,0])    # store it
+            # perform standard read All
+            for word in range(1,g.wline_nr+1):
+                for bit in range(1,g.bline_nr+1):
+                    Mnow=float(f.getFloats(1))
 
                     self.sendData.emit(word,bit,Mnow,self.Vread,0,self.tag)
                     self.sendPosition.emit(word,bit)
-
-                    #f.cbAntenna.selectDeviceSignal.emit(word,bit)
-            #self.updateHistoryTree.emit()
-            #self.disableInterface.emit(False)
-            #self.finished.emit()
         else:
-            g.ser.write_b(str(2)+"\n")    # send the type of read - read stand alone custom array
+            # send the type of read - read stand alone custom array
+            g.ser.write_b(str(2)+"\n")
             g.ser.write_b(str(g.wline_nr)+"\n")
             g.ser.write_b(str(g.bline_nr)+"\n")
             g.ser.write_b(str(len(g.customArray))+"\n")
             for cell in g.customArray:
                 word,bit=cell
-                g.ser.write_b(str(word)+"\n")  # send wordline
-                g.ser.write_b(str(bit)+"\n")  # send bitline
+                g.ser.write_b(str(word)+"\n")
+                g.ser.write_b(str(bit)+"\n")
 
-                #Mnow=float(g.ser.readline().rstrip())         # read the value
                 Mnow=float(f.getFloats(1))
-
-                #g.Mhistory[word][bit].append([g.Mnow,0,0,0])    # store it
 
                 self.sendData.emit(word,bit,Mnow,self.Vread,0,self.tag)
                 self.sendPosition.emit(word,bit)
 
-                    #f.cbAntenna.selectDeviceSignal.emit(word,bit)
-            #self.updateHistoryTree.emit()
         self.sendPosition.emit(self.w_old,self.b_old)
         self.disableInterface.emit(False)
         self.finished.emit()
-
 
 
 class manualOperations_panel(QtWidgets.QWidget):
     def __init__(self):
         super(manualOperations_panel, self).__init__()
         self.initUI()
-        
+
     def initUI(self):
-        #p = self.palette()
-        #p.setColor(self.backgroundRole(), QtCore.Qt.white)
-        #self.setPalette(p)
-        #self.update()
-        #self.butn=f.deviceAntenna()
-        ######################################
+
         # Setup position and resistance labels
         self.position = QtWidgets.QLabel(self)
         self.position.setText('W=0 | B=0')
@@ -104,15 +91,12 @@ class manualOperations_panel(QtWidgets.QWidget):
 
         # Setup slots for automatic Label updating
         f.cbAntenna.selectDeviceSignal.connect(self.setM)
-        ######################################
 
-        ######################################
         # Setup manual reading panel
         self.readPanel = QtWidgets.QGroupBox('Read Operations')
         self.readPanel.setStyleSheet(s.groupStyle)
         readPanelLayout = QtWidgets.QVBoxLayout()
         readPanelLayout.setContentsMargins(10,25,10,10)
-        #readPanelLayout.setContentsMargins(0,0,0,0)
 
         push_read=QtWidgets.QPushButton('Read Single')
         push_read.setStyleSheet(s.btnStyle)
@@ -123,7 +107,6 @@ class manualOperations_panel(QtWidgets.QWidget):
         push_readAll.clicked.connect(self.readAll)
 
         hbox_1=QtWidgets.QHBoxLayout()
-        #hbox_1.setContentsMargins(0,0,0,0)
         hbox_1.addWidget(push_read)
         hbox_1.addWidget(push_readAll)
 
@@ -137,11 +120,11 @@ class manualOperations_panel(QtWidgets.QWidget):
         combo_readType=QtWidgets.QComboBox()
         combo_readType.setStyleSheet(s.comboStyle)
         combo_readType.insertItems(1,g.readOptions)
-        combo_readType.currentIndexChanged.connect(self.updateReadType) #In-built signal for class QComboBox
+        combo_readType.currentIndexChanged.connect(self.updateReadType)
         combo_readType.setCurrentIndex(2)
         g.readOption=combo_readType.currentIndex()
 
-        #Numerical 'spin box' to set read-out voltage.
+        # Numerical 'spin box' to set read-out voltage.
         read_voltage=QtWidgets.QDoubleSpinBox()
         #read_voltage.setHeight(25)
         read_voltage.setStyleSheet(s.spinStyle)
@@ -152,23 +135,26 @@ class manualOperations_panel(QtWidgets.QWidget):
         read_voltage.setSuffix(' V')
         read_voltage.valueChanged.connect(self.setVread)
 
-        #Instantiate GUI row including update read, read-out type and read-out voltage spin-box.
+        # Instantiate GUI row including update read, read-out type and read-out
+        # voltage spin-box.
         hbox_2=QtWidgets.QHBoxLayout()
         hbox_2.addWidget(push_updateRead)
         hbox_2.addWidget(combo_readType)
         hbox_2.addWidget(read_voltage)
 
-        #Check-box.
+        # Check-box for custom array.
         self.customArrayCheckbox = QtWidgets.QCheckBox("Custom array")
         self.customArrayCheckbox.stateChanged.connect(self.toggleSA)
 
-        #Text field to show selected file containing SA locations for particular application.
+        # Text field to show selected file containing SA locations for
+        # particular application.
         self.customArrayFileName=QtWidgets.QLabel()
         self.customArrayFileName.setStyleSheet(s.style1)
 
-        #File browser. Push-button connecting to function opening file browser.
+        # File browser. Push-button connecting to function opening file browser.
         push_browse = QtWidgets.QPushButton('...')
-        push_browse.clicked.connect(self.findSAfile)    # open custom array defive position file
+        # open custom array defive position file
+        push_browse.clicked.connect(self.findSAfile)
         push_browse.setFixedWidth(20)
 
         hbox_3=QtWidgets.QHBoxLayout()
@@ -182,11 +168,10 @@ class manualOperations_panel(QtWidgets.QWidget):
 
         self.readPanel.setLayout(readPanelLayout)
 
-        ######################################
         # Manual Pulse panel
         self.pulsePanel = QtWidgets.QGroupBox('Manual Pulsing')
         self.pulsePanel.setStyleSheet(s.groupStyle)
-        
+
         pulsePanelLayout= QtWidgets.QGridLayout()
         pulsePanelLayout.setContentsMargins(10,25,10,10)
 
@@ -230,7 +215,6 @@ class manualOperations_panel(QtWidgets.QWidget):
         pulsePanelLayout.addWidget(self.pulse_V_pos,0,0)
         pulsePanelLayout.addWidget(self.pulse_V_neg,0,2)
 
-        # ========== ComboBox ===========
         pw_pos_lay=QtWidgets.QHBoxLayout()
         pw_neg_lay=QtWidgets.QHBoxLayout()
 
@@ -254,9 +238,6 @@ class manualOperations_panel(QtWidgets.QWidget):
         pw_neg_lay.addWidget(self.pulse_pw_neg)
         pw_neg_lay.addWidget(self.pw_negDropDown)
 
-        #pulsePanelLayout.addWidget(self.pulse_pw_pos,1,0)
-        #pulsePanelLayout.addWidget(self.pulse_pw_neg,1,2)
-
         pulsePanelLayout.addLayout(pw_pos_lay,1,0)
         pulsePanelLayout.addLayout(pw_neg_lay,1,2)
 
@@ -271,9 +252,7 @@ class manualOperations_panel(QtWidgets.QWidget):
         pulsePanelLayout.setAlignment(self.check_lock, QtCore.Qt.AlignHCenter)
 
         self.pulsePanel.setLayout(pulsePanelLayout)
-        ######################################
 
-        ######################################
         # Display Options Panel
         displayPanel = QtWidgets.QGroupBox('Display Options')
         displayPanel.setStyleSheet(s.groupStyle)
@@ -305,7 +284,6 @@ class manualOperations_panel(QtWidgets.QWidget):
         displayPanelLayout.addWidget(check_log)
 
         displayPanel.setLayout(displayPanelLayout)
-        ######################################
 
         mainLayout = QtWidgets.QVBoxLayout()
 
@@ -325,8 +303,6 @@ class manualOperations_panel(QtWidgets.QWidget):
 
         self.setM(1,1)
 
-        #self.show()
-
     def lockPulses(self, state):
         if state==2:
             self.pulse_V_neg.setEnabled(False)
@@ -342,7 +318,6 @@ class manualOperations_panel(QtWidgets.QWidget):
     def updateLogScale(self,event):
         f.displayUpdate.updateLog.emit(event)
 
-
     def toggleSA(self, event):
         if (event==0):
             g.checkSA=False
@@ -352,7 +327,8 @@ class manualOperations_panel(QtWidgets.QWidget):
         else:
             if (g.customArray):
                 g.checkSA=True
-                f.cbAntenna.selectDeviceSignal.emit(g.customArray[0][0], g.customArray[0][1])       # signal the crossbar antenna that this device has been selected
+                # signal the crossbar antenna that this device has been selected
+                f.cbAntenna.selectDeviceSignal.emit(g.customArray[0][0], g.customArray[0][1])
                 f.displayUpdate.updateSignal_short.emit()
                 for w in range(1,33):
                     for b in range(1,33):
@@ -371,10 +347,8 @@ class manualOperations_panel(QtWidgets.QWidget):
                     for cell in g.customArray:
                         w,b=cell
                         f.SAantenna.enable.emit(w,b)
-                    f.cbAntenna.selectDeviceSignal.emit(g.customArray[0][0], g.customArray[0][1])       # signal the crossbar antenna that this device has been selected
+                    f.cbAntenna.selectDeviceSignal.emit(g.customArray[0][0], g.customArray[0][1])
                     f.displayUpdate.updateSignal_short.emit()
-
-                        # Disable all cells except the ones in g.customArray
 
                 else:
                     g.checkSA=False
@@ -405,11 +379,9 @@ class manualOperations_panel(QtWidgets.QWidget):
             except ValueError:
                 error=1
         file.close()
-        
+
         # check if positions read are correct
         if (error==1):
-            #self.errorMessage=QtWidgets.QErrorMessage()
-            #self.errorMessage.showMessage("Custom array file is formatted incorrectly!")  
             errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Custom array text file formatted incorrectly, or selected devices outside of array range!")
             errMessage.setIcon(QtWidgets.QMessageBox.Critical)
@@ -425,7 +397,6 @@ class manualOperations_panel(QtWidgets.QWidget):
     def setM(self,w,b):
         try:
             g.Mnow=g.Mhistory[w][b][-1][0]
-            #self.resistance.setText(str(int(g.Mnow))+' Ohms')
             self.resistance.setText(str('%.0f' % g.Mnow)+' Ohms')
         except IndexError:
             self.resistance.setText('Not Read')
@@ -441,15 +412,9 @@ class manualOperations_panel(QtWidgets.QWidget):
             g.ser.write_b(str(g.w)+"\n")
             g.ser.write_b(str(g.b)+"\n")
 
-            # try:
-            #     currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-            # except ValueError:
-            #     currentline='%.10f' % 0.0
-
-            # currentM=float(currentline)
             currentM=float(f.getFloats(1))
 
-            g.Mnow=currentM       # conver to float
+            g.Mnow=currentM
             tag='S R'+str(g.readOption)+' V='+str(g.Vread)
             f.updateHistory(g.w,g.b,currentM,float(g.Vread),0,tag)
             self.setM(g.w,g.b)
@@ -459,7 +424,6 @@ class manualOperations_panel(QtWidgets.QWidget):
 
 
     def readAll(self):
-        #disableInterface.disable.emit()
         if g.ser.port != None:
             self.thread=QtCore.QThread()
             self.readAllWorker=readAllWorker()
@@ -474,10 +438,6 @@ class manualOperations_panel(QtWidgets.QWidget):
             self.readAllWorker.disableInterface.connect(f.interfaceAntenna.disable.emit)
             self.thread.start()
 
-    #def storeReadAllData(self,w,b,Mnow):
-    #    tag='F R'+str(g.readOption)+' V='+str(g.Vread)
-    #    g.Mhistory[w][b].append([Mnow,float(g.Vread),0,tag])    # store it
-
     def updateRead(self):
         if g.ser.port != None:
             job='01'
@@ -486,7 +446,7 @@ class manualOperations_panel(QtWidgets.QWidget):
                 g.ser.write_b(str(3)+"\n") # use correct option for Vread < 0
             else:
                 g.ser.write_b(str(g.readOption)+"\n")
-            
+
             g.ser.write_b(str(g.Vread)+"\n")
 
     def setVread(self,event):
@@ -495,17 +455,18 @@ class manualOperations_panel(QtWidgets.QWidget):
             job='01'
             g.ser.write_b(job+"\n")
             if g.Vread < 0 and g.readOption == 2:
-                g.ser.write_b(str(3)+"\n") # use correct option for Vread < 0
+                # use correct option for Vread < 0
+                g.ser.write_b(str(3)+"\n")
             else:
                 g.ser.write_b(str(g.readOption)+"\n")
-            
+
             g.ser.write_b(str(g.Vread)+"\n")
 
 
     def extractParamsPlus(self):
         self.amplitude=float(self.pulse_V_pos.text())
         duration=float(self.pulse_pw_pos.text())
-        unit=float(self.multiply[self.pw_plusDropDown.currentIndex()])        
+        unit=float(self.multiply[self.pw_plusDropDown.currentIndex()])
         self.pw=duration*unit
 
         if self.pw<0.00000009:
@@ -524,12 +485,12 @@ class manualOperations_panel(QtWidgets.QWidget):
         if self.check_lock.isChecked():
             self.amplitude=-1*float(self.pulse_V_pos.text())
             duration=float(self.pulse_pw_pos.text())
-            unit=float(self.multiply[self.pw_plusDropDown.currentIndex()])        
+            unit=float(self.multiply[self.pw_plusDropDown.currentIndex()])
             self.pw=duration*unit
         else:
             self.amplitude=-1*float(self.pulse_V_neg.text())
             duration=float(self.pulse_pw_neg.text())
-            unit=float(self.multiply[self.pw_negDropDown.currentIndex()])        
+            unit=float(self.multiply[self.pw_negDropDown.currentIndex()])
             self.pw=duration*unit
 
         if self.check_lock.isChecked():
@@ -555,18 +516,16 @@ class manualOperations_panel(QtWidgets.QWidget):
         self.pulse()
 
     def pulse(self):
-        if g.ser.port != None: 
-            ser=g.ser                   # simplify the namespace
-            job="3"                     # define job
-            ser.write_b(job+"\n")            # Send job followed by cell position and pulsing parameters
+        if g.ser.port != None:
+            ser=g.ser
+            job="3"
+            ser.write_b(job+"\n")
             ser.write_b(str(g.w)+"\n")
             ser.write_b(str(g.b)+"\n")
 
             ser.write_b(str(float(self.amplitude))+"\n")
             ser.write_b(str(float(self.pw))+"\n")
 
-            # Read the value of M after the pulse
-            # currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
             g.Mnow=float(f.getFloats(1))
 
             tag='P'
@@ -591,6 +550,5 @@ class manualOperations_panel(QtWidgets.QWidget):
             job='01'
             g.ser.write_b(job+"\n")
             g.ser.write_b(str(g.readOption)+"\n")
-            
             g.ser.write_b(str(g.Vread)+"\n")
 

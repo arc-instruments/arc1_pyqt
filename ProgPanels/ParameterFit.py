@@ -47,7 +47,7 @@ MODEL_TMPL="""//////////////////////////////////////////////////
 `include "constants.h"
 
 module memSQUARE(p, n, rs);
-	inout p, n, rs;
+inout p, n, rs;
 
 electrical p, n, rs, x;
 
@@ -150,8 +150,10 @@ end
 
 endmodule"""
 
+
 tag="MPF"
 g.tagDict.update({tag:"Parameter Fit*"})
+
 
 def _curve_fit(func, x, y, **kwargs):
     v = scipy.version.short_version.split('.')
@@ -159,6 +161,7 @@ def _curve_fit(func, x, y, **kwargs):
         if 'method' in kwargs.keys():
             kwargs.pop('method')
     return curve_fit(func, x, y, **kwargs)
+
 
 class ModelWidget(QtWidgets.QWidget):
 
@@ -342,6 +345,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
         self.modelStackedWidget.setCurrentIndex(index)
 
     def fitMechanismClicked(self):
+
         # all IVs are in self.IVs
         # self.IVs is a list of lists containing the I-V data
         # for example self.IVs[0] is the first I-V obtained
@@ -390,7 +394,6 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
             (Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw) = self.fit(posRef, negRef, numPoints)
         except RuntimeError:
             self.parameterResultLabel.setText("Convergence error!")
-            print("Could not converge")
         (Rinit, result) = self.response(Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, tw)
 
         self.modelParams["aPos"] = Spos
@@ -449,9 +452,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
         return (Rinit, RSSIMresponse)
 
     def fit(self, POSlimit, NEGlimit, numPoints=500):
-        #R = np.array(self.resistances[1:])
-        #V = np.array(self.voltages[1:])
-        #t = np.array(self.pulses[1:])
+
         R = np.array(self.resistances[:])
         V = np.array(self.voltages[:])
         t = np.array(self.pulses[:])
@@ -508,7 +509,6 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
             return (R0pos[POSlimitPOSITION]+S*(Rm**2)*t-S*Rm*R0pos[POSlimitPOSITION]*t)/(1+S*(Rm-R0pos[POSlimitPOSITION])*t)
 
         params = _curve_fit(funPOSinit, time, positiveDATAarray[POSlimitPOSITION][:,1], p0=(sgnPOS,Rmpos[POSlimitPOSITION]),method='lm')
-
         Spos=params[0][0] #value for the Ap parameter in (2)
         Rmpos0=params[0][1]
 
@@ -565,6 +565,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
 
         return (Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, t[0])
 
+
 class ThreadWrapper(QtCore.QObject):
 
     finished = QtCore.pyqtSignal()
@@ -599,7 +600,6 @@ class ThreadWrapper(QtCore.QObject):
         for i in range(numVoltages):
             voltages.append(vpos[i])
             voltages.append(vneg[i])
-        # print(voltages)
 
         for device in self.deviceList:
             w = device[0]
@@ -607,7 +607,6 @@ class ThreadWrapper(QtCore.QObject):
             self.highlight.emit(w, b)
 
             for (i, voltage) in enumerate(voltages):
-                # print("Running voltage %d (%d) from %d"  % (i, i+1, len(voltages)))
                 if i == 0:
                     startTag = "%s_%%s_s" % tag
                 else:
@@ -618,17 +617,13 @@ class ThreadWrapper(QtCore.QObject):
                 else:
                     endTag = "%s_%%s_i" % tag
 
-                # print("%d: %s %s %s" % (i, startTag, midTag, endTag))
                 if self.params["run_iv"]:
-                    print("Running FF")
                     self.formFinder(w, b, voltage, self.params["pulse_width"], self.params["interpulse"],
                             self.params["pulses"], startTag % "FF", midTag % "FF", midTag % "FF")
-                    print("FF finished; Running CT")
                     self.curveTracer(w, b, self.params["ivstop_pos"], self.params["ivstop_neg"],
                             self.params["ivstart"], self.params["ivstep"],
                             self.params["iv_interpulse"], self.params["ivpw"], self.params["ivtype"],
                             midTag % "CT", midTag % "CT", endTag % "CT")
-                    print("CT finished")
                 else:
                     self.formFinder(w, b, voltage, self.params["pulse_width"], self.params["interpulse"],
                             self.params["pulses"], startTag % "FF", midTag % "FF", endTag % "FF")
@@ -640,7 +635,7 @@ class ThreadWrapper(QtCore.QObject):
         self.finished.emit()
 
     def curveTracer(self, w, b, vPos, vNeg, vStart, vStep, interpulse, pwstep, ctType, startTag, midTag, endTag):
-        print("Sending CT data")
+
         g.ser.write_b(str(201) + "\n")
 
         g.ser.write_b(str(vPos) + "\n")
@@ -666,7 +661,6 @@ class ThreadWrapper(QtCore.QObject):
         buffer = []
         aTag = ""
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
-        print("CT data sent")
 
         while(not end):
             # curValues = []
@@ -675,7 +669,6 @@ class ThreadWrapper(QtCore.QObject):
             # curValues.append(float(g.ser.readline().rstrip()))
             # curValues.append(float(g.ser.readline().rstrip()))
             curValues = list(f.getFloats(3))
-            print(curValues)
 
             if curValues[0] > 10e9:
                 continue
@@ -693,8 +686,6 @@ class ThreadWrapper(QtCore.QObject):
                     aTag = startTag
                     continue
 
-            #data.append(buffer)
-            #print(buffer[0], buffer[1], buffer[2], aTag)
             # flush buffer values
             self.sendDataCT.emit(w, b, buffer[0], buffer[1], buffer[2], aTag)
             buffer[0] = curValues[0]
@@ -733,16 +724,10 @@ class ThreadWrapper(QtCore.QObject):
         aTag = ""
 
         while(not end):
-            # curValues = []
-
-            # curValues.append(float(g.ser.readline().rstrip()))
-            # curValues.append(float(g.ser.readline().rstrip()))
-            # curValues.append(float(g.ser.readline().rstrip()))
 
             curValues = list(f.getFloats(3))
 
             if (curValues[2] < 99e-9) and (curValues[0] > 0.0):
-                # print("spurious read")
                 continue
 
             if (int(curValues[0]) == 0) and (int(curValues[1]) == 0) and (int(curValues[2]) == 0):
@@ -758,8 +743,6 @@ class ThreadWrapper(QtCore.QObject):
                     aTag = startTag
                     continue
 
-            #data.append(buffer)
-            #print(buffer[0], buffer[1], buffer[2], aTag)
             # flush buffer values
             self.sendData.emit(w, b, buffer[0], buffer[1], buffer[2], aTag)
             buffer[0] = curValues[0]

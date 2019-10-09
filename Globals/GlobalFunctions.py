@@ -20,12 +20,14 @@ from virtualArC import virtualarc
 ###########################################
 # Signal Routers
 ###########################################
-class cbAntenna(QObject):       # class which routes signals (socket) where instantiated
-    selectDeviceSignal=pyqtSignal(int, int)     # used for highlighting/deselecting devices on the crossbar panel
+# Class which routes signals (socket) where instantiated
+class cbAntenna(QObject):
+    # Used for highlighting/deselecting devices on the crossbar panel
+    selectDeviceSignal=pyqtSignal(int, int)
     deselectOld=pyqtSignal()
     redraw=pyqtSignal()
     reformat=pyqtSignal()
-                                # and signals updating the current select device
+    # and signals updating the current select device
     recolor=pyqtSignal(float, int, int)
 
     def __init__(self):
@@ -33,6 +35,7 @@ class cbAntenna(QObject):       # class which routes signals (socket) where inst
 
     def cast(self,w,b):
         self.selectDeviceSignal.emit(w,b)
+
 cbAntenna=cbAntenna()
 
 
@@ -47,17 +50,21 @@ class displayUpdate(QObject):
 
     def cast(self):
         self.updateSignal_short.emit()
+
 displayUpdate=displayUpdate()
 
 
-class historyTreeAntenna(QObject):      # class which routes signals (socket) where instantiated
-    updateTree=pyqtSignal(int,int)  # used for signaling the device history tree list to update its contents
+# Class which routes signals (socket) where instantiated
+class historyTreeAntenna(QObject):
+    # used for signaling the device history tree list to update its contents
+    updateTree=pyqtSignal(int,int)
     updateTree_short=pyqtSignal()
     clearTree=pyqtSignal()
     changeSessionName=pyqtSignal()
 
     def __init__(self):
         super(historyTreeAntenna,self).__init__()
+
 historyTreeAntenna=historyTreeAntenna()
 
 
@@ -76,11 +83,9 @@ class interfaceAntenna(QObject):
 
     def wakeUp(self):
         g.waitCondition.wakeAll()
-        #print " --> waitCondition wakedAll"
     def cast(self, value):
         # if value==False:
         #   g.waitCondition.wakeAll()
-        #   print " --> waitCondition wakedAll"
         if self.globalDisable==False:
             self.disable.emit(value)
             #sleep(0.1)
@@ -100,13 +105,16 @@ interfaceAntenna=interfaceAntenna()
 
 ###########################################
 
+
 class SAantenna(QObject):
     disable=pyqtSignal(int, int)
     enable=pyqtSignal(int, int)
 
     def __init__(self):
         super(SAantenna,self).__init__()
+
 SAantenna=SAantenna()
+
 
 ###########################################
 # Update history function
@@ -119,14 +127,13 @@ def updateHistory(w,b,m,a,pw,tag):
         g.Mnow=m
     g.Mhistory[w][b].append([g.Mnow,a,pw,tag,readTag,g.Vread])
 
-
     g.w=w
     g.b=b
     cbAntenna.recolor.emit(m,w,b)
 
+
 def updateHistory_CT(w,b,m,a,pw,tag):
     readTag='R2'
-    #print "received: ", m, a
 
     if g.sessionMode==1:
         g.Mnow=m/2
@@ -147,12 +154,6 @@ def updateHistory_short(m,a,pw,tag):
     else:
         g.Mnow=m
     g.Mhistory[g.w][g.b].append([g.Mnow,a,pw,tag,readTag, g.Vread])
-    #g.MList[g.w][g.b]=np.append(g.MList[g.w][g.b],m)
-    #g.PList[g.w][g.b]=np.append(g.PList[g.w][g.b],0)
-    #g.PList[g.w][g.b]=np.append(g.PList[g.w][g.b],a)
-    #g.PList[g.w][g.b]=np.append(g.PList[g.w][g.b],0)
-    #g.PMarkerList[g.w][g.b]=np.append(g.PMarkerList[g.w][g.b],a)
-    #g.PWList[g.w][g.b]=np.append(g.PWList[g.w][g.b],pw)
     cbAntenna.recolor.emit(m,g.w,g.b)
 
 
@@ -182,8 +183,9 @@ def gzipFileSize(fname):
         f.seek(-4,2)
         return struct.unpack('I', f.read(4))[0]
 
+
 ###########################################
-# UUpdate Hover panel
+# Update Hover panel
 ###########################################
 
 class hoverAntenna(QObject):
@@ -195,6 +197,7 @@ class hoverAntenna(QObject):
 
 hoverAntenna=hoverAntenna()
 
+
 class addressAntenna(QObject):
     def __init__(self):
         super(addressAntenna,self).__init__()
@@ -202,18 +205,20 @@ class addressAntenna(QObject):
     def update(self, w,b):
         g.w,g.b=w,b
         cbAntenna.selectDeviceSignal.emit(w, b)
+
 addressAntenna=addressAntenna()
 
-dataBuffer=[]
 
 def getFloats(n):
     if not isinstance(g.ser, virtualarc.virtualArC):
         while g.ser.inWaiting()<n*4:
             pass
-        values=g.ser.read(size=n*4) # read n * 4 bits of data (n floats) from the input serial
+        # read n * 4 bits of data (n floats) from the input serial
+        values=g.ser.read(size=n*4)
         buf = memoryview(values)
         extracted=np.frombuffer(buf, dtype=np.float32)
     else:
         extracted = g.ser.read(n)
-    return extracted    # returns a list of these floats
+    # returns a list of these floats
+    return extracted
 

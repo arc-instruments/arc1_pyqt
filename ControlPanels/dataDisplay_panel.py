@@ -22,11 +22,11 @@ import Globals.GlobalStyles as s
 
 
 class dataDisplay_panel(QtWidgets.QWidget):
-    
+
     def __init__(self):
         super(dataDisplay_panel, self).__init__()
         self.initUI()
-        
+
     def initUI(self):
 
         pg.setConfigOption('background', 'w')
@@ -50,18 +50,12 @@ class dataDisplay_panel(QtWidgets.QWidget):
         self.readSymbol=QtGui.QPainterPath()
         self.readSymbol.moveTo(-3,0)
         self.readSymbol.lineTo(3,0)
-        #self.readSymbol.lineTo(5,1)
-        #self.readSymbol.lineTo(-4,1)
-        #self.readSymbol.closeSubpath()
 
         view=pg.GraphicsLayoutWidget()
 
         self.plot_mem=view.addPlot()
-        #self.plot_mem.getViewBox().wheelEvent.connect
         self.plot_mem.setMouseEnabled(True,False)
-        #self.plot_mem.getViewBox().sigYRangeChanged.connect(self.rangeChangedViaMouse)
         self.curveM=self.plot_mem.plot(pen=penM, symbolPen=None, symbolBrush=(255,0,0), symbol='s', symbolSize=5, pxMode=True)
-        #self.plot_mem.enableAutoRange(self.plot_mem.getAxis('left'),True)
         labelM_style = {'color': '#000000', 'font-size': '10pt'}
         self.plot_mem.getAxis('left').setLabel('Resistance\n', units='Ω', **labelM_style)
         self.plot_mem.getAxis('left').setGrid(50)
@@ -69,17 +63,20 @@ class dataDisplay_panel(QtWidgets.QWidget):
         self.plot_mem.showAxis('right')
         self.plot_mem.getAxis('right').setWidth(60)
         self.plot_mem.getAxis('bottom').setGrid(50)
-        
+
         self.plot_mem.getAxis('right').setStyle(showValues=False)
 
-        view.nextRow()  # go to next row and add the next plot
+        view.nextRow()
 
         self.plot_pls=view.addPlot()
         self.plot_pls.setMouseEnabled(True,False)
         self.curveP=self.plot_pls.plot(pen=penP)
-        self.curvePMarkers=self.plot_pls.plot(pen=None, symbolPen=None, symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
+        self.curvePMarkers=self.plot_pls.plot(pen=None, symbolPen=None,
+                symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
 
-        self.curveReadMarkers=self.plot_pls.plot(pen=None, symbolPen=(0,0,255), symbolBrush=None, symbol=self.readSymbol, symbolSize=6, pxMode=True)
+        self.curveReadMarkers=self.plot_pls.plot(pen=None, symbolPen=(0,0,255),
+                symbolBrush=None, symbol=self.readSymbol, symbolSize=6,
+                pxMode=True)
 
         self.plot_pls.setFixedHeight(150)
         labelV_style = {'color': '#000000', 'font-size': '10pt'}
@@ -93,14 +90,12 @@ class dataDisplay_panel(QtWidgets.QWidget):
         self.plot_pls.scene().addItem(self.plot_width)
         self.plot_pls.showAxis('right')
         self.plot_pls.getAxis('right').setLabel('Pulse width', units='s', **labelPn_style)
-        #self.plot_pls.getAxis('right').setLogMode(True)
         self.plot_pls.getAxis('right').setPen(penPW)
         self.plot_width.setXLink(self.plot_pls)
         self.plot_pls.getAxis('right').linkToView(self.plot_width)
 
-        #print self.plot_pls.getAxis('right')
         self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
-        
+
         self.plot_pls.getAxis('left').setWidth(60)
         self.plot_pls.getAxis('right').setWidth(60)
 
@@ -109,9 +104,8 @@ class dataDisplay_panel(QtWidgets.QWidget):
         self.curvePW.setPen(penPW)
         self.plot_width.addItem(self.curvePW)
 
-        #self.plot_pls.getAxis('right').setLogMode(True)
-
-        self.plot_pls.getViewBox().setXLink(self.plot_mem.getViewBox()) # link x axes
+        # link x axes
+        self.plot_pls.getViewBox().setXLink(self.plot_mem.getViewBox())
 
         mainLayout = QtWidgets.QVBoxLayout()
         mainLayout.addWidget(view)
@@ -126,13 +120,13 @@ class dataDisplay_panel(QtWidgets.QWidget):
         f.displayUpdate.updateLog.connect(self.updateLogScale)
         f.interfaceAntenna.lastDisplaySignal.connect(self.last_updateDisplay_short)
 
-        # make the size of the viewboxes of PWplot and pusle plot the same
         self.plot_pls.getViewBox().sigResized.connect(self.updateViews)
         self.plot_width.enableAutoRange(self.plot_width.YAxis,True)
         self.plot_pls.enableAutoRange()
 
         self.last_display_time=time.time()
-        self.frame_time=0.05    # max 20 frames per second
+        # 20 fps max
+        self.frame_time=0.05
         self.min_frame_time=0.05
 
         self.updateViews()
@@ -145,7 +139,10 @@ class dataDisplay_panel(QtWidgets.QWidget):
         pass
 
     def updateViews2(self):
-        self.plot_pls.getViewBox().setGeometry(self.plot_mem.getViewBox().x(), self.plot_pls.getViewBox().y(), self.plot_pls.getViewBox().width(), self.plot_pls.getViewBox().height())
+        self.plot_pls.getViewBox().setGeometry(self.plot_mem.getViewBox().x(),
+                self.plot_pls.getViewBox().y(),
+                self.plot_pls.getViewBox().width(),
+                self.plot_pls.getViewBox().height())
 
     def updateViews(self):
 
@@ -159,12 +156,12 @@ class dataDisplay_panel(QtWidgets.QWidget):
         self.updateDisplay(g.w,g.b,2,g.dispPoints,99)
 
     def updateDisplay(self,w,b,type,points,slider):
+
         # type = 1: display all data
         # type = 2: display a nr of points
         firstPoint=0
         lastPoint=1
-        #self.plot_mem.enableAutoRange()
-        #self.plot_pls.enableAutoRange()
+
         timenow=time.time()
         if timenow-self.last_display_time>self.frame_time:
             self.last_display_time=time.time()
@@ -196,13 +193,6 @@ class dataDisplay_panel(QtWidgets.QWidget):
                 self.plot_mem.setXRange(max(lastPoint-points,0),lastPoint-1)
                 self.plot_pls.setXRange(max(lastPoint-points,0),lastPoint-1)
 
-            # Improvement
-            # Mlist=[0 for x in g.Mhistory[g.w][g.b][firstPoint:lastPoint]]
-            # PList=[0 for x in g.Mhistory[g.w][g.b][firstPoint:lastPoint]]
-            # PWList=[]
-            # PMarkerList=[]
-            # ReadMarkerList=[]
-
             Mlist=[]
             PList=[]
             PWList=[]
@@ -220,11 +210,10 @@ class dataDisplay_panel(QtWidgets.QWidget):
                 else:
                     PMarkerList.append(item[1])
                     PWList.append(item[2])
-                
+
                 ReadMarkerList.append(item[5])
 
             self.plot_pls.enableAutoRange()
-
 
             pNrList=np.asarray(range(firstPoint,lastPoint))
 
@@ -234,8 +223,9 @@ class dataDisplay_panel(QtWidgets.QWidget):
             self.curvePMarkers.setData(pNrList,np.asarray(PMarkerList))
             self.curveReadMarkers.setData(pNrList, np.asarray(ReadMarkerList))
 
-            if self.log==0: 
-                self.plot_mem.setYRange(min(Mlist)/1.2,self.max_without_inf(Mlist)*1.2) #If any infinite numbers arise, deal appropriately.
+            if self.log==0:
+                # If any infinite numbers arise, deal appropriately.
+                self.plot_mem.setYRange(min(Mlist)/1.2,self.max_without_inf(Mlist)*1.2)
             else:
                 self.plot_mem.setYRange(np.log10(min(Mlist)/1.2),np.log10(self.max_without_inf(Mlist)*1.2))
 

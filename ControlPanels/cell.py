@@ -11,33 +11,27 @@ from PyQt5 import QtGui, QtWidgets
 
 
 class cell(QtWidgets.QWidget):
-    
+
     def __init__(self):
         super(cell, self).__init__()
         self.initUI()
-        
-    def initUI(self):  
-        self.pen=QtGui.QPen(QtGui.QColor(200,200,200))      # Set the initial pen (which draws the edge of a square)
-        self.brush=QtGui.QBrush(QtGui.QColor(255,255,255))   # Set the initial brush (which sets the fill of a square) 
 
-    def paintEvent(self, e):    # this is called whenever the Widget is resized
-        qp = QtGui.QPainter()   # initialise the Painter Object
-        qp.begin(self)          # Begin the painting process
-        self.drawRectangle(qp)  # Call the function
-        qp.end()                # End the painting process
-        
-    def drawRectangle(self,qp): 
-        size=self.size()        # get the size of this Widget (which by default fills the parent (Layout box))
-        qp.setPen(self.pen)     # set the pen
-        qp.setBrush(self.brush) # set the brush
-        qp.drawRect(0,0,size.width(),size.height()) 
+    def initUI(self):
+        # Set the initial pen (which draws the edge of a square)
+        self.pen=QtGui.QPen(QtGui.QColor(200,200,200))
+        # Set the initial brush (which sets the fill of a square)
+        self.brush=QtGui.QBrush(QtGui.QColor(255,255,255))
 
-        #qp.drawRect(0,0,size.width(),size.height())     # Draw the new rectangle which fills the entire widget
+    # this is called whenever the Widget is resized
+    def paintEvent(self, e):
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        self.drawRectangle(qp)
+        qp.end()
 
-
-
-
-
-
-
+    def drawRectangle(self,qp):
+        size=self.size()
+        qp.setPen(self.pen)
+        qp.setBrush(self.brush)
+        qp.drawRect(0,0,size.width(),size.height())
 

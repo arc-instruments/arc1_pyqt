@@ -20,8 +20,10 @@ import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
+
 tag="RET"
 g.tagDict.update({tag:"Retention*"})
+
 
 class getData(QtCore.QObject):
 
@@ -85,7 +87,6 @@ class getData(QtCore.QObject):
 
             if (end-start)>self.duration:
                 break
-                #self.updateTree.emit(w,b)
 
         #Final read
         for device in self.deviceList:
@@ -104,18 +105,18 @@ class getData(QtCore.QObject):
             self.updateTree.emit(w,b)
 
         self.disableInterface.emit(False)
-        
+
         self.finished.emit()
 
 
 class Retention(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super(Retention, self).__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -147,9 +148,7 @@ class Retention(QtWidgets.QWidget):
         gridLayout.setColumnStretch(6,1)
         if self.short==False:
             gridLayout.setColumnStretch(7,2)
-        #gridLayout.setSpacing(2)
 
-        #setup a line separator
         lineLeft=QtWidgets.QFrame()
         lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
         lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -168,7 +167,6 @@ class Retention(QtWidgets.QWidget):
             lineEdit.setText(leftInit[i])
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
-            #gridLayout.addWidget(lineEdit, i,1)
 
         for i in range(len(rightLabels)):
             lineLabel=QtWidgets.QLabel()
@@ -179,7 +177,6 @@ class Retention(QtWidgets.QWidget):
             lineEdit=QtWidgets.QLineEdit()
             lineEdit.setValidator(isFloat)
             self.rightEdits.append(lineEdit)
-            #gridLayout.addWidget(lineEdit, i,5)
 
 
         # ========== ComboBox ===========
@@ -200,14 +197,6 @@ class Retention(QtWidgets.QWidget):
         self.every_dropDown.setCurrentIndex(0)
         self.duration_dropDown.insertItems(1,self.units)
         self.duration_dropDown.setCurrentIndex(1)
-
-        #every_lay.addWidget(self.leftEdits[0])
-        #every_lay.addWidget(self.every_dropDown)
-        #duration_lay.addWidget(self.leftEdits[1])
-        #duration_lay.addWidget(self.duration_dropDown)
-
-        #gridLayout.addLayout(every_lay,0,1)
-        #gridLayout.addLayout(duration_lay,1,1)
 
         gridLayout.addWidget(self.leftEdits[0],0,1)
         gridLayout.addWidget(self.every_dropDown,0,3)
@@ -258,7 +247,7 @@ class Retention(QtWidgets.QWidget):
 
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
+
         layoutWidgets=[]
 
         for i,item in layoutItems:
@@ -269,8 +258,6 @@ class Retention(QtWidgets.QWidget):
             if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
-        #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
@@ -291,15 +278,12 @@ class Retention(QtWidgets.QWidget):
         if g.ser.port != None:
 
             time_mag=float(self.leftEdits[0].text())
-            unit=float(self.multiply[self.every_dropDown.currentIndex()])        
+            unit=float(self.multiply[self.every_dropDown.currentIndex()])
             every=time_mag*unit
 
             time_mag=float(self.leftEdits[1].text())
-            unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
+            unit=float(self.multiply[self.duration_dropDown.currentIndex()])
             duration=time_mag*unit
-
-            #every=float(self.leftEdits[0].text())*60
-            #duration=float(self.leftEdits[1].text())*60
 
             self.thread=QtCore.QThread()
             self.getData=getData([[g.w,g.b]],every,duration,g.Vread)
@@ -313,17 +297,16 @@ class Retention(QtWidgets.QWidget):
         else:
             self.hboxProg.setEnabled(True)
 
-
     def programRange(self):
         if g.ser.port != None:
             rangeDev=self.makeDeviceList(True)
 
             time_mag=float(self.leftEdits[0].text())
-            unit=float(self.multiply[self.every_dropDown.currentIndex()])        
+            unit=float(self.multiply[self.every_dropDown.currentIndex()])
             every=time_mag*unit
 
             time_mag=float(self.leftEdits[1].text())
-            unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
+            unit=float(self.multiply[self.duration_dropDown.currentIndex()])
             duration=time_mag*unit
 
             self.thread=QtCore.QThread()
@@ -331,18 +314,18 @@ class Retention(QtWidgets.QWidget):
             self.finalise_thread_initialisation()
 
             self.thread.start()
-        
+
 
     def programAll(self):
         if g.ser.port != None:
             rangeDev=self.makeDeviceList(False)
 
             time_mag=float(self.leftEdits[0].text())
-            unit=float(self.multiply[self.every_dropDown.currentIndex()])        
+            unit=float(self.multiply[self.every_dropDown.currentIndex()])
             every=time_mag*unit
 
             time_mag=float(self.leftEdits[1].text())
-            unit=float(self.multiply[self.duration_dropDown.currentIndex()])        
+            unit=float(self.multiply[self.duration_dropDown.currentIndex()])
             duration=time_mag*unit
 
             self.thread=QtCore.QThread()
@@ -363,12 +346,11 @@ class Retention(QtWidgets.QWidget):
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)        
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def makeDeviceList(self,isRange):
-        #if g.checkSA=False:
-        rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0
+
+        rangeDev=[]
         if isRange==False:
             minW=1
             maxW=g.wline_nr
@@ -378,7 +360,7 @@ class Retention(QtWidgets.QWidget):
             minW=g.minW
             maxW=g.maxW
             minB=g.minB
-            maxB=g.maxB            
+            maxB=g.maxB
 
 
         # Find how many SA devices are contained in the range
@@ -386,7 +368,6 @@ class Retention(QtWidgets.QWidget):
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):
                     rangeDev.append([w,b])
-            #rangeMax=(wMax-wMin+1)*(bMax-bMin+1)
         else:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):

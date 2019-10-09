@@ -18,6 +18,7 @@ import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
+
 tag="stdp"
 g.tagDict.update({tag:"STDP*"})
 
@@ -49,7 +50,7 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n") #Tell mBED how many devices to be operated on.
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
@@ -59,11 +60,8 @@ class getData(QtCore.QObject):
             g.ser.write_b(str(int(w))+"\n")
             g.ser.write_b(str(int(b))+"\n")
 
-            #store a first read
+            # store a first read
             valuesNew=f.getFloats(3)
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
             tag_=tag+"_s"
             self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
             self.displayData.emit()
@@ -83,17 +81,11 @@ class getData(QtCore.QObject):
                     time.sleep(0.001)
 
                 valuesNew=f.getFloats(3)
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
                 tag_=tag+" dt="+str("%.6f" % dt)+" before"
                 self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
                 self.displayData.emit()
 
                 valuesNew=f.getFloats(3)
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
 
                 tag_=tag+" dt="+str("%.6f" % dt)+" after"
 
@@ -107,9 +99,6 @@ class getData(QtCore.QObject):
                 self.displayData.emit()
 
             valuesNew=f.getFloats(3)
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
 
             tag_=tag+"_e"
 
@@ -149,14 +138,9 @@ class getData(QtCore.QObject):
             post_voltage=self_post_voltage
 
         total_time=[0]
-        total_voltage=[0]   
+        total_voltage=[0]
         index_pre=1
         index_post=1
-
-        # print "pre_voltage", pre_voltage
-        # print "pre_time", pre_time
-        # print "post_voltage", post_voltage
-        # print "post_time", post_time
 
         pre_voltage=[x*gain for x in pre_voltage]
         post_voltage=[x*gain for x in post_voltage]
@@ -201,22 +185,17 @@ class getData(QtCore.QObject):
         total_voltage.append(0)
         total_time.append(max([pre_time[-1],post_time[-1]]))
 
-        # print "Total votlage"
-        # print total_voltage
-        # print "Total time"
-        # print total_time
-        
         return total_time, total_voltage
 
 
 class STDP(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super(STDP, self).__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -246,14 +225,6 @@ class STDP(QtWidgets.QWidget):
 
         if self.short==False:
             gridLayout.setColumnStretch(7,2)
-
-        #setup a line separator
-        # lineLeft=QtWidgets.QFrame()
-        # lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
-        # lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
-        # lineLeft.setLineWidth(1)
-
-        # gridLayout.addWidget(lineLeft, 0, 2, 6, 1)
 
         self.push_load_pre=QtWidgets.QPushButton("Load Pre Spike")
         self.push_load_pre.clicked.connect(self.load_pre)
@@ -290,19 +261,13 @@ class STDP(QtWidgets.QWidget):
         self.leftEdits[0].textChanged.connect(self.scale_voltage)
         self.leftEdits[1].textChanged.connect(self.warp_time)
 
-        #self.check_return=QtWidgets.QCheckBox("Return to G0")
-        #gridLayout.addWidget(self.check_return,7,0)
-
         self.check_single=QtWidgets.QCheckBox("Only single event ->")
         gridLayout.addWidget(self.check_single, 8,0)
-
 
         self.gain=1
         self.warp=1
 
-        #vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
-
         hbox=QtWidgets.QHBoxLayout()
 
         vbox_left=QtWidgets.QVBoxLayout()
@@ -317,29 +282,32 @@ class STDP(QtWidgets.QWidget):
         pg.setConfigOption('foreground', 'k')
         view=pg.GraphicsLayoutWidget()
 
-        pen_blue=QtGui.QPen()               # pen to draw the amplitude curves
-        pen_blue.setColor(QtCore.Qt.blue)   
-        pen_green=QtGui.QPen()               # pen to draw the amplitude curves
-        pen_green.setColor(QtCore.Qt.green)   
-        pen_red=QtGui.QPen()               # pen to draw the amplitude curves
-        pen_red.setColor(QtCore.Qt.red)   
+        # pen to draw the amplitude curves
+        pen_blue=QtGui.QPen()
+        pen_blue.setColor(QtCore.Qt.blue)
+
+        # pen to draw the amplitude curves
+        pen_green=QtGui.QPen()
+        pen_green.setColor(QtCore.Qt.green)
+
+        # pen to draw the amplitude curves
+        pen_red=QtGui.QPen()
+        pen_red.setColor(QtCore.Qt.red)
+
         labeltotal_style = {'color': '#000000', 'font-size': '10pt'}
 
         plot_height=80*g.scaling_factor
         plot_width=300*g.scaling_factor
-        ################################################################### PLOT TOTAL ####
+
         self.plot_total=view.addPlot()
         self.plot_total.setMouseEnabled(False,False)
-        self.curve_total=self.plot_total.plot(pen=pg.mkPen(color="00F", width=2)) 
+        self.curve_total=self.plot_total.plot(pen=pg.mkPen(color="00F", width=2))
         self.plot_total.getAxis('left').setLabel('Pre-Post', units='V', **labeltotal_style)
         #self.plot_total.setFixedHeight(plot_height)
         self.plot_total.getAxis('left').setGrid(50)
         self.plot_total.getAxis('left').setWidth(60)
         self.plot_total.getAxis('bottom').setGrid(50)
-       # self.plot_total.setMinimumWidth(plot_width)
 
-
-        ################################################################### PLOT PRE ######
         view.nextRow()  # go to next row and add the next plot
 
         self.plot_p=view.addPlot()
@@ -351,8 +319,6 @@ class STDP(QtWidgets.QWidget):
         self.plot_p.getAxis('left').setGrid(50)
         self.plot_p.getAxis('bottom').setGrid(50)
         self.plot_p.getAxis('left').setWidth(60)
-       #self.plot_p.setMinimumWidth(plot_width)
-
 
         vbox_spikes.addWidget(view)
 
@@ -375,7 +341,6 @@ class STDP(QtWidgets.QWidget):
         self.slider=QtWidgets.QSlider(QtCore.Qt.Horizontal, parent=self)
         self.slider.setValue(50)
         self.slider.valueChanged.connect(self.updateSpikes)
-        #self.slider.valueChanged.connect(self.updateDescription)
 
         vbox_spikes.addWidget(self.slider)
 
@@ -385,14 +350,12 @@ class STDP(QtWidgets.QWidget):
         self.vW.setLayout(hbox)
         self.vW.setContentsMargins(0,0,0,0)
         self.vW.setMaximumHeight(320)
-        #self.vW.setMinimumWidth(700)
 
         scrlArea=QtWidgets.QScrollArea()
         scrlArea.setWidget(self.vW)
         scrlArea.setContentsMargins(0,0,0,0)
         scrlArea.setWidgetResizable(False)
         scrlArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        #scrlArea.setMinimumHeight(330)
 
         scrlArea.installEventFilter(self)
 
@@ -478,7 +441,7 @@ class STDP(QtWidgets.QWidget):
                 self.updateSpikes(50.0)
             else:
                 pass
-            self.post_filename.setText(path.fileName()) 
+            self.post_filename.setText(path.fileName())
 
         else:
             errMessage = QtWidgets.QMessageBox()
@@ -530,10 +493,9 @@ class STDP(QtWidgets.QWidget):
                 self.max_spike_time=max([self.pre_time[-1],self.post_time[-1]])
                 self.fix_spike_timescales()
                 self.slider.setValue(50)
-                self.updateSpikes(50.0)     
-            
-            self.pre_filename.setText(path.fileName())           
+                self.updateSpikes(50.0)
 
+            self.pre_filename.setText(path.fileName())
 
         else:
             errMessage = QtWidgets.QMessageBox()
@@ -603,7 +565,7 @@ class STDP(QtWidgets.QWidget):
         # Creates the pre and post voltage waveforms
 
         total_time=[0]
-        total_voltage=[0]   
+        total_voltage=[0]
         index_pre=1
         index_post=1
 
@@ -650,7 +612,7 @@ class STDP(QtWidgets.QWidget):
         total_voltage.append(0)
         #total_time.append(pre_time[-1])
         total_time.append(max([pre_time[-1],post_time[-1]]))
-        
+
         self.curve_pre.setData(pre_time,pre_voltage)
         self.curve_post.setData(post_time,post_voltage)
         self.curve_total.setData(total_time, total_voltage)
@@ -658,7 +620,7 @@ class STDP(QtWidgets.QWidget):
 
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
+
         layoutWidgets=[]
 
         for i,item in layoutItems:
@@ -669,8 +631,6 @@ class STDP(QtWidgets.QWidget):
             if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        
-        #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
@@ -751,15 +711,13 @@ class STDP(QtWidgets.QWidget):
             self.finalise_thread_initialisation()
 
             self.thread.start()
-        
 
     def programAll(self):
         if g.ser.port != None:
             rangeDev=self.makeDeviceList(True)
 
-
             job="40"
-            g.ser.write_b(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")
 
             self.sendParams()
 
@@ -781,13 +739,12 @@ class STDP(QtWidgets.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)      
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)  
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def makeDeviceList(self,isRange):
-        #if g.checkSA=False:
-        rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0
+
+        rangeDev=[]
         if isRange==False:
             minW=1
             maxW=g.wline_nr
@@ -797,8 +754,7 @@ class STDP(QtWidgets.QWidget):
             minW=g.minW
             maxW=g.maxW
             minB=g.minB
-            maxB=g.maxB            
-
+            maxB=g.maxB
 
         # Find how many SA devices are contained in the range
         if g.checkSA==False:

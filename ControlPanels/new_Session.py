@@ -33,11 +33,9 @@ class new_Session(QtWidgets.QWidget):
         mainLayout.setContentsMargins(0,0,0,0)
 
         # Setup top logo
-        # ============================
         logoTop=QtWidgets.QLabel()
         logoTop.setPixmap(Graphics.getPixmap('new-session-banner'))
         mainLayout.addWidget(logoTop)
-        # ============================
 
         if sys.version_info.major == 2:
             self.pythonWarningGroupBox = QtGui.QGroupBox('Python migration')
@@ -62,7 +60,6 @@ class new_Session(QtWidgets.QWidget):
             mainLayout.addWidget(self.pythonWarningGroupBox)
 
         # Setup general settings
-        # ============================
         self.generalSettings = QtWidgets.QGroupBox('General Settings')
         self.generalSettings.setStyleSheet(s.groupStyleNewSesh)
         self.generalSettings.setFont(fonts.font2)
@@ -78,7 +75,7 @@ class new_Session(QtWidgets.QWidget):
         wDirLabel.setFont(fonts.font3)
 
         push_browse = QtWidgets.QPushButton('...')
-        push_browse.clicked.connect(self.selectWDir)    # open custom array defive position file
+        push_browse.clicked.connect(self.selectWDir)
         push_browse.setFixedWidth(20)
 
         self.dirName=QtWidgets.QLineEdit()
@@ -117,19 +114,10 @@ class new_Session(QtWidgets.QWidget):
         mainLayout.addWidget(self.generalSettings)
         #mainLayout.addWidget(self.generalSettings)
 
-        # ============================
-
         # Setup mCAT settings
-        # ============================
-
-        #hwTitle=QtWidgets.QLabel(self)
-        #hwTitle.setText('Hardware Settings')
-        #hwTitle.setFont(fonts.font3)
         self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
         self.hwSettings.setStyleSheet(s.groupStyleNewSesh)
-        #palette=QtGui.QPalette()
         self.hwSettings.setFont(fonts.font2)
-
 
         hwSetLayout=QtWidgets.QGridLayout()
         hwSetLayout.setContentsMargins(10,20,10,10)
@@ -253,29 +241,17 @@ class new_Session(QtWidgets.QWidget):
 
         mainLayout.addLayout(startLay)
 
-        #spacer=QtWidgets.QSpacerItem(1,1)
-        #mainLayout.addWidget(spacer)
-        #mainLayout.addSpacing(1)
-
-        self.setContentsMargins(0,0,0,0)    # spacing of the full Layout to accomodate line numbers and colorbar on the right  
+        self.setContentsMargins(0,0,0,0)
         self.setLayout(mainLayout)
         #self.setGeometry()
         self.redrawCB()
 
     def selectWDir(self):
         folderDialog=QtWidgets.QFileDialog()
-        #folderDialog.setFileMode(QtWidgets.QFileDialog.Directory)
-
         directory = folderDialog.getExistingDirectory(self, 'Choose Directory', os.path.curdir)
-
         self.dirName.setText(directory)
 
-        pass
-
     def redrawCB(self):
-        #layout=QtWidgets.QGridLayout()
-        #self.
-        #self.cbWidget.setLayout(layout)
 
         wordline=QtWidgets.QLabel()
         wordline.setText("W\no\nr\nd\nl\ni\nn\ne")
@@ -357,9 +333,6 @@ class new_Session(QtWidgets.QWidget):
 
         self.close()
 
-        pass
-
     def cancelNewSession(self):
         self.close()
-        pass
 

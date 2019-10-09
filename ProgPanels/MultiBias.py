@@ -67,13 +67,13 @@ class getData(QtCore.QObject):
 
 
 class MultiBias(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super(MultiBias, self).__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -108,9 +108,7 @@ class MultiBias(QtWidgets.QWidget):
 
         if self.short==False:
             gridLayout.setColumnStretch(7,2)
-        #gridLayout.setSpacing(2)
 
-        #setup a line separator
         lineLeft=QtWidgets.QFrame()
         lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
         lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -167,9 +165,6 @@ class MultiBias(QtWidgets.QWidget):
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i+2,5)
 
-        # verticalLine.setFrameStyle(QFrame.VLine)
-        # verticalLine.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Expanding)
-
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
@@ -217,7 +212,7 @@ class MultiBias(QtWidgets.QWidget):
         else:
             if g.ser.port != None:
                 job="50"
-                g.ser.write_b(job+"\n")   # sends the job
+                g.ser.write_b(job+"\n")
 
                 self.sendParams()
 
@@ -230,16 +225,17 @@ class MultiBias(QtWidgets.QWidget):
 
 
                 self.thread=QtCore.QThread()
-                self.getData=getData(wLines, int(self.edit_blines.value()), RW, float(self.leftEdits[0].text()), float(self.leftEdits[1].text())/1000000)
+                self.getData=getData(wLines, int(self.edit_blines.value()), RW,
+                        float(self.leftEdits[0].text()),
+                        float(self.leftEdits[1].text())/1000000)
                 self.finalise_thread_initialisation()
 
                 self.thread.start()
 
     def sendParams(self):
-        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
-        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
-        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")              # send read Voltage
-
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
 
     def apply_write(self):
         self.apply_multiBias(2)
@@ -266,7 +262,7 @@ class MultiBias(QtWidgets.QWidget):
 
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
+
         layoutWidgets=[]
 
         for i,item in layoutItems:
@@ -293,8 +289,6 @@ class MultiBias(QtWidgets.QWidget):
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         return False
 
-        #time.sleep(0.001)
-
     def disableProgPanel(self,state):
         if state==True:
             self.hboxProg.setEnabled(False)
@@ -311,14 +305,15 @@ class MultiBias(QtWidgets.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)     
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)  
-        self.getData.updateCurrentRead.connect(self.updateCurrentRead) 
-
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
+        self.getData.updateCurrentRead.connect(self.updateCurrentRead)
 
     def throwError(self):
         reply = QtWidgets.QMessageBox.question(self, "Error",
-            "Formatting of active worlines input box is wrong. Check for double spaces, trailing spaces, and addresses larger than 32 or smaller than 1.",
+            "Formatting of active worlines input box is wrong. " +
+            "Check for double spaces, trailing spaces, " +
+            "and addresses larger than 32 or smaller than 1.",
             QtWidgets.QMessageBox.Ok)
         event.ignore()
 

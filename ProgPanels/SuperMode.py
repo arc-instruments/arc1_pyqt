@@ -154,7 +154,6 @@ class draggableButton(QtWidgets.QPushButton):
             self.setText("End Loop")
 
         self.setFixedHeight(20)
-        #super(draggableButton,self).setDragEnabled(True)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat("application/x-module"):
@@ -192,8 +191,8 @@ class draggableButton(QtWidgets.QPushButton):
         self.startDrag(event)
 
     def associate(self):
-        thisPanel = importlib.import_module(self.what)     # import the module
-        panel_class = getattr(thisPanel, self.name)        # get it's main class
+        thisPanel = importlib.import_module(self.what)
+        panel_class = getattr(thisPanel, self.name)
         thisModule = panel_class(short=True)
         return thisModule
 
@@ -228,7 +227,7 @@ class draggableButtonPlaced(QtWidgets.QPushButton):
     def startDrag(self, event):
         self.setVisible(False)
         self.deleteContainer.emit()
-        self.deleteLater()       
+        self.deleteLater()
         selected = QtCore.QByteArray(self.ID)
 
         mimeData = QtCore.QMimeData()
@@ -259,7 +258,7 @@ class draggableButtonPlaced(QtWidgets.QPushButton):
             self.setStyleSheet(s.loop_style_top_selected)
         elif self.what=="End":
             self.setStyleSheet(s.loop_style_bot_selected)
-        else: 
+        else:
             self.setStyleSheet(s.selectedStyle)
         print(self.module, " emitted")
 
@@ -307,7 +306,7 @@ class dropZone(QtWidgets.QWidget):
         self.vbox.setSpacing(0)
         self.setLayout(self.vbox)
         self.count=0
-        
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat("application/x-module"):
             self.dummyBtn=draggableButtonPlacedDummy("Dummy")
@@ -356,7 +355,7 @@ class dropZone(QtWidgets.QWidget):
 
     def dropEvent(self, event):
         data = event.mimeData()
-        
+
         if event.mimeData().hasFormat("application/x-module"):
             self.count+=1
             index = self.vbox.indexOf(self.dummyBtn)
@@ -379,7 +378,6 @@ class dropZone(QtWidgets.QWidget):
                 newBtn.ID=data.data("application/x-module")
                 newBtn.setText("End Loop")
                 newBtn.displayModule.connect(self.routerDisplayModule)
-            #newBtn.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
 
             newWidget=centerWidget(newBtn)
             newBtn.deleteContainer.connect(newWidget.deleteContainer)
@@ -387,16 +385,15 @@ class dropZone(QtWidgets.QWidget):
             self.vbox.insertWidget(index, newWidget)
             self.setMinimumHeight(placed_module_height*self.count)
 
-            #print "INDEX: ", index
-            #print self.count, self.height()
             event.accept()
-            
+
         elif event.mimeData().hasFormat("application/x-module-placed"):
-            #self.count+=1
+
             index = self.vbox.indexOf(self.dummyBtn)
             self.dummyBtn.deleteLater()
 
             associatedModule=module_id_dict[str(data.data("application/x-module-placed"))]
+
             if data.text() not in ['Loop','End']:
                 newBtn=draggableButtonPlaced(data.text(), associatedModule)
                 newBtn.ID=data.data("application/x-module-placed")
@@ -417,11 +414,8 @@ class dropZone(QtWidgets.QWidget):
             newBtn.deleteContainer.connect(newWidget.deleteContainer)
             newBtn.decrementCount.connect(self.decrement_and_resize)
             self.vbox.insertWidget(index, newWidget)
-            #self.setMinimumHeight(30*self.count)
 
-            #print "INDEX: ", index
-            #print self.count, self.height()
-            event.accept()      
+            event.accept()
 
     def decrement_and_resize(self):
         self.count-=1
@@ -431,7 +425,7 @@ class dropZone(QtWidgets.QWidget):
         if self.count*placed_module_height<=placed_module_height:
             self.setFixedHeight(placed_module_height)
         else:
-            self.setFixedHeight(self.count*placed_module_height)  
+            self.setFixedHeight(self.count*placed_module_height)
 
     def dragLeaveEvent(self, event):
         self.dummyBtn.deleteLater()
@@ -474,14 +468,11 @@ class SuperMode(QtWidgets.QWidget):
     def __init__(self):
         super(SuperMode, self).__init__()
         self.initUI()
-        
-    def initUI(self):   
+
+    def initUI(self):
         global EdgeBtn_style
 
         mainLayout=QtWidgets.QVBoxLayout()
-
-        #titleLabel = QtWidgets.QLabel('SuperMode')
-        #titleLabel.setFont(fonts.font1)
 
         hbox=QtWidgets.QHBoxLayout()
         vboxLeft=QtWidgets.QVBoxLayout()
@@ -489,7 +480,6 @@ class SuperMode(QtWidgets.QWidget):
         vboxLeft.setSpacing(0)
 
         self.vboxMid=QtWidgets.QVBoxLayout()
-        
         self.dropWidget=dropZone()
         sizePolicy=QtWidgets.QSizePolicy()
         sizePolicy.setVerticalPolicy(QtWidgets.QSizePolicy.Expanding)
@@ -501,7 +491,6 @@ class SuperMode(QtWidgets.QWidget):
         moduleEdit.setMinimumWidth(500)
         moduleEdit.setLayout(self.moduleLayout)
 
-        
         moduleViewscrlArea=QtWidgets.QScrollArea()
         moduleViewscrlArea.setWidget(moduleEdit)
         moduleViewscrlArea.setContentsMargins(0,0,0,0)
@@ -510,7 +499,7 @@ class SuperMode(QtWidgets.QWidget):
         moduleViewscrlArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         moduleViewscrlArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         #moduleViewscrlArea.installEventFilter(self)
-        
+
         separator1=QtWidgets.QFrame()
         separator1.setFrameShape(QtWidgets.QFrame.HLine)
         separator1.setLineWidth(2)
@@ -538,11 +527,8 @@ class SuperMode(QtWidgets.QWidget):
         progPanelList_basic_loops.reverse()
         for module in progPanelList_basic_loops:
             btn=draggableButton(module)
-            vboxLeft.addWidget(btn)  
-        vboxLeft.addWidget(separator3)      
-
-        ###########################################
-        # SAVING and LOADING
+            vboxLeft.addWidget(btn)
+        vboxLeft.addWidget(separator3)
 
         vboxLeft.addStretch()
 
@@ -559,8 +545,6 @@ class SuperMode(QtWidgets.QWidget):
         vboxLeft.addWidget(self.loaded_label)
         vboxLeft.addWidget(push_load)
         vboxLeft.addWidget(push_save)
-
-        ###########################################
 
         startBtn=QtWidgets.QPushButton("Start")
         startBtn.setStyleSheet(s.EdgeBtn_style)
@@ -670,14 +654,13 @@ class SuperMode(QtWidgets.QWidget):
             proceed=True
 
         if proceed or reply == QtWidgets.QMessageBox.Yes:
-            for i in reversed(range(self.dropWidget.vbox.count())): 
+            for i in reversed(range(self.dropWidget.vbox.count())):
                 self.dropWidget.vbox.itemAt(i).widget().setParent(None)
 
             self.dropWidget.count=0
             self.dropWidget.resizeHeight()
             self.dropWidget.routerDisplayModule(None)
             self.dropWidget.update()
-           # print self.dropWidget.vbox.count()
 
             try:
                 path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
@@ -725,16 +708,14 @@ class SuperMode(QtWidgets.QWidget):
                 self.dropWidget.vbox.addWidget(newCenterWidget)
                 globalID+=1
 
-                #print "Added module: ", moduleName, " at index ", self.dropWidget.vbox.count()-1
-
-            #self.dropWidget.setFixedHeight(self.dropWidget.vbox.count()*placed_module_height)
             self.dropWidget.count=self.dropWidget.vbox.count()
             self.dropWidget.resizeHeight()
             self.dropWidget.update()
 
     def displayModule(self, module):
         try:
-            self.moduleLayout.itemAt(0).widget().setParent(None) # delete previous widget
+            # delete previous widget
+            self.moduleLayout.itemAt(0).widget().setParent(None)
         except:
             pass
         self.moduleLayout.addWidget(module)
@@ -784,10 +765,10 @@ class SuperMode(QtWidgets.QWidget):
                 "Are you sure?",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
         if reply == QtWidgets.QMessageBox.Yes:
-            for i in reversed(range(self.dropWidget.vbox.count())): 
+            for i in reversed(range(self.dropWidget.vbox.count())):
                 self.dropWidget.vbox.itemAt(i).widget().setParent(None)
 
-            self.dropWidget.count=0    
+            self.dropWidget.count=0
             self.dropWidget.resizeHeight()
             self.dropWidget.routerDisplayModule(None)
             self.loaded_label.setText("")
@@ -802,10 +783,8 @@ class SuperMode(QtWidgets.QWidget):
             mainChain_indexes = self.extractModuleChain()
 
             if mainChain_indexes==False:
-                #print "Problem with the Loops"
                 self.throw_wrong_loops_dialogue()
             else:
-                #print "Starting..."
                 self.thread=QtCore.QThread()
                 self.getData=getData(mainChain_indexes, [[g.w,g.b]])
                 self.finalise_thread_initialisation()
@@ -813,15 +792,12 @@ class SuperMode(QtWidgets.QWidget):
 
     def programRange(self):
         if g.ser.port != None:
-            #print "Apply to Range"
             rangeDev=self.makeDeviceList(True)
             mainChain_indexes = self.extractModuleChain()
 
             if mainChain_indexes==False:
-                #print "Problem with the Loops"
                 self.throw_wrong_loops_dialogue(self)
             else:
-                #print "Starting..."
                 self.thread=QtCore.QThread()
                 self.getData=getData(mainChain_indexes, rangeDev)
                 self.finalise_thread_initialisation()
@@ -829,15 +805,12 @@ class SuperMode(QtWidgets.QWidget):
 
     def programAll(self):
         if g.ser.port != None:
-            #print "Apply to All"
             rangeDev=self.makeDeviceList(False)
             mainChain_indexes = self.extractModuleChain()
 
             if mainChain_indexes==False:
-                #print "Problem with the Loops"
                 self.throw_wrong_loops_dialogue()
             else:
-                #print "Starting..."
                 self.thread=QtCore.QThread()
                 self.getData=getData(mainChain_indexes, rangeDev)
                 self.finalise_thread_initialisation()
@@ -872,15 +845,13 @@ class SuperMode(QtWidgets.QWidget):
             minW=g.minW
             maxW=g.maxW
             minB=g.minB
-            maxB=g.maxB            
-
+            maxB=g.maxB
 
         # Find how many SA devices are contained in the range
         if g.checkSA==False:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):
                     rangeDev.append([w,b])
-            #rangeMax=(wMax-wMin+1)*(bMax-bMin+1)
         else:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):

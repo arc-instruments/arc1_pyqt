@@ -26,22 +26,16 @@ class cbContainer(QtWidgets.QWidget):
         self.initUI()
         
     def initUI(self):      
-        #mainLayout=QtWidgets.QGridLayout()  # Set grid layout
-        #self.setLayout(mainLayout)
-        #mainLayout.setSpacing(0)
         layout=QtWidgets.QGridLayout(self)
         self.setLayout(layout)
         layout.setSpacing(0)
 
         self.cells=[[[] for x in range(0,g.bline_nr+1)] for y in range(0,g.wline_nr+1)]
 
-        #sizePolicy=QtWidgets.QSizePolicy()
-        #sizePolicy.setWidthForHeight(True)
-
-        for r in range(1,g.wline_nr+1):           # populate the grid with a "device" in each box
+        # Populate the grid with a "device" in each box
+        for r in range(1,g.wline_nr+1):
             for c in range(1,g.bline_nr+1):
                 self.cells[r][c]=d.device(r,c)
-                #self.cells[r][c].setSizePolicy(sizePolicy)
                 self.cells[r][c].setMinimumWidth(22)
                 self.cells[r][c].setMinimumHeight(14)
                 self.cells[r][c].setMaximumWidth(50)
@@ -76,8 +70,6 @@ class cbContainer(QtWidgets.QWidget):
         self.rectWidget=QtWidgets.QWidget(self)
         self.rectWidget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
         self.installEventFilter(self)
-        #self.highlightBox=QtWidgets.QWidget(self)
-        #self.highlightBox.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
 
         self.dragging=False
 
@@ -93,7 +85,6 @@ class cbContainer(QtWidgets.QWidget):
 
         f.cbAntenna.deselectOld.emit()
         self.cells[w][b].highlight()
-
 
         f.cbAntenna.deselectOld.disconnect()
         f.cbAntenna.deselectOld.connect(self.cells[w][b].dehighlight)
@@ -119,12 +110,14 @@ class cbContainer(QtWidgets.QWidget):
             w,b=position
             if g.checkSA==False:
                 self.changeDevice(int(w),int(b))
-                f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))       # signal the crossbar antenna that this device has been selected
+                # signal the crossbar antenna that this device has been selected
+                f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
                 f.displayUpdate.updateSignal_short.emit()
             else:
                 if [int(w),int(b)] in g.customArray:
                     self.changeDevice(int(w),int(b))
-                    f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))       # signal the crossbar antenna that this device has been selected
+                    # signal the crossbar antenna that this device has been selected
+                    f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
                     f.displayUpdate.updateSignal_short.emit()
 
             if g.sessionMode==2 and g.ser.port != None:
@@ -139,7 +132,6 @@ class cbContainer(QtWidgets.QWidget):
                 self.rectWidget.show()
 
     def mouseMoveEvent(self, event):
-        #if self.rubberband.isVisible():
         if self.dragging==True:
             self.rubberband.setGeometry(QtCore.QRect(self.origin, event.pos()).normalized())
             self.rubberband.hide()
@@ -150,7 +142,6 @@ class cbContainer(QtWidgets.QWidget):
 
             for child in self.findChildren(QtWidgets.QWidget):
                 if rect.intersects(child.geometry()):
-                    #selected.append(child)
                     position=child.whatsThis().split(" ")
                     try:
                         wList.append(int(position[0]))
@@ -183,8 +174,6 @@ class cbContainer(QtWidgets.QWidget):
             self.rectWidget.setStyleSheet("border: 3px solid red")
             self.rectWidget.show()
 
-        #QtWidgets.QWidget.mouseMoveEvent(self, event)
-
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
             try:
@@ -200,7 +189,6 @@ class cbContainer(QtWidgets.QWidget):
             except AttributeError:
                 pass
         return False
-
 
     def mouseReleaseEvent(self, event):
         self.dragging=False

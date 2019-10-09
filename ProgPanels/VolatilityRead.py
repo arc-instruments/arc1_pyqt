@@ -34,7 +34,9 @@ class getData(QtCore.QObject):
         self.deviceList=deviceList
         self.stopOpt = stopOpt
         self.stopTol = stopTol
-        self.ttestsamp = 25 #No. of samples at the beginning and at the end of the batch to be taken for t-test.
+        # No. of samples at the beginning and at the end of the batch to be
+        # taken for t-test.
+        self.ttestsamp = 25
 
     def getIt(self):
 
@@ -59,24 +61,27 @@ class getData(QtCore.QObject):
             stop=0
 
             while stop==0:
-                #Prepare for batch processing.
-                values = np.empty(shape=self.B) #Reset batch result array contents.
+                # Prepare for batch processing.
+                # Reset batch result array contents.
+                values = np.empty(shape=self.B)
 
-                for i in np.arange(self.B): #Obtain data for entire batch.
-                    #Send data to log-file.
+                # Obtain data for entire batch.
+                for i in np.arange(self.B):
+                    # Send data to log-file.
                     dataTime=int(g.ser.readline().rstrip())
                     Mnow=f.getFloats(1)
                     self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_i_ '+ str(dataTime))
 
-                    #Hold all or portion of incoming data in temporary array.
-                    #values.append(Mnow)
+                    # Hold all or portion of incoming data in temporary array.
                     values[i] = Mnow
 
                 timeNow=time.time()
 
                 # FIX TIME option - end volatility test after fixed time.
                 if self.stopOpt == 'FixTime':
-                    if (timeNow-start)>=self.stopTime:       # if more than stopTime has elapsed, do not request a new batch
+                    # if more than stopTime has elapsed, do not request a new
+                    # batch
+                    if (timeNow-start)>=self.stopTime:
                         stop=1
                         g.ser.write_b(str(int(stop))+"\n")
                     else:
@@ -84,11 +89,13 @@ class getData(QtCore.QObject):
                         g.ser.write_b(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'LinearFit':
-                    if self.B > 1: #Check that there are at least 2 points in batch, or no linear fit possible.
-                        try: #Try computing linear fit.
+                    # Check that there are at least 2 points in batch, or no
+                    # linear fit possible.
+                    if self.B > 1:
+                        try:
                             fitres = np.polyfit(np.arange(self.B), values, 1)
-                        except RuntimeError: #If that proves impossible...
-                            fitres = np.array([0, 0]) #...assign dummy value.
+                        except RuntimeError:
+                            fitres = np.array([0, 0])
                             print('Error: Could not fit data to linear function.')
 
                         # Obtain slope of linear fit on volatile data in units of %/batch.
@@ -106,34 +113,45 @@ class getData(QtCore.QObject):
                             stop=0
                             g.ser.write_b(str(int(stop))+"\n")
 
-                    else: #If the batch is not large enough just end it there.
+                    # If the batch is not large enough just end it there.
+                    else:
                         stop=1
                         g.ser.write_b(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'T-Test':
-                    if self.B >= self.ttestsamp*2: #Check that the batch is actually large enough to carry out a stat-test.
-                        tmet = abs(stat.ttest_ind(values[:self.ttestsamp], values[-self.ttestsamp:], equal_var = False)[0]) #Perform t-test on first & last N samples in batch, then get t-metric.
+                    # Check that the batch is actually large enough to carry
+                    # out a stat-test.
+                    if self.B >= self.ttestsamp*2:
+                        # Perform t-test on first & last N samples in batch,
+                        # then get t-metric.
+                        tmet = abs(stat.ttest_ind(values[:self.ttestsamp], values[-self.ttestsamp:], equal_var = False)[0])
                         print('T-metric: ' + str(tmet))
 
-                        if tmet < self.stopConf or (timeNow-start)>=self.stopTime: #If probability (loosely speaking) of null hypothesis being true is below our confidence tolerance...
-                            #... stop requestiong batches. Also have a max time-check.
+                        # If probability (loosely speaking) of null hypothesis
+                        # being true is below our confidence tolerance...
+                        if tmet < self.stopConf or (timeNow-start)>=self.stopTime:
+                            # ... stop requestiong batches. Also have a max time-check.
                             stop=1
                             g.ser.write_b(str(int(stop))+"\n")
                         else:
                             stop=0
                             g.ser.write_b(str(int(stop))+"\n")
 
-                    else: #If the batch is not large enough just end it there.
+                    # If the batch is not large enough just end it there.
+                    else:
                         stop=1
                         g.ser.write_b(str(int(stop))+"\n")
-                        print('WARNING: Batch not long enough to support this oepration. Minimum batch length required is '+str(2*self.ttestsamp)+'.')
+                        print('WARNING: Batch not long enough to support this '+
+                              'operation. Minimum batch length required is ' +
+                              str(2*self.ttestsamp) + '.')
 
-                #DEFAULT case - something went wrong so just stop the text after 1 batch.
+                # DEFAULT case - something went wrong so just stop the text
+                # after 1 batch.
                 else:
                     stop=1
                     g.ser.write_b(str(int(stop))+"\n")
 
-            Mnow = f.getFloats(1)   # get first read value
+            Mnow = f.getFloats(1)
             self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_e')
 
             self.updateTree.emit(w,b)
@@ -141,18 +159,18 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(False)
         self.changeArcStatus.emit('Ready')
         self.displayData.emit()
-        
+
         self.finished.emit()
 
 
 class VolatilityRead(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super(VolatilityRead, self).__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -206,9 +224,7 @@ class VolatilityRead(QtWidgets.QWidget):
         gridLayout.setColumnStretch(6,1)
         if self.short==False:
             gridLayout.setColumnStretch(7,2)
-        #gridLayout.setSpacing(2)
 
-        #setup a line separator
         lineLeft=QtWidgets.QFrame()
         lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
         lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -220,11 +236,6 @@ class VolatilityRead(QtWidgets.QWidget):
 
         gridLayout.addWidget(lineLeft, 0, 2, 5, 1)
         gridLayout.addWidget(lineRight, 0, 6, 5, 1)
-        #gridLayout.addWidget(line,1,2)
-        #gridLayout.addWidget(line,2,2)
-        #gridLayout.addWidget(line,3,2)
-        #gridLayout.addWidget(line,4,2)
-
 
         for i in range(len(leftLabels)):
             lineLabel=QtWidgets.QLabel()
@@ -250,15 +261,11 @@ class VolatilityRead(QtWidgets.QWidget):
             self.rightEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i,5)
 
-        #Position the combo boxes and respective labels
-
         lineLabel=QtWidgets.QLabel()
         lineLabel.setText('Stop Option:')
         gridLayout.addWidget(lineLabel,3,4)
 
         gridLayout.addWidget(self.combo_stopOptions,3,5)
-
-        # ==============================================
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -307,7 +314,7 @@ class VolatilityRead(QtWidgets.QWidget):
 
     def extractPanelParameters(self):
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
+
         layoutWidgets=[]
 
         for i,item in layoutItems:
@@ -318,7 +325,6 @@ class VolatilityRead(QtWidgets.QWidget):
             if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
 
-        #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
@@ -345,12 +351,8 @@ class VolatilityRead(QtWidgets.QWidget):
             self.rightEdits[2].setStyleSheet("border: 1px solid grey;")
 
     def eventFilter(self, object, event):
-        #print(object)
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #if event.type()==QtCore.QEvent.Paint:
-        #    self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
-        #print(self.vW.size().width())
         return False
 
     def resizeWidget(self,event):
@@ -367,14 +369,14 @@ class VolatilityRead(QtWidgets.QWidget):
             B=int(self.leftEdits[2].text())
             stopTime=int(self.rightEdits[0].text())
             stopConf=float(self.rightEdits[1].text())
-            stopTol = float(self.rightEdits[2].text())/100 #Convert % into normal.
+            stopTol = float(self.rightEdits[2].text())/100
 
             A=float(self.leftEdits[0].text())
             pw=float(self.leftEdits[1].text())/1000000
 
             job="33"
-            g.ser.write_b(job+"\n")   # sends the job
-            
+            g.ser.write_b(job+"\n")
+
             self.sendParams()
 
             self.thread=QtCore.QThread()
@@ -390,7 +392,6 @@ class VolatilityRead(QtWidgets.QWidget):
         else:
             self.hboxProg.setEnabled(True)
 
-
     def programRange(self):
         if g.ser.port != None:
             B=int(self.leftEdits[2].text())
@@ -404,7 +405,7 @@ class VolatilityRead(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(True)
 
             job="33"
-            g.ser.write_b(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")
 
             self.sendParams()
 
@@ -419,7 +420,7 @@ class VolatilityRead(QtWidgets.QWidget):
             B=int(self.leftEdits[2].text())
             stopTime=int(self.rightEdits[0].text())
             stopConf=float(self.rightEdits[1].text())
-            stopTol = float(self.rightEdits[2].text())/100 #Convert % into normal.
+            stopTol = float(self.rightEdits[2].text())/100
 
             A=float(self.leftEdits[0].text())
             pw=float(self.leftEdits[1].text())/1000000
@@ -427,7 +428,7 @@ class VolatilityRead(QtWidgets.QWidget):
             rangeDev=self.makeDeviceList(False)
 
             job="33"
-            g.ser.write_b(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")
 
             self.sendParams()
 
@@ -448,12 +449,11 @@ class VolatilityRead(QtWidgets.QWidget):
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.getData.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)        
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def makeDeviceList(self,isRange):
-        #if g.checkSA=False:
-        rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0
+
+        rangeDev=[]
         if isRange==False:
             minW=1
             maxW=g.wline_nr
@@ -463,15 +463,13 @@ class VolatilityRead(QtWidgets.QWidget):
             minW=g.minW
             maxW=g.maxW
             minB=g.minB
-            maxB=g.maxB            
-
+            maxB=g.maxB
 
         # Find how many SA devices are contained in the range
         if g.checkSA==False:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):
                     rangeDev.append([w,b])
-            #rangeMax=(wMax-wMin+1)*(bMax-bMin+1)
         else:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):

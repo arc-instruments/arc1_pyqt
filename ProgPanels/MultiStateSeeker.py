@@ -91,8 +91,10 @@ class ThreadWrapper(QtCore.QObject):
                 status = int(g.ser.readline().rstrip())
                 self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_e")
                 self.displayData.emit()
-                if status == 0: # all OK, read the results, if any
-                    ints = int(g.ser.readline().rstrip()) # expecting 1 int
+
+                # all OK, read the results, if any
+                if status == 0:
+                    ints = int(g.ser.readline().rstrip())   # expecting 1 int
                     floats = int(g.ser.readline().rstrip()) # expecting 0 floats
                     sign = int(g.ser.readline().rstrip())
                     return sign
@@ -153,7 +155,8 @@ class ThreadWrapper(QtCore.QObject):
             currentR = float(f.getFloats(1)[0])
             numPoints = len(window)
 
-            if numPoints < 50: # accumulate at least 50 points before starting to count
+            # accumulate at least 50 points before starting to count
+            if numPoints < 50:
                 t0 = time.time()
 
             if (time.time() - t0 > self.params["stability_tmax"]):
@@ -282,7 +285,9 @@ class ThreadWrapper(QtCore.QObject):
                 status = int(g.ser.readline().rstrip())
                 self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_e")
                 self.displayData.emit()
-                if status == 0: # all OK, read the results, if any
+
+                # all OK, read the results, if any
+                if status == 0:
                     g.ser.readline().rstrip() # expecting 0 int (discard them)
                     g.ser.readline().rstrip() # expecting 0 floats (discard them)
                     # nothing is returned
@@ -290,9 +295,6 @@ class ThreadWrapper(QtCore.QObject):
                     print("Phase 3 failed with exit code: %d", status)
                 return states
             elif(newValues[0] < 0): # we have a state
-                # state = float(g.ser.readline().rstrip())
-                # lbound = float(g.ser.readline().rstrip())
-                # ubound = float(g.ser.readline().rstrip())
                 [state, lbound, ubound] = list(f.getFloats(3))
                 self.sendData.emit(w, b, values[0], values[1], 0, tag_ + "_STATE_%g_%g_%g"%(state, lbound, ubound))
                 self.displayData.emit()

@@ -39,7 +39,7 @@ class getData(QtCore.QObject):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n") #Tell mBED how many devices to be operated on.
+        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
@@ -53,9 +53,6 @@ class getData(QtCore.QObject):
             endCommand=0
 
             valuesNew=f.getFloats(3)
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
 
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
@@ -66,9 +63,6 @@ class getData(QtCore.QObject):
                 valuesOld=valuesNew
 
                 valuesNew=f.getFloats(3)
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -86,13 +80,13 @@ class getData(QtCore.QObject):
 
 
 class Endurance(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super(Endurance, self).__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
@@ -142,29 +136,13 @@ class Endurance(QtWidgets.QWidget):
         gridLayout.setColumnStretch(6,1)
         if self.short==False:
             gridLayout.setColumnStretch(7,2)
-        #gridLayout.setSpacing(2)
 
-        #setup a line separator
         lineLeft=QtWidgets.QFrame()
         lineLeft.setFrameShape(QtWidgets.QFrame.VLine)
         lineLeft.setFrameShadow(QtWidgets.QFrame.Raised)
         lineLeft.setLineWidth(1)
-        #lineRight=QtWidgets.QFrame()
-        #lineRight.setFrameShape(QtWidgets.QFrame.VLine)
-        #lineRight.setFrameShadow(QtWidgets.QFrame.Raised)
-        #lineRight.setLineWidth(1)
 
         gridLayout.addWidget(lineLeft, 0, 2, 6, 1)
-        #gridLayout.addWidget(lineRight, 0, 6, 5, 1)
-
-        #label1=QtWidgets.QLabel('Pulse Amplitude (V)')
-        #label1.setFixedWidth(150)
-        #label2=QtWidgets.QLabel('Pulse width (us)')
-        #label2.setFixedWidth(150)
-        #label3=QtWidgets.QLabel('Cycles')
-        #label3.setFixedWidth(150)
-        #label4=QtWidgets.QLabel('Interpulse (ms)')
-        #label4.setFixedWidth(150)
 
         for i in range(len(leftLabels)):
             lineLabel=QtWidgets.QLabel()
@@ -194,9 +172,6 @@ class Endurance(QtWidgets.QWidget):
         self.rightEdits[2].editingFinished.connect(self.imposeLimitsOnCS_n)
         self.leftEdits[1].editingFinished.connect(self.imposeLimitsOnPW_p)
         self.rightEdits[1].editingFinished.connect(self.imposeLimitsOnPW_n)
-
-        # verticalLine.setFrameStyle(QFrame.VLine)
-        # verticalLine.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Expanding)
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -241,16 +216,21 @@ class Endurance(QtWidgets.QWidget):
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
 
-    def imposeLimitsOnPW_p(self):   # if pw is set to below 30us and current cut-off is activated, increase pulse width to 30us
+    # if pw is set to below 30us and current cut-off is activated, increase
+    # pulse width to 30us
+    def imposeLimitsOnPW_p(self):
         if float(self.leftEdits[2].text())!=0 and float(self.leftEdits[1].text())<30:
             self.leftEdits[1].setText("30")
 
-    def imposeLimitsOnPW_n(self): # if pw is set to below 30us and current cut-off is activated, increase pulse width to 30us
+    # if pw is set to below 30us and current cut-off is activated, increase
+    # pulse width to 30us
+    def imposeLimitsOnPW_n(self):
         if float(self.rightEdits[2].text())!=0 and float(self.rightEdits[1].text())<30:
             self.rightEdits[1].setText("30")
 
-
-    def imposeLimitsOnCS_p(self):   # if current cut-off is set, make sure values are between 10 and 1000 uA. Also, increase pw to a minimum of 30 us.
+    # if current cut-off is set, make sure values are between 10 and 1000 uA.
+    # Also, increase pw to a minimum of 30 us.
+    def imposeLimitsOnCS_p(self):
         currentText=float(self.leftEdits[2].text())
         if currentText!=0:
             if currentText<10:
@@ -260,8 +240,9 @@ class Endurance(QtWidgets.QWidget):
             if float(self.leftEdits[1].text())<30:
                 self.leftEdits[1].setText("30")
 
-
-    def imposeLimitsOnCS_n(self,): # if current cut-off is set, make sure values are between 10 and 1000 uA. Also, increase pw to a minimum of 30 us.
+    # if current cut-off is set, make sure values are between 10 and 1000 uA.
+    # Also, increase pw to a minimum of 30 us.
+    def imposeLimitsOnCS_n(self,):
         currentText=float(self.rightEdits[2].text())
         if currentText!=0:
             if currentText<10:
@@ -273,8 +254,8 @@ class Endurance(QtWidgets.QWidget):
 
 
     def extractPanelParameters(self):
+
         layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
         layoutWidgets=[]
 
         for i,item in layoutItems:
@@ -302,26 +283,33 @@ class Endurance(QtWidgets.QWidget):
         return False
 
     def sendParams(self):
-        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")              # send positive amplitude
-        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")      # send positive pw
-        g.ser.write_b(str(float(self.leftEdits[2].text())/1000000)+"\n")      # send positive cut-off (A)
-        #time.sleep(0.001)
-        g.ser.write_b(str(float(self.rightEdits[0].text())*-1)+"\n")          # send negative amplitude
-        g.ser.write_b(str(float(self.rightEdits[1].text())/1000000)+"\n")     # send negative pw
-        g.ser.write_b(str(float(self.rightEdits[2].text())/1000000)+"\n")     # send negative cut-off (A)
-        #time.sleep(0.001)
-        g.ser.write_b(str(float(self.leftEdits[5].text()))+"\n")              # send interpulse (ms)
+        # positive amplitude
+        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        # positive pw
+        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        # positive cut-off
+        g.ser.write_b(str(float(self.leftEdits[2].text())/1000000)+"\n")
+        # negative amplitude
+        g.ser.write_b(str(float(self.rightEdits[0].text())*-1)+"\n")
+        # negative pw
+        g.ser.write_b(str(float(self.rightEdits[1].text())/1000000)+"\n")
+        # negative cut-off
+        g.ser.write_b(str(float(self.rightEdits[2].text())/1000000)+"\n")
+        # interpulse
+        g.ser.write_b(str(float(self.leftEdits[5].text()))+"\n")
 
-        g.ser.write_b(str(int(self.leftEdits[3].text()))+"\n")              # send positive nr of pulses
-        g.ser.write_b(str(int(self.rightEdits[3].text()))+"\n")             # send negative nr of pulses
-        g.ser.write_b(str(int(self.leftEdits[4].text()))+"\n")              # send cycles
-        #time.sleep(0.001)
-
+        # positive number of pulses
+        g.ser.write_b(str(int(self.leftEdits[3].text()))+"\n")
+        # negative number of pulses
+        g.ser.write_b(str(int(self.rightEdits[3].text()))+"\n")
+        # cycles
+        g.ser.write_b(str(int(self.leftEdits[4].text()))+"\n")
 
     def programOne(self):
         if g.ser.port != None:
+
             job="191"
-            g.ser.write_b(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")
 
             self.sendParams()
 
@@ -340,11 +328,11 @@ class Endurance(QtWidgets.QWidget):
 
     def programRange(self):
         if g.ser.port != None:
+
             rangeDev=self.makeDeviceList(True)
 
-
             job="191"
-            g.ser.write_b(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")
 
             self.sendParams()
 
@@ -353,14 +341,15 @@ class Endurance(QtWidgets.QWidget):
             self.finalise_thread_initialisation()
 
             self.thread.start()
-        
 
     def programAll(self):
+
         if g.ser.port != None:
+
             rangeDev=self.makeDeviceList(False)
 
             job="191"
-            g.ser.write_b(job+"\n")   # sends the job
+            g.ser.write_b(job+"\n")
 
             self.sendParams()
 
@@ -380,13 +369,13 @@ class Endurance(QtWidgets.QWidget):
         self.getData.highlight.connect(f.cbAntenna.cast)
         self.getData.displayData.connect(f.displayUpdate.cast)
         self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)     
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)   
+        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def makeDeviceList(self,isRange):
-        #if g.checkSA=False:
-        rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0
+
+        rangeDev=[]
+
         if isRange==False:
             minW=1
             maxW=g.wline_nr
@@ -396,7 +385,7 @@ class Endurance(QtWidgets.QWidget):
             minW=g.minW
             maxW=g.maxW
             minB=g.minB
-            maxB=g.maxB            
+            maxB=g.maxB
 
 
         # Find how many SA devices are contained in the range
@@ -404,7 +393,6 @@ class Endurance(QtWidgets.QWidget):
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):
                     rangeDev.append([w,b])
-            #rangeMax=(wMax-wMin+1)*(bMax-bMin+1)
         else:
             for w in range(minW,maxW+1):
                 for b in range(minB,maxB+1):
