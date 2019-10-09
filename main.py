@@ -23,6 +23,7 @@ import requests
 import subprocess
 import gzip
 import types
+import warnings
 from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
 from virtualArC import virtualarc
@@ -31,6 +32,15 @@ import ProgPanels
 import ctypes
 import semver
 myappid = 'ArC ONE Control' # arbitrary string
+
+
+# Filter pyqtgraph range warnings
+warnings.filterwarnings('ignore', r'All-NaN (slice|axis) encountered',
+        module='pyqtgraph')
+warnings.filterwarnings('ignore',
+        r'invalid value encountered in (greater|less)',
+        module='pyqtgraph')
+
 
 # Platform dependent configuration
 if sys.platform == "win32":
