@@ -12,6 +12,10 @@ import sys
 import os
 import time
 
+import pyqtgraph as pg
+import numpy as np
+
+import Graphics
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -404,8 +408,127 @@ class SwitchSeeker(QtWidgets.QWidget):
                             rangeDev.append(cell)
 
         return rangeDev
-        
+
     def getJobCode(self):
         job=self.modeSelectionCombo.itemData(self.modeSelectionCombo.currentIndex())
         return job
 
+    @staticmethod
+    def display(w, b, raw, parent=None):
+
+        # Initialisations
+        pulseNr = 0
+        deltaR = []
+        initR = []
+        ampl = []
+        Rs = []
+
+        # Holds under and overshoot voltages
+        over = []
+        under = []
+        offshoots = [] # holds both in order
+
+        # holds maximum normalised resistance offset during a train of reads
+        max_dR = 0
+
+        # Find the pulse amplitudes and the resistance (averaged over the read
+        # sequence) after each pulse train
+        index = 0
+
+        while index < len(raw):
+
+            # if this is the first read pulse of a read sequence:
+            if index < len(raw) and raw[index][2] == 0:
+
+                # record the start index
+                start_index = index
+                # initialise average resistance during a read run accumulator
+                readAvgRun = 0
+                # counts nr of reads
+                idx = 0
+
+                # If the line contains 0 amplitude and 0 width, then we're
+                # entering a read run
+                while index < len(raw) and raw[index][2] == 0:
+
+                    # increment the counter
+                    idx += 1
+                    # add to accumulator
+                    readAvgRun += raw[index][0]
+                    # increment the global index as we're advancing through the
+                    # pulse run
+                    index += 1
+                    # if the index exceeded the lenght of the run, exit
+                    if index > len(raw) - 1:
+                        break
+
+                # When we exit the while loop we are at the end of the reading
+                # run
+                readAvgRun = readAvgRun/idx
+
+                # append with this resistance
+                Rs.append(readAvgRun)
+
+                # find the maximum deviation from the average read during a
+                # read sequence (helps future plotting of the confidence bar)
+                for i in range(idx):
+
+                    # maybe not the best way to do this but still
+                    if abs(raw[start_index+i][0] - readAvgRun)/readAvgRun > max_dR:
+                        max_dR = abs(raw[start_index+i][0] - readAvgRun)/readAvgRun
+
+            # if both amplitude and pw are non-zero, we are in a pulsing run
+            # if this is the first  pulse of a write sequence:
+            if index<len(raw) and raw[index][1] != 0 and raw[index][2] != 0:
+                while index<len(raw) and raw[index][1] != 0 and raw[index][2] != 0:
+
+                    # increment the index
+                    index += 1
+                    # if the index exceeded the length of the run, exit
+                    if index == len(raw) - 1:
+                        break
+
+                # record the pulse voltage at the end
+                ampl.append(raw[index-1][1])
+
+
+        # Record initial resistances and delta R.
+        for i in range(len(ampl)):
+            initR.append(Rs[i])
+            deltaR.append((Rs[i+1] - Rs[i])/Rs[i])
+
+        confX = [0, 0]
+        confY = [-max_dR, max_dR]
+
+        # setup display
+        resultWindow = QtWidgets.QWidget()
+        resultWindow.setGeometry(100, 100, 1000*g.scaling_factor, 500)
+        resultWindow.setWindowTitle("SwitchSeeker: W="+ str(w) + " | B=" + str(b))
+        resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
+        resultWindow.show()
+
+        view = pg.GraphicsLayoutWidget()
+
+        labelStyle = {'color': '#000000', 'font-size': '10pt'}
+
+        japanPlot = view.addPlot()
+        japanCurve = japanPlot.plot(pen=None, symbolPen=None,
+                symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
+        japanPlot.getAxis('left').setLabel('dM/M0', **labelStyle)
+        japanPlot.getAxis('bottom').setLabel('Voltage', units='V', **labelStyle)
+        japanPlot.getAxis('left').setGrid(50)
+        japanPlot.getAxis('bottom').setGrid(50)
+
+        resLayout = QtWidgets.QHBoxLayout()
+        resLayout.addWidget(view)
+        resLayout.setContentsMargins(0, 0, 0, 0)
+
+        resultWindow.setLayout(resLayout)
+
+        japanCurve.setData(np.asarray(ampl), np.asarray(deltaR))
+        resultWindow.update()
+
+        return resultWindow
+
+
+g.DispCallbacks[tag] = SwitchSeeker.display
