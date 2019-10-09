@@ -970,7 +970,7 @@ class UDPmod(QtWidgets.QWidget): #Define new module class inheriting from QtWidg
 
         global ConnMat
 
-        path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open file', "*.txt"))
+        path = QtCore.QFileInfo(QtWidgets.QFileDialog().getOpenFileName(self, 'Open file', "*.txt")[0])
         #path=fname.getOpenFileName()
 
         customArray = []
