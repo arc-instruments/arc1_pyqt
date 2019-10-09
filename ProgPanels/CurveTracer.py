@@ -337,10 +337,9 @@ class CurveTracer(QtWidgets.QWidget):
         self.gridLayout=gridLayout
 
     def goLive(self):
-        moduleName="CT_LIVE"   # format module name from drop down
-        thisPanel = importlib.import_module(moduleName)     # import the module
-        panel_class = getattr(thisPanel, moduleName)        # get it's main class    
-        self.widg=panel_class(short=True)              
+        thisPanel = importlib.import_module(".".join([ProgPanels.__name__, "CT_LIVE"]))
+        panel_class = getattr(thisPanel, "CT_LIVE")
+        self.widg=panel_class(short=True)
 
     def imposeLimitsOnStepWidth(self):
         currentText=float(self.leftEdits[4].text())
