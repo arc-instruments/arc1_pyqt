@@ -139,6 +139,7 @@ class draggableButton(QtWidgets.QPushButton):
         self.what = moduleName
         self.name = self.what.split(".")[-1]
         super(draggableButton,self).__init__(self.name)
+        self.setStyleSheet("font-size: 7pt; min-height: 15px;")
         if moduleName=='Loop':
             self.setText("Start Loop")
         if moduleName=='End':
@@ -477,7 +478,7 @@ class SuperMode(QtWidgets.QWidget):
         hbox=QtWidgets.QHBoxLayout()
         vboxLeft=QtWidgets.QVBoxLayout()
         vboxLeft.setContentsMargins(0,0,0,0)
-        vboxLeft.setSpacing(2)
+        vboxLeft.setSpacing(0)
 
         self.vboxMid=QtWidgets.QVBoxLayout()
         
