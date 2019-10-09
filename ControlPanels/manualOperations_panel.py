@@ -9,6 +9,7 @@
 
 import sys
 import os
+import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 import Globals.GlobalFunctions as f
@@ -361,38 +362,33 @@ class manualOperations_panel(QtWidgets.QWidget):
         except IndexError: # nothing selected
             return
 
-        customArray=[]
-        name=path.fileName()
+        customArray = []
 
-        file=QtCore.QFile(path.filePath())
-        file.open(QtCore.QIODevice.ReadOnly)
+        try:
+            arraydata = np.loadtxt(path, dtype=int, delimiter=',', comments='#')
 
-        textStream=QtCore.QTextStream(file)
-        error=0
-        while not textStream.atEnd():
-            line = textStream.readLine()
-            try:
-                w,b=line.split(", ")
-                customArray.append([int(w),int(b)])
-                if (int(w)<1 or int(w)>g.wline_nr or int(b)<1 or int(b)>g.bline_nr):
-                    error=1
-            except ValueError:
-                error=1
-        file.close()
+            for row in arraydata:
+                (w, b) = row
+                customArray.append([w, b])
 
-        # check if positions read are correct
-        if (error==1):
+                # check if w and b are within bounds
+                if (int(w) < 1 or int(w) > g.wline_nr or
+                        int(b) < 1 or
+                        int(b) > g.bline_nr):
+                    raise ValueError("Device coordinates out of bounds")
+
+        except ValueError as exc:
             errMessage = QtWidgets.QMessageBox()
-            errMessage.setText("Custom array text file formatted incorrectly, or selected devices outside of array range!")
+            errMessage.setText("Custom array text file formatted " +
+                    "incorrectly, or selected devices outside of array range!")
             errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
             return False
-        else:
-            self.customArrayFileName.setText(name)
-            g.customArray=customArray
-            return True
 
+        self.customArrayFileName.setText(path.baseName())
+        g.customArray=customArray
+        return True
 
     def setM(self,w,b):
         try:

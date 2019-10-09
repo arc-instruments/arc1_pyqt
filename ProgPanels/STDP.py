@@ -10,6 +10,7 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
+import numpy as np
 import pyqtgraph as pg
 import time
 
@@ -405,33 +406,22 @@ class STDP(QtWidgets.QWidget):
             self.push_load_post.setEnabled(True)
 
     def load_post(self):
-        pass
-        print("Loading spike...")
 
         openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
                 'Open spike file', "*.txt")[0]
         path = QtCore.QFileInfo(openFileName)
 
-        voltage=[]
-        time=[]
-        name=path.fileName()
+        voltage = []
+        time = []
 
-        file=QtCore.QFile(path.filePath())
-        file.open(QtCore.QIODevice.ReadOnly)
+        try:
+            arraydata = np.loadtxt(path, dtype=float, delimiter=',', comments='#')
 
-        textStream=QtCore.QTextStream(file)
-        error=False
-        while not textStream.atEnd():
-            line = textStream.readLine()
-            try:
-                v,t=line.split(", ")
-                voltage.append(float(v))
-                time.append(float(t))
-            except ValueError:
-                error=True
-        file.close()
+            for row in arraydata:
+                (v, t) = row
+                voltage.append(v)
+                time.append(t)
 
-        if not error:
             self.post_voltage=voltage
             self.post_time=time
             if self.pre_voltage and self.pre_time:
@@ -439,72 +429,59 @@ class STDP(QtWidgets.QWidget):
                 self.slider.setValue(50)
                 self.fix_spike_timescales()
                 self.updateSpikes(50.0)
-            else:
-                pass
-            self.post_filename.setText(path.fileName())
 
-        else:
+            self.post_filename.setText(path.baseName())
+
+        except BaseException as exc:
+            print(exc)
             errMessage = QtWidgets.QMessageBox()
-            errMessage.setText("Invalid spike file! Possible problem with voltage-time series syntax.")
+            errMessage.setText("Invalid spike file! " +
+                    "Possible problem with voltage-time series syntax.")
             errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
 
-        print("done")
-
     def load_pre(self):
-        pass
-        print("Loading spike...")
 
         openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
                 'Open spike file', "*.txt")[0]
         path = QtCore.QFileInfo(openFileName)
 
-        voltage=[]
-        time=[]
-        name=path.fileName()
+        voltage = []
+        time = []
 
-        file=QtCore.QFile(path.filePath())
-        file.open(QtCore.QIODevice.ReadOnly)
+        try:
+            arraydata = np.loadtxt(path, dtype=float, delimiter=',', comments='#')
 
-        textStream=QtCore.QTextStream(file)
-        error=False
-        while not textStream.atEnd():
-            line = textStream.readLine()
-            try:
-                v,t=line.split(", ")
-                voltage.append(float(v))
-                time.append(float(t))
-            except ValueError:
-                error=True
-        file.close()
+            for row in arraydata:
+                (v, t) = row
+                voltage.append(v)
+                time.append(t)
 
-        if not error:
-            self.pre_voltage=voltage
-            self.pre_time=time
+            self.pre_voltage = voltage
+            self.pre_time = time
             if self.check_identical.isChecked():
-                self.post_voltage=voltage
-                self.post_time=time
-                self.max_spike_time=max([self.pre_time[-1],self.post_time[-1]])
+                self.post_voltage = voltage
+                self.post_time = time
+                self.max_spike_time = max([self.pre_time[-1],self.post_time[-1]])
                 self.slider.setValue(50)
                 self.fix_spike_timescales()
                 self.updateSpikes(50.0)
             elif self.post_voltage and self.post_time:
-                self.max_spike_time=max([self.pre_time[-1],self.post_time[-1]])
+                self.max_spike_time = max([self.pre_time[-1], self.post_time[-1]])
                 self.fix_spike_timescales()
                 self.slider.setValue(50)
                 self.updateSpikes(50.0)
 
-            self.pre_filename.setText(path.fileName())
+            self.pre_filename.setText(path.baseName())
 
-        else:
+        except BaseException as exc:
             errMessage = QtWidgets.QMessageBox()
-            errMessage.setText("Invalid spike file! Possible problem with voltage-time series syntax.")
+            errMessage.setText("Invalid spike file! " +
+                    "Possible problem with voltage-time series syntax.")
             errMessage.setIcon(QtWidgets.QMessageBox.Critical)
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
-
-        print("done")
 
     def scale_voltage(self, value):
         self.gain=float(value)
