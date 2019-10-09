@@ -621,35 +621,32 @@ class SuperMode(QtWidgets.QWidget):
         self.show()
 
     def savePickle(self):
-        layoutItems=self.dropWidget.vbox
+        layoutItems = self.dropWidget.vbox
         items = [layoutItems.itemAt(i).widget().btn.module for i in range(layoutItems.count())]
-        result=self.checkLoopOrder(items)
+        result = self.checkLoopOrder(items)
         if result:
             if g.workingDirectory:
-                path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', g.workingDirectory, 'PKL(*.pkl)'))
-                path=path_.filePath()
-                saveFileName=path_.fileName()
-                #g.workingDirectory=path_.filePath()
+                curDir = g.workingDirectory
             else:
-                path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '', 'PKL(*.pkl)'))
-                path=path_.filePath()
-                saveFileName=path_.fileName()
-                #g.workingDirectory=path_.filePath()     
+                curDir = ''
 
-            if not path.isEmpty():
+            saveFileName = QtWidgets.QFileDialog.getSaveFileName(self,
+                    'Save File', curDir, 'PKL(*.pkl)')[0]
+            path_ = QtCore.QFileInfo(saveFileName)
+            path = path_
+
+            if path:
 
                 chainList=[]
                 for module in items:
-                    chainList.append([module.__class__.__name__, module.extractPanelParameters()])
+                    chainList.append([module.__class__.__module__, module.extractPanelParameters()])
 
-                with open(unicode(path), 'wb') as output:
+                with open(path, 'wb') as output:
                     pickle.dump(chainList, output, pickle.HIGHEST_PROTOCOL)
-              
-            self.loaded_label.setText(saveFileName)
+
+            self.loaded_label.setText(os.path.basename(saveFileName))
         else:
-            pass
             self.throw_wrong_loops_dialogue()
-            #print "Problems with loops dude. wtf."
 
     def loadPickle(self):
         global globalID
@@ -676,7 +673,8 @@ class SuperMode(QtWidgets.QWidget):
             try:
                 path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
                         getOpenFileName(self, 'Load file', "*.pkl")[0])
-            except IndexError: # nothing selected
+            except IndexError:
+                # nothing selected
                 return
 
             name=path.fileName()
@@ -689,41 +687,31 @@ class SuperMode(QtWidgets.QWidget):
             globalID=0
 
             for moduleName, layoutWidgets in chainList:
-                thisPanel = importlib.import_module(moduleName)     # import the module
-                panel_class = getattr(thisPanel, moduleName)        # get it's main class 
-                moduleHandle = panel_class(short=True) 
-                moduleHandle.setPanelParameters(layoutWidgets)    
-                #print moduleName
+                # import the module
+                thisPanel = importlib.import_module(moduleName)
+                # get its main class
+                baseModuleName = moduleName.split(".")[-1]
+                panel_class = getattr(thisPanel, baseModuleName)
+                moduleHandle = panel_class(short=True)
+                moduleHandle.setPanelParameters(layoutWidgets)
 
-                if moduleName not in ['Loop','End']:
-                    newBtn=draggableButtonPlaced(moduleName, moduleHandle)
-                    newBtn.ID=str(globalID)
-                    module_id_dict[newBtn.ID]=moduleHandle
-                    newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
-                elif moduleName=='Loop':
-                    newBtn=draggableLoopPlaced(moduleName, moduleHandle)
-                    newBtn.ID=str(globalID)
-                    module_id_dict[newBtn.ID]=moduleHandle
+                if baseModuleName == 'Loop':
+                    newBtn = draggableLoopPlaced(baseModuleName, moduleHandle)
                     newBtn.setText("Start Loop")
-                    newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
-                elif moduleName=='End':
-                    newBtn=draggableLoopPlacedEnd(moduleName, moduleHandle)
-                    newBtn.ID=str(globalID)
-                    module_id_dict[newBtn.ID]=moduleHandle
+                elif baseModuleName == 'End':
+                    newBtn = draggableLoopPlacedEnd(baseModuleName, moduleHandle)
                     newBtn.setText("End Loop")
-                    newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
+                else:
+                    newBtn = draggableButtonPlaced(baseModuleName, moduleHandle)
 
+                newBtn.ID = str(globalID)
+                module_id_dict[newBtn.ID] = moduleHandle
 
-                #newBtn=draggableButtonPlaced(moduleName, moduleHandle)
-                #newBtn.ID=str(globalID)
-                #module_id_dict[newBtn.ID]=moduleHandle
-                #newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
+                newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
 
                 newCenterWidget=centerWidget(newBtn)
                 newBtn.deleteContainer.connect(newCenterWidget.deleteContainer)
                 newBtn.decrementCount.connect(self.dropWidget.decrement_and_resize)
-
-                
 
                 self.dropWidget.vbox.addWidget(newCenterWidget)
                 globalID+=1
