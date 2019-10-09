@@ -1,3 +1,4 @@
+# Sample spike file for STDP
 0.0, 0.0
 0.0001, 0.0001
 0.0016, 0.0002
