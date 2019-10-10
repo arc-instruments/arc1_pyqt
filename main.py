@@ -31,6 +31,14 @@ import Graphics
 import ProgPanels
 import ctypes
 import semver
+
+from ControlWidgets import CrossbarWidget
+from ControlWidgets import DataDisplayWidget
+from ControlWidgets import HistoryWidget
+from ControlWidgets import ManualOpsWidget
+from ControlWidgets import ProgPanelWidget
+
+
 myappid = 'ArC ONE Control' # arbitrary string
 
 
@@ -59,8 +67,6 @@ import Globals.GlobalVars as g
 import Globals.GlobalFunctions as f
 import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
-
-import ControlPanels
 
 
 # Version comparison
@@ -252,20 +258,14 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         splashScreen.showMessage("Loading Modules...", alignment=QtCore.Qt.AlignBottom, color=QtCore.Qt.white)
 
-        from ControlPanels import crossbar_panel
-        from ControlPanels import dataDisplay_panel
-        from ControlPanels import history_panel
-        from ControlPanels import manualOperations_panel
-        from ControlPanels import prog_panel
-
         ##########################
         # Import control panels as separate widgets
-        hp = history_panel.history_panel()
-        self.mo = manualOperations_panel.manualOperations_panel()
-        self.pp = prog_panel.prog_panel()
-        dd = dataDisplay_panel.dataDisplay_panel()
+        hp = HistoryWidget()
+        self.mo = ManualOpsWidget()
+        self.pp = ProgPanelWidget()
+        dd = DataDisplayWidget()
 
-        self.cp = crossbar_panel.crossbar_panel()
+        self.cp = CrossbarWidget()
 
         # Divide the working space and populate
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal) # toplevel divider
@@ -393,8 +393,8 @@ class Arcontrol(QtWidgets.QMainWindow):
             QtCore.QCoreApplication.instance().quit()
 
     def showConfig(self):
-        from ControlPanels import configHardware
-        self.cfgHW=configHardware.configHardware()
+        from ControlWidgets import ConfigHardwareWidget
+        self.cfgHW = ConfigHardwareWidget()
         self.cfgHW.setFixedWidth(500)
         self.cfgHW.setFixedHeight(150)
 
@@ -417,8 +417,8 @@ class Arcontrol(QtWidgets.QMainWindow):
             g.ser.write_b(str(int(g.sneakPathOption))+"\n")
 
     def showAbout(self):
-        from ControlPanels import aboutSection
-        self.aboutSesh=aboutSection.aboutSection()
+        from ControlWidgets import AboutWidget
+        self.aboutSesh = AboutWidget()
         self.aboutSesh.setFixedWidth(600)
         self.aboutSesh.setFixedHeight(300)
 
@@ -469,8 +469,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def redrawCrossbar(self):
         self.cp.deleteLater()
-        from ControlPanels import crossbar_panel
-        self.cp=crossbar_panel.crossbar_panel()
+        self.cp = CrossbarWidget()
 
         self.layoutBot.addWidget(self.cp)
 
@@ -539,23 +538,22 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def newSessionStart(self):
         self.deleteAllData()
-        from ControlPanels import new_Session
-        self.newSesh=new_Session.new_Session()
-        self.newSesh.setFixedWidth(500)
-        self.newSesh.setMaximumHeight(850*g.scaling_factor)
+        from ControlWidgets import NewSessionDialog
+        newSession = NewSessionDialog()
+        newSession.setFixedWidth(500)
+        newSession.setMaximumHeight(850*g.scaling_factor)
 
-
-        frameGm = self.newSesh.frameGeometry()
+        frameGm = newSession.frameGeometry()
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
-        self.newSesh.move(frameGm.topLeft())
+        newSession.move(frameGm.topLeft())
 
-        self.newSesh.setWindowTitle("New Session")
-        self.newSesh.setWindowIcon(Graphics.getIcon('appicon'))
+        newSession.setWindowTitle("New Session")
+        newSession.setWindowIcon(Graphics.getIcon('appicon'))
         g.ser.close()
         g.ser.port=None
 
-        self.newSesh.show()
+        newSession.exec_()
 
     def reformatInterface(self):
         f.interfaceAntenna.disable.emit(False)

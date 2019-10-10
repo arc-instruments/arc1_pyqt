@@ -9,8 +9,8 @@
 
 import sys
 import os
-from PyQt5 import QtGui, QtCore, QtWidgets
 from functools import partial
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 import pyqtgraph as pg
 import numpy as np
@@ -23,10 +23,10 @@ import Globals.GlobalVars as g
 import Graphics
 
 
-class history_panel(QtWidgets.QWidget):
+class HistoryWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(history_panel, self).__init__()
+        super(HistoryWidget, self).__init__()
         self.initUI()
 
     def initUI(self):

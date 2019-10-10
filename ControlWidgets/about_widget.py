@@ -19,18 +19,18 @@ import Globals.GlobalFunctions as f
 import Graphics
 
 
-class aboutSection(QtWidgets.QWidget):
-    
+class AboutWidget(QtWidgets.QWidget):
+
     def __init__(self):
-        super(aboutSection, self).__init__()
-        
+        super(AboutWidget, self).__init__()
+
         self.initUI()
-        
+
     def initUI(self):
 
         p = self.palette()
         p.setColor(self.backgroundRole(), QtCore.Qt.white)
-        self.setPalette(p)      
+        self.setPalette(p)
 
         mainLayout=QtWidgets.QVBoxLayout()
         mainLayout.setSpacing(0)
@@ -49,7 +49,7 @@ class aboutSection(QtWidgets.QWidget):
 
         p = spacerWidget.palette()
         p.setColor(spacerWidget.backgroundRole(), QtCore.Qt.white)
-        spacerWidget.setPalette(p)  
+        spacerWidget.setPalette(p)
 
         botHLay.addWidget(spacerWidget)
         botHLay.setSpacing(0)

@@ -8,7 +8,6 @@
 ####################################
 
 from PyQt5 import QtGui, QtWidgets
-from . import cell as c
 
 import Globals.GlobalVars as g
 import Globals.GlobalFonts as fonts
@@ -16,13 +15,13 @@ import Globals.GlobalStyles as s
 import Globals.GlobalFunctions as f
 
 
-class configHardware(QtWidgets.QWidget):
-    
+class ConfigHardwareWidget(QtWidgets.QWidget):
+
     def __init__(self):
-        super(configHardware, self).__init__()
+        super(ConfigHardwareWidget, self).__init__()
         self.initUI()
 
-    def initUI(self):      
+    def initUI(self):
         mainLayout=QtWidgets.QVBoxLayout()
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)

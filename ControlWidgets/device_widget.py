@@ -8,19 +8,18 @@
 ####################################
 
 import sys
-from PyQt5 import QtGui, QtWidgets
 import numpy as np
-
+from PyQt5 import QtGui, QtWidgets
 
 import Globals
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 
 
-class device(QtWidgets.QWidget):
+class DeviceWidget(QtWidgets.QWidget):
 
-    def __init__(self,r,c):
-        super(device, self).__init__()
+    def __init__(self, r, c):
+        super(DeviceWidget, self).__init__()
         self.r=r
         self.c=c
         self.initUI()

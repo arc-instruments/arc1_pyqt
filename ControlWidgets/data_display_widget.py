@@ -21,10 +21,10 @@ import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
 
-class dataDisplay_panel(QtWidgets.QWidget):
+class DataDisplayWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(dataDisplay_panel, self).__init__()
+        super(DataDisplayWidget, self).__init__()
         self.initUI()
 
     def initUI(self):

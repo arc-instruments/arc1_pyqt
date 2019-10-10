@@ -18,10 +18,10 @@ import Globals.GlobalStyles as s
 import Globals.GlobalVars as g
 
 
-class prog_panel(QtWidgets.QWidget):
+class ProgPanelWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(prog_panel, self).__init__()
+        super(ProgPanelWidget, self).__init__()
         self.initUI()
 
     def initUI(self):
@@ -89,7 +89,4 @@ class prog_panel(QtWidgets.QWidget):
 
     def removePanel(self):
         self.tabFrame.removeTab(self.tabFrame.currentIndex())
-
-    def populatePanels(self):
-        pass
 

@@ -7,19 +7,28 @@
 
 ####################################
 
+import sys
 from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import Qt
 
-class colorBarSlice(QtWidgets.QWidget):
+import Globals.GlobalFunctions as f
+
+
+class HoverWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(colorBarSlice, self).__init__()
+        super(HoverWidget, self).__init__()
         self.initUI()
 
     def initUI(self):
-        # edge of the square
-        self.pen=QtGui.QPen(QtGui.QColor(200,200,200))
-        # fill of the square
-        self.brush=QtGui.QBrush(QtGui.QColor(150,10,100))
+        self.setWindowFlags(Qt.Popup)
+
+        self.pen=QtGui.QPen(QtGui.QColor(0,0,0))
+        self.brush=QtGui.QBrush(QtGui.QColor(0,32,87))
+
+    def reposition(self,x,y):
+        self.move(x,y)
+        self.show()
 
     def paintEvent(self, e):
         qp = QtGui.QPainter()
@@ -31,9 +40,5 @@ class colorBarSlice(QtWidgets.QWidget):
         size=self.size()
         qp.setPen(self.pen)
         qp.setBrush(self.brush)
-        qp.drawRect(0,0,size.width(),size.height())
+        qp.drawRect(0,0,100,50)
 
-    def recolor(self,qColor):
-        self.pen.setColor(qColor)
-        self.brush.setColor(qColor)
-        self.update()

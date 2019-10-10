@@ -18,7 +18,7 @@ import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
 
 
-class readAllWorker(QtCore.QObject):
+class _ReadAllWorker(QtCore.QObject):
     finished=QtCore.pyqtSignal()
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
     sendPosition=QtCore.pyqtSignal(int, int)
@@ -28,7 +28,7 @@ class readAllWorker(QtCore.QObject):
     tag='F R'+str(g.readOption)+' V='+str(Vread)
 
     def __init__(self):
-        super(readAllWorker,self).__init__()
+        super(_ReadAllWorker,self).__init__()
 
     def readAll(self):
         self.w_old=g.w
@@ -72,9 +72,9 @@ class readAllWorker(QtCore.QObject):
         self.finished.emit()
 
 
-class manualOperations_panel(QtWidgets.QWidget):
+class ManualOpsWidget(QtWidgets.QWidget):
     def __init__(self):
-        super(manualOperations_panel, self).__init__()
+        super(ManualOpsWidget, self).__init__()
         self.initUI()
 
     def initUI(self):
@@ -422,7 +422,7 @@ class manualOperations_panel(QtWidgets.QWidget):
     def readAll(self):
         if g.ser.port != None:
             self.thread=QtCore.QThread()
-            self.readAllWorker=readAllWorker()
+            self.readAllWorker = _ReadAllWorker()
             self.readAllWorker.moveToThread(self.thread)
             self.thread.started.connect(self.readAllWorker.readAll)
             self.readAllWorker.sendData.connect(f.updateHistory)

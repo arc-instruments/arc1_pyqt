@@ -7,10 +7,10 @@
 
 ####################################
 
-from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
-from . import cell as c
+from PyQt5 import QtGui, QtCore, QtWidgets
+from . import CellWidget
 
 import Graphics
 
@@ -20,14 +20,14 @@ import Globals.GlobalStyles as s
 import Globals.GlobalFunctions as f
 
 
-class new_Session(QtWidgets.QWidget):
-    
+class NewSessionDialog(QtWidgets.QDialog):
+
     def __init__(self):
-        super(new_Session, self).__init__()
-        
+        super(NewSessionDialog, self).__init__()
+
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
         mainLayout=QtWidgets.QVBoxLayout()  # Set main vertical layout
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
@@ -94,7 +94,7 @@ class new_Session(QtWidgets.QWidget):
         self.wModeCombo=QtWidgets.QComboBox(self)
         self.wModeCombo.addItem("Live: Local")
         self.wModeCombo.addItem("Live: External BNC")
-        self.wModeCombo.addItem("Live: BNC to Local")    
+        self.wModeCombo.addItem("Live: BNC to Local")
         self.wModeCombo.addItem("Offline")
         self.wModeCombo.setFont(fonts.font3)
 
@@ -294,7 +294,7 @@ class new_Session(QtWidgets.QWidget):
 
         for w in range(1,wmax+1):
             for b in range(1,bmax+1):
-                aCell=c.cell()
+                aCell = CellWidget()
                 aCell.setMinimumWidth(15)
                 aCell.setMaximumHeight(20*g.scaling_factor)
                 layout.addWidget(aCell,w,b)

@@ -7,28 +7,27 @@
 
 ####################################
 
-from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
-from . import device as d
-from . import colorBarSlice as cBS
+from PyQt5 import QtGui, QtCore, QtWidgets
+from . import DeviceWidget
+from . import ColorbarWidget
 
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
 import Globals.GlobalFonts as fonts
 import Globals.GlobalStyles as s
 
-from . import cbContainer
-from . import hoverPanel as hP
+from . import CrossbarContainerWidget
 
 
-class crossbar_panel(QtWidgets.QWidget):
-    
+class CrossbarWidget(QtWidgets.QWidget):
+
     def __init__(self):
-        super(crossbar_panel, self).__init__()
-        
+        super(CrossbarWidget, self).__init__()
+
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         f.hoverAntenna.displayHoverPanel.connect(self.displayHover)
         f.hoverAntenna.hideHoverPanel.connect(self.hideHover)
@@ -56,7 +55,7 @@ class crossbar_panel(QtWidgets.QWidget):
         lay2=QtWidgets.QHBoxLayout()
         lay2.setSpacing(0)
 
-        self.cb=cbContainer.cbContainer()
+        self.cb = CrossbarContainerWidget()
 
         lay2.addStretch()
         lay2.addWidget(wordline)
@@ -67,12 +66,12 @@ class crossbar_panel(QtWidgets.QWidget):
         lay1.addLayout(lay2)
         lay1.addLayout(bitH)
         lay1.addStretch()
-        
+
         # Colorbar setup
         colorBarLay=QtWidgets.QHBoxLayout()
         colorBarLeft=QtWidgets.QVBoxLayout()
         for i in range(len(g.qColorList)):
-            aux=cBS.colorBarSlice()
+            aux = ColorbarWidget()
             aux.recolor(g.qColorList[255-i])
             aux.setMinimumWidth(20)
             aux.setMaximumWidth(20)

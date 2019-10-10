@@ -7,10 +7,9 @@
 
 ####################################
 
-from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
-from . import device as d
-
+from PyQt5 import QtGui, QtCore, QtWidgets
+from . import DeviceWidget
 
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -18,14 +17,14 @@ import Globals.GlobalFonts as fonts
 import Globals.GlobalStyles as s
 
 
-class cbContainer(QtWidgets.QWidget):
-    
+class CrossbarContainerWidget(QtWidgets.QWidget):
+
     def __init__(self):
-        super(cbContainer, self).__init__()
-        
+        super(CrossbarContainerWidget, self).__init__()
+
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
         layout=QtWidgets.QGridLayout(self)
         self.setLayout(layout)
         layout.setSpacing(0)
@@ -35,7 +34,7 @@ class cbContainer(QtWidgets.QWidget):
         # Populate the grid with a "device" in each box
         for r in range(1,g.wline_nr+1):
             for c in range(1,g.bline_nr+1):
-                self.cells[r][c]=d.device(r,c)
+                self.cells[r][c] = DeviceWidget(r, c)
                 self.cells[r][c].setMinimumWidth(22)
                 self.cells[r][c].setMinimumHeight(14)
                 self.cells[r][c].setMaximumWidth(50)
@@ -80,7 +79,6 @@ class cbContainer(QtWidgets.QWidget):
     def enableCell(self, w, b):
         self.cells[w][b].enableIt(w,b)
 
-    
     def changeDevice(self, w, b):
 
         f.cbAntenna.deselectOld.emit()
@@ -169,7 +167,7 @@ class cbContainer(QtWidgets.QWidget):
             y2=self.devBotRight.y()+self.devBotRight.height()+4
 
             self.rangeRect.setCoords(x1,y1,x2,y2)
-            
+
             self.rectWidget.setGeometry(self.rangeRect)
             self.rectWidget.setStyleSheet("border: 3px solid red")
             self.rectWidget.show()

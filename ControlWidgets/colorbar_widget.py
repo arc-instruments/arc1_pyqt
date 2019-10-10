@@ -10,19 +10,18 @@
 from PyQt5 import QtGui, QtWidgets
 
 
-class cell(QtWidgets.QWidget):
+class ColorbarWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(cell, self).__init__()
+        super(ColorbarWidget, self).__init__()
         self.initUI()
 
     def initUI(self):
-        # Set the initial pen (which draws the edge of a square)
+        # edge of the square
         self.pen=QtGui.QPen(QtGui.QColor(200,200,200))
-        # Set the initial brush (which sets the fill of a square)
-        self.brush=QtGui.QBrush(QtGui.QColor(255,255,255))
+        # fill of the square
+        self.brush=QtGui.QBrush(QtGui.QColor(150,10,100))
 
-    # this is called whenever the Widget is resized
     def paintEvent(self, e):
         qp = QtGui.QPainter()
         qp.begin(self)
@@ -35,3 +34,7 @@ class cell(QtWidgets.QWidget):
         qp.setBrush(self.brush)
         qp.drawRect(0,0,size.width(),size.height())
 
+    def recolor(self,qColor):
+        self.pen.setColor(qColor)
+        self.brush.setColor(qColor)
+        self.update()
