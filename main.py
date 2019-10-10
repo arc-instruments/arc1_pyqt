@@ -76,16 +76,12 @@ def write_b(ser, what):
 
 class Arcontrol(QtWidgets.QMainWindow):
 
-    operationProgress = QtCore.pyqtSignal(int)
-    operationFinished = QtCore.pyqtSignal()
-
     def __init__(self):
         super(Arcontrol, self).__init__()
 
         self.initUI()
 
     def initUI(self):
-
 
         # Splash Screen
         pixmap = Graphics.getPixmap('splash')
@@ -598,7 +594,7 @@ class Arcontrol(QtWidgets.QMainWindow):
             pass
 
 
-    def _loadCSV(self, csvfile, filesize):
+    def _loadCSV(self, csvfile, filesize, filename):
 
         bytecount = lambda x: len(x.encode())
 
@@ -607,6 +603,16 @@ class Arcontrol(QtWidgets.QMainWindow):
         delimiter_size = len(rdr.dialect.lineterminator.encode())
 
         error = 0
+
+        dialog = QtWidgets.QProgressDialog("Loading file <b>%s</b>…" % filename,
+                "Cancel", 0, 100, parent=self)
+        bar = QtWidgets.QProgressBar()
+        bar.setStyleSheet(s.progressBarStyle)
+        dialog.setWindowModality(QtCore.Qt.WindowModal)
+        dialog.setWindowTitle("Loading file")
+        dialog.setWindowIcon(Graphics.getIcon('appicon'))
+        dialog.setBar(bar)
+        dialog.setCancelButton(None)
 
         for (counter, values) in enumerate(rdr):
             if (counter == 0):
@@ -634,11 +640,9 @@ class Arcontrol(QtWidgets.QMainWindow):
             # find the byte size of the values + the byte size of the delimiter + the commas
             bytesLoaded += sum(map(bytecount, values)) + delimiter_size + len(values) - 1
             progress = int((bytesLoaded/filesize)*100)
-            self.operationProgress.emit(progress)
-            print("Loading file %d%%\r" % progress, end='')
+            dialog.setValue(progress)
 
-        print()
-        self.operationFinished.emit()
+        dialog.setValue(100)
         return error
 
     def findAndLoadFile(self):
@@ -666,7 +670,7 @@ class Arcontrol(QtWidgets.QMainWindow):
             filesize = os.stat(path.filePath()).st_size
 
         with opener(path.filePath(), 'rt') as csvfile:
-            error = self._loadCSV(csvfile, filesize)
+            error = self._loadCSV(csvfile, filesize, path.fileName())
 
         # check if positions read are correct
         if (error):
@@ -684,7 +688,6 @@ class Arcontrol(QtWidgets.QMainWindow):
                         #for dataPoint in g.Mhistory[w][b]:
                         f.cbAntenna.recolor.emit(g.Mhistory[w][b][-1][0],w,b)
 
-            print("File loaded successfully")
             f.interfaceAntenna.changeArcStatus.emit('Disc')
 
             return True

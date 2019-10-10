@@ -374,3 +374,14 @@ QPushButton:hover{\
 QPushButton:pressed{\
 	margin: 3px; \
 	}"""
+
+progressBarStyle = """
+QProgressBar {
+    border: 1px solid rgb(0, 32, 87);
+    text-align: right;
+    margin-right: 2.5em;
+}
+
+QProgressBar::chunk {
+    background-color: rgb(0, 32, 87);
+}"""
