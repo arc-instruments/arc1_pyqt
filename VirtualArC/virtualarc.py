@@ -14,10 +14,11 @@ readNoise=0.01
 write_scheme={'V/2':0.5}
 Vread=0.5
 
-class virtualArC(object):
-    
+
+class VirtualArC(object):
+
     def __init__(self, option):
-        super(virtualArC, self).__init__()
+        super(VirtualArC, self).__init__()
         self.port="not none"
         self.crossbar=[[] for x in range(33)]
         self.counter=0
@@ -233,7 +234,7 @@ class virtualArC(object):
 
             self.counter=0
             self.write=self.get_curvetracer_device
-    
+
     def get_curvetracer_device(self, value):
         self.counter+=1
         self.q_in.put(value.rstrip())
@@ -267,13 +268,13 @@ class virtualArC(object):
 
         if self.option==0:
             firstV=int(abs(Vpos_max-Vstart)/Vstep)
-            secondV=int(abs(abs(Vneg_max)-Vstart)/Vstep)            
+            secondV=int(abs(abs(Vneg_max)-Vstart)/Vstep)
         if self.option==1:
             firstV=int(abs(abs(Vneg_max)-Vstart)/Vstep)
             secondV=int(abs(Vpos_max-Vstart)/Vstep)
         if self.option==2:
             firstV=int(abs(Vpos_max-Vstart)/Vstep)
-            secondV=0   
+            secondV=0
         if self.option==3:
             firstV=int(abs(abs(Vneg_max)-Vstart)/Vstep)
             secondV=0
@@ -292,12 +293,12 @@ class virtualArC(object):
             for i in range(firstV+1):
                 Vread=(i*Vstep+Vstart)*polarity
                 pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
-                self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
+                self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0)
 
             for i in range(firstV,0,-1):
                 Vread=((i-1)*Vstep+Vstart)*polarity
                 pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
-                self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
+                self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0)
 
             if option==0:
                 polarity=-1
@@ -312,14 +313,14 @@ class virtualArC(object):
                 for i in range(secondV+1):
                     Vread=(i*Vstep+Vstart)*polarity
                     pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
-                    self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
+                    self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0)
 
                 for i in range(secondV,0,-1):
                     Vread=((i-1)*Vstep+Vstart)*polarity
                     pulse(self.crossbar, self.w, self.b, Vread, self.pwstep, self.dt)
-                    self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0) 
+                    self.tripleSend(read(self.crossbar,self.w,self.b), Vread, 0.0)
 
-            self.tripleSend(0.0, 0.0, 0.0) 
+            self.tripleSend(0.0, 0.0, 0.0)
 
         if self.nr_of_devices==0:
             self.write=self.base_write
@@ -362,7 +363,7 @@ class virtualArC(object):
     def execute_switchseeker_fast(self):
         self.nr_of_devices-=1
         baseline=0
-        
+
         currR=0
         exitFlag=False
         terminate=False
@@ -466,7 +467,7 @@ class virtualArC(object):
     def execute_switchseeker_slow(self):
         self.nr_of_devices-=1
         baseline=0
-        
+
         currR=0
         exitFlag=False
         exitFlag2=False
@@ -704,11 +705,11 @@ class virtualArC(object):
         self.q_in.put(value.rstrip())
         if self.counter==4:
             self.compute_pulse()
-            self.counter=0      
+            self.counter=0
 
     def compute_pulse(self):
         w=int(self.q_in.get())
-        b=int(self.q_in.get())      
+        b=int(self.q_in.get())
         ampl=float(self.q_in.get())
         pw=float(self.q_in.get())
 

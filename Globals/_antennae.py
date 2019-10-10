@@ -4,7 +4,7 @@ import numpy as np
 import collections
 import struct
 from . import GlobalVars as g
-from virtualArC import virtualarc
+from VirtualArC import VirtualArC
 
 
 ###########################################

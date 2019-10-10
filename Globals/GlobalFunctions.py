@@ -15,7 +15,7 @@ from PyQt5 import QtGui, QtWidgets
 import numpy as np
 import collections
 import struct
-from virtualArC import virtualarc
+from VirtualArC import VirtualArC
 
 
 # Signal emitters
@@ -97,7 +97,7 @@ def gzipFileSize(fname):
 
 
 def getFloats(n):
-    if not isinstance(g.ser, virtualarc.virtualArC):
+    if not isinstance(g.ser, VirtualArC):
         while g.ser.inWaiting()<n*4:
             pass
         # read n * 4 bits of data (n floats) from the input serial

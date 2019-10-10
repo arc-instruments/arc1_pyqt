@@ -26,7 +26,7 @@ import types
 import warnings
 from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
-from virtualArC import virtualarc
+from VirtualArC import VirtualArC
 import Graphics
 import ProgPanels
 import ctypes
@@ -795,7 +795,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def connectArC(self):
         if g.COM=="VirtualArC":
-            g.ser=virtualarc.virtualArC([])
+            g.ser = VirtualArC([])
         elif g.ser.port == None:  # only connect if disconnected
             job="0"
             try:
