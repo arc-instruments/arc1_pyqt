@@ -53,16 +53,9 @@ warnings.filterwarnings('ignore',
 # Platform dependent configuration
 if sys.platform == "win32":
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-    serialFormat = 'COM%d'
-elif sys.platform in ["linux", "linux2"]:
-    serialFormat = '/dev/ttyACM%d'
-elif sys.platform in ["darwin"]:
-    serialFormat = '/dev/tty.usbmodem%d'
-else:
-    serialFormat = '%d'
+
 
 import Globals
-
 import Globals.GlobalVars as g
 import Globals.GlobalFunctions as f
 import Globals.GlobalStyles as s
@@ -885,15 +878,15 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     # Scan for available ports. returns a list of tuples (num, name)
     def scanSerials(self):
+        from serial.tools.list_ports import comports
+
         available = []
-        for i in range(256):
-            try:
-                s = serial.Serial(serialFormat % i)
-                available.append(s.name)
-                s.close()
-            except serial.SerialException:
-                pass
+
+        for serial in comports():
+            available.append(serial.device)
+
         available.append("VirtualArC")
+
         return available
 
     def updateComPort(self):
