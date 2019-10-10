@@ -415,7 +415,8 @@ class STDP(QtWidgets.QWidget):
         time = []
 
         try:
-            arraydata = np.loadtxt(path, dtype=float, delimiter=',', comments='#')
+            arraydata = np.loadtxt(path.absoluteFilePath(), dtype=float,
+                    delimiter=',', comments='#')
 
             for row in arraydata:
                 (v, t) = row
@@ -451,7 +452,8 @@ class STDP(QtWidgets.QWidget):
         time = []
 
         try:
-            arraydata = np.loadtxt(path, dtype=float, delimiter=',', comments='#')
+            arraydata = np.loadtxt(path.absoluteFilePath(), dtype=float,
+                    delimiter=',', comments='#')
 
             for row in arraydata:
                 (v, t) = row

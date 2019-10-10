@@ -365,7 +365,8 @@ class ManualOpsWidget(QtWidgets.QWidget):
         customArray = []
 
         try:
-            arraydata = np.loadtxt(path, dtype=int, delimiter=',', comments='#')
+            arraydata = np.loadtxt(path.absoluteFilePath(), dtype=int,
+                    delimiter=',', comments='#')
 
             for row in arraydata:
                 (w, b) = row
