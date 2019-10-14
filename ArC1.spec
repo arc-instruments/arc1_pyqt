@@ -10,7 +10,7 @@ import os.path
 try:
     PATHEX = os.environ['ARC_PYI_PATHEX']
 except KeyError:
-    raise ValueError("Environment variable ARC_PATHEX must be set to the "
+    raise ValueError("Environment variable ARC_PYI_PATHEX must be set to the "
             "full path of your arc1_pyqt source")
 
 CONSOLE = bool(int(os.environ.get('ARC_PYI_CONSOLE', 1)))
