@@ -229,7 +229,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.toolbar.addWidget(spacer)
 
         self.arcStatusLabel=QtWidgets.QLabel()
-        self.arcStatusLabel.setMinimumWidth(200*g.scaling_factor)
+        self.arcStatusLabel.setMinimumWidth(int(200*g.scaling_factor))
         self.arcStatusLabel.setStyleSheet(s.arcStatus_disc)
         self.arcStatusLabel.setText('Disconnected')
         self.arcStatusLabel.setFont(fonts.font1)
@@ -282,12 +282,12 @@ class Arcontrol(QtWidgets.QMainWindow):
         splitter.setCollapsible(1,False)
 
         # Setup size constraints for each compartment of the UI
-        hp.setMinimumWidth(150*g.scaling_factor)
-        hp.setMaximumWidth(300*g.scaling_factor)
-        hp.setMinimumHeight(700*g.scaling_factor)
+        hp.setMinimumWidth(int(150*g.scaling_factor))
+        hp.setMaximumWidth(int(300*g.scaling_factor))
+        hp.setMinimumHeight(int(700*g.scaling_factor))
 
-        self.mo.setFixedWidth(300*g.scaling_factor)
-        dd.setMinimumWidth(650*g.scaling_factor)
+        self.mo.setFixedWidth(int(300*g.scaling_factor))
+        dd.setMinimumWidth(int(650*g.scaling_factor))
 
         # define how scaling the window scales the two sections
         layoutRight.setStretchFactor(layoutTop, 5)
@@ -297,8 +297,8 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.layoutBot.setStretchFactor(self.pp, 6)
         self.layoutBot.setStretchFactor(self.cp, 6)
 
-        self.pp.setMinimumWidth(700*g.scaling_factor)
-        self.cp.setMinimumWidth(600*g.scaling_factor)
+        self.pp.setMinimumWidth(int(700*g.scaling_factor))
+        self.cp.setMinimumWidth(int(600*g.scaling_factor))
 
         layoutTop.setSpacing(0)
         self.layoutBot.setSpacing(0)
@@ -320,7 +320,8 @@ class Arcontrol(QtWidgets.QMainWindow):
         f.cbAntenna.recolor.connect(self.updateSaveButton)
 
         # Setup main window geometry
-        self.setGeometry(100, 100, g.scaling_factor*1500, g.scaling_factor*800)
+        self.setGeometry(100, 100, int(g.scaling_factor*1500),
+                int(g.scaling_factor*800))
         self.setWindowTitle('ArC One - Control Panel')
         self.setWindowIcon(Graphics.getIcon('appicon'))
 
@@ -530,7 +531,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         from ControlWidgets import NewSessionDialog
         newSession = NewSessionDialog()
         newSession.setFixedWidth(500)
-        newSession.setMaximumHeight(850*g.scaling_factor)
+        newSession.setMaximumHeight(int(850*g.scaling_factor))
 
         frameGm = newSession.frameGeometry()
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
