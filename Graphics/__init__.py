@@ -1,5 +1,9 @@
 import os.path
-import importlib.resources
+try:
+    import importlib.resources as importlib_resources
+except (ModuleNotFoundError, ImportError):
+    import importlib_resources
+
 from PyQt5 import QtCore, QtGui
 
 
@@ -23,7 +27,7 @@ _pixmaps = {}
 # before loading the pixmaps from file!
 def initialise():
     for x in _pixmap_files:
-        with importlib.resources.path(__name__, x) as res:
+        with importlib_resources.path(__name__, x) as res:
             with open(res, 'rb') as f:
 
                 img = os.path.splitext(x)[0]
