@@ -77,14 +77,14 @@ def writeDelimitedData(data, dest, delimiter="\t"):
             f.write(text+"\n")
         f.close()
     except Exception as exc:
-        print(exc)
+        print("Error when writing delimited data:", exc)
 
 
 def saveFuncToFilename(func, title="", parent=None):
     fname = QtWidgets.QFileDialog.getSaveFileName(parent, title)
 
     if fname:
-        func(fname)
+        func(fname[0])
 
 
 def gzipFileSize(fname):
