@@ -175,12 +175,7 @@ class HistoryWidget(QtWidgets.QWidget):
 
             raw=g.Mhistory[w][b][startPoint:endPoint+1]
 
-            # Display results in a new window based on the tag
-            # the tag selects the type of results processing and display.
-
-            if tagKey=='VOL':
-                pass
-
+            # special handling for STDP
             if tagKey=='stdp':
 
                 reg=re.compile(r'-?[0-9\.]+')
@@ -202,7 +197,6 @@ class HistoryWidget(QtWidgets.QWidget):
                         i+=2
                     else:
                         i+=1
-
 
                 # setup display
                 self.resultWindow.append(QtWidgets.QWidget())
@@ -230,7 +224,6 @@ class HistoryWidget(QtWidgets.QWidget):
 
                 self.resultWindow[-1].update()
 
-            # Only phase 3 has exploitable results
             if str(tagKey) in g.DispCallbacks:
                 widget = g.DispCallbacks[tagKey](w, b, raw, self)
                 self.resultWindow.append(widget)
