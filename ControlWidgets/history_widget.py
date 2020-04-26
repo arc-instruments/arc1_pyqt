@@ -14,7 +14,6 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 import pyqtgraph as pg
 import numpy as np
-import re
 
 import Globals.GlobalStyles as s
 import Globals.GlobalFonts as fonts
@@ -174,55 +173,6 @@ class HistoryWidget(QtWidgets.QWidget):
             tagKey=str(item.whatsThis(5))
 
             raw=g.Mhistory[w][b][startPoint:endPoint+1]
-
-            # special handling for STDP
-            if tagKey=='stdp':
-
-                reg=re.compile(r'-?[0-9\.]+')
-
-                i=0
-                list_dt=[]
-                Mbefore=0
-                Mafter=0
-                dG=[]
-                dt=0
-                while i<len(raw):
-                    stdp_tag=str(raw[i][3])
-                    if "before" in stdp_tag:
-                        Mbefore=raw[i][0]
-                        Mafter=raw[i+1][0]
-                        dt=float(re.findall(reg,stdp_tag)[0])
-                        list_dt.append(dt)
-                        dG.append((1/Mafter-1/Mbefore)/(1/Mbefore))
-                        i+=2
-                    else:
-                        i+=1
-
-                # setup display
-                self.resultWindow.append(QtWidgets.QWidget())
-                self.resultWindow[-1].setGeometry(100,100,500,500)
-                self.resultWindow[-1].setWindowTitle("STDP: W="+ str(w) + " | B=" + str(b))
-                self.resultWindow[-1].setWindowIcon(Graphics.getIcon('appicon'))
-                self.resultWindow[-1].show()
-
-                view=pg.GraphicsLayoutWidget()
-                label_style = {'color': '#000000', 'font-size': '10pt'}
-
-                self.plot_stdp=view.addPlot()
-                self.curve_stdp=self.plot_stdp.plot(pen=None, symbolPen=None, symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
-                self.plot_stdp.getAxis('left').setLabel('dG/G0', **label_style)
-                self.plot_stdp.getAxis('bottom').setLabel('deltaT', units='s', **label_style)
-                self.plot_stdp.getAxis('left').setGrid(50)
-                self.plot_stdp.getAxis('bottom').setGrid(50)
-                self.curve_stdp.setData(np.asarray(list_dt),np.asarray(dG))
-
-                resLayout = QtWidgets.QHBoxLayout()
-                resLayout.addWidget(view)
-                resLayout.setContentsMargins(0,0,0,0)
-
-                self.resultWindow[-1].setLayout(resLayout)
-
-                self.resultWindow[-1].update()
 
             if str(tagKey) in g.DispCallbacks:
                 widget = g.DispCallbacks[tagKey](w, b, raw, self)

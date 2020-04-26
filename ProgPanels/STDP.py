@@ -10,6 +10,7 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
+import re
 import numpy as np
 import pyqtgraph as pg
 import time
@@ -750,3 +751,62 @@ class STDP(QtWidgets.QWidget):
 
         return rangeDev
 
+
+    @staticmethod
+    def display(w, b, raw, parent=None):
+
+        reg = re.compile(r'-?[0-9\.]+')
+
+        i = 0
+        list_dt = []
+        Mbefore = 0
+        Mafter = 0
+        dG = []
+        dt = 0
+
+        while i < len(raw):
+
+            # find the STDP tag
+            stdp_tag = str(raw[i][3])
+
+            if "before" in stdp_tag:
+                # register resistances before and after
+                Mbefore = raw[i][0]
+                Mafter = raw[i+1][0]
+
+                # append delta Ts and delta Gs
+                dt = float(re.findall(reg, stdp_tag)[0])
+                list_dt.append(dt)
+                dG.append((1/Mafter-1/Mbefore)/(1/Mbefore))
+                i += 2
+            else:
+                i += 1
+
+        resultWindow = QtWidgets.QWidget()
+        resultWindow.setGeometry(100,100,500,500)
+        resultWindow.setWindowTitle("STDP: W="+ str(w) + " | B=" + str(b))
+        resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
+        resultWindow.show()
+
+        view = pg.GraphicsLayoutWidget()
+        label_style = {'color': '#000000', 'font-size': '10pt'}
+
+        plot_stdp = view.addPlot()
+        curve_stdp = plot_stdp.plot(pen=None, symbolPen=None, \
+                symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
+        plot_stdp.getAxis('left').setLabel('dG/G0', **label_style)
+        plot_stdp.getAxis('bottom').setLabel('deltaT', units='s', **label_style)
+        plot_stdp.getAxis('left').setGrid(50)
+        plot_stdp.getAxis('bottom').setGrid(50)
+        curve_stdp.setData(np.asarray(list_dt),np.asarray(dG))
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(view)
+        layout.setContentsMargins(0,0,0,0)
+
+        resultWindow.setLayout(resLayout)
+
+        return resultWindow
+
+
+g.DispCallbacks[tag] = STDP.display
