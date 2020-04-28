@@ -103,7 +103,11 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
 
             a=self.childAt(self.origin)
 
-            position=a.whatsThis().split(" ")
+            try:
+                position=a.whatsThis().split(" ")
+            except ValueError:
+                # this is probably an invalid position
+                return
 
             w,b=position
             if g.checkSA==False:
@@ -146,6 +150,9 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
                         bList.append(int(position[1]))
                     except ValueError:
                         pass
+
+            if len(wList) == 0 or len(bList) == 0:
+                return
 
             minW=min(wList)
             maxW=max(wList)
