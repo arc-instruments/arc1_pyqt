@@ -10,7 +10,7 @@
 import sys
 import os
 from PyQt5 import QtGui, QtCore, QtWidgets
-from . import CellWidget
+from . import MatrixWidget
 
 import Graphics
 
@@ -153,14 +153,14 @@ class NewSessionDialog(QtWidgets.QDialog):
         self.cb_w.setSingleStep(1)
         self.cb_w.setValue(32)
         self.cb_w.setFont(fonts.font3)
-        self.cb_w.valueChanged.connect(self.redrawCB)
+        self.cb_w.valueChanged.connect(self.matrixSizeChanged)
 
         self.cb_b=QtWidgets.QSpinBox(self)
         self.cb_b.setMinimum(1)
         self.cb_b.setMaximum(32)
         self.cb_b.setSingleStep(1)
         self.cb_b.setValue(32)
-        self.cb_b.valueChanged.connect(self.redrawCB)
+        self.cb_b.valueChanged.connect(self.matrixSizeChanged)
         self.cb_b.setFont(fonts.font3)
 
         cb_w_label=QtWidgets.QLabel(self)
@@ -202,8 +202,8 @@ class NewSessionDialog(QtWidgets.QDialog):
 
         mainLayout.addWidget(line2)
 
-        cbWidget=QtWidgets.QWidget()
-        self.cbWindow=QtWidgets.QStackedLayout()
+        cbWidget = QtWidgets.QWidget()
+        self.cbWindow = QtWidgets.QStackedLayout()
         cbWidget.setLayout(self.cbWindow)
 
         mainLayout.addWidget(cbWidget)
@@ -244,78 +244,50 @@ class NewSessionDialog(QtWidgets.QDialog):
         self.setContentsMargins(0,0,0,0)
         self.setLayout(mainLayout)
         #self.setGeometry()
-        self.redrawCB()
+        self.updateCB()
 
     def selectWDir(self):
         folderDialog=QtWidgets.QFileDialog()
-        directory = folderDialog.getExistingDirectory(self, 'Choose Directory', os.path.curdir)
+        directory = folderDialog.getExistingDirectory(self, 'Choose Directory', \
+                os.path.curdir)
         self.dirName.setText(directory)
 
-    def redrawCB(self):
+    def matrixSizeChanged(self, *args):
+        w = self.cb_w.value()
+        b = self.cb_b.value()
+        #self.cbWindow.redrawArray(w, b)
+        self.updateCB(w, b)
 
-        wordline=QtWidgets.QLabel()
+    def updateCB(self, w=g.wline_nr, b=g.bline_nr):
+
+        wdg = QtWidgets.QWidget()
+        mainLayout = QtWidgets.QHBoxLayout(wdg)
+        gridLayout = QtWidgets.QGridLayout()
+
+        wordline = QtWidgets.QLabel(wdg)
         wordline.setText("W\no\nr\nd\nl\ni\nn\ne")
-        bitline=QtWidgets.QLabel()
+        wordline.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
+        bitline = QtWidgets.QLabel(wdg)
         bitline.setText("Bitline")
-
-        bitH=QtWidgets.QHBoxLayout()
-        bitH.addStretch()
-        bitH.addWidget(bitline)
-        bitH.addStretch()
-
-        w1=QtWidgets.QWidget()
-        lay1=QtWidgets.QVBoxLayout()
-        lay2=QtWidgets.QVBoxLayout()
-
-        lay2=QtWidgets.QHBoxLayout()
-        layout=QtWidgets.QGridLayout()
-        layout.setSpacing(0)
-        w1.setLayout(lay1)
-
-        layout2=QtWidgets.QVBoxLayout()
-        layout2.addStretch()
-        layout2.addLayout(layout)
-        #layout2.addLayout(bitH)
-        layout2.addStretch()
-
-        lay1.addStretch()
-        lay1.setAlignment(QtCore.Qt.AlignCenter)
-        lay1.addLayout(lay2)
-        lay1.addLayout(bitH)
-        lay1.addStretch()
-
-        lay2.addStretch()
-        lay2.addWidget(wordline)
-        lay2.addLayout(layout2)
-        lay2.addStretch()
-
-        wmax=self.cb_w.value()
-        bmax=self.cb_b.value()
-
-        for w in range(1,wmax+1):
-            for b in range(1,bmax+1):
-                aCell = CellWidget()
-                aCell.setMinimumWidth(15)
-                aCell.setMaximumHeight(20*g.scaling_factor)
-                layout.addWidget(aCell,w,b)
-        aCell=[]
-
-        for w in range(1,wmax+1):
-            aux=QtWidgets.QLabel()
-            aux.setText(str(w))
-            aux.setFont(fonts.font4)
-            layout.addWidget(aux,w,0)
-
-        for b in range(1,bmax+1):
-            aux=QtWidgets.QLabel()
-            aux.setText(str(b))
-            aux.setFont(fonts.font4)
-            layout.addWidget(aux,33,b)
+        bitline.setAlignment(QtCore.Qt.AlignCenter)
 
 
-        self.cbWindow.addWidget(w1)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, \
+                QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(1)
+        matrix = MatrixWidget(words=w, bits=b, passive=True, width=(15, 25), \
+                height=(10, 20*g.scaling_factor))
+        matrix.setSizePolicy(sizePolicy)
+
+        gridLayout.addWidget(wordline, 0, 1, 1, 1)
+        gridLayout.addWidget(matrix, 0, 2, 1, 1)
+        gridLayout.addWidget(bitline, 1, 2, 1, 1)
+
+        mainLayout.addLayout(gridLayout)
+
+        self.cbWindow.addWidget(wdg)
         self.cbWindow.setCurrentIndex(self.cbWindow.count()-1)
-
 
     def startSession(self):
         g.wline_nr=self.cb_w.value()

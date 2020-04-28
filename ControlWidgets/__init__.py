@@ -4,6 +4,7 @@ from .about_widget import AboutWidget
 from .cell_widget import CellWidget
 from .device_widget import DeviceWidget
 from .colorbar_widget import ColorbarWidget
+from .matrix_widget import MatrixWidget
 from .crossbar_container_widget import CrossbarContainerWidget
 from .crossbar_widget import CrossbarWidget
 from .config_hardware_widget import ConfigHardwareWidget

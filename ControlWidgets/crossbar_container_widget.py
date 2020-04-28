@@ -10,6 +10,7 @@
 import sys
 from PyQt5 import QtGui, QtCore, QtWidgets
 from . import DeviceWidget
+from . import MatrixWidget
 
 import Globals.GlobalFunctions as f
 import Globals.GlobalVars as g
@@ -28,32 +29,8 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
         layout=QtWidgets.QGridLayout(self)
         self.setLayout(layout)
         layout.setSpacing(0)
-
-        self.cells=[[[] for x in range(0,g.bline_nr+1)] for y in range(0,g.wline_nr+1)]
-
-        # Populate the grid with a "device" in each box
-        for r in range(1,g.wline_nr+1):
-            for c in range(1,g.bline_nr+1):
-                self.cells[r][c] = DeviceWidget(r, c)
-                self.cells[r][c].setMinimumWidth(22)
-                self.cells[r][c].setMinimumHeight(14)
-                self.cells[r][c].setMaximumWidth(50)
-                self.cells[r][c].setMaximumHeight(50)
-                self.cells[r][c].setWhatsThis(str(r)+" "+str(c))
-
-                layout.addWidget(self.cells[r][c],r,c)
-
-        for w in range(1,g.wline_nr+1):
-            aux=QtWidgets.QLabel()
-            aux.setText(str(w))
-            aux.setFont(fonts.cbFont)
-            layout.addWidget(aux,w,0)
-
-        for b in range(1,g.bline_nr+1):
-            aux=QtWidgets.QLabel()
-            aux.setText(str(b))
-            aux.setFont(fonts.cbFont)
-            layout.addWidget(aux,33,b)
+        self.matrix = MatrixWidget(words=g.wline_nr, bits=g.bline_nr)
+        layout.addWidget(self.matrix)
 
         f.cbAntenna.selectDeviceSignal.connect(self.changeDevice)
         f.cbAntenna.deselectOld.connect(self.dummySlot)
@@ -72,23 +49,22 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
 
         self.dragging=False
 
-
     def disableCell(self, w, b):
-        self.cells[w][b].disableIt()
+        self.matrix.cells[w][b].disableIt()
 
     def enableCell(self, w, b):
-        self.cells[w][b].enableIt(w,b)
+        self.matrix.cells[w][b].enableIt(w,b)
 
     def changeDevice(self, w, b):
 
         f.cbAntenna.deselectOld.emit()
-        self.cells[w][b].highlight()
+        self.matrix.cells[w][b].highlight()
 
         f.cbAntenna.deselectOld.disconnect()
-        f.cbAntenna.deselectOld.connect(self.cells[w][b].dehighlight)
+        f.cbAntenna.deselectOld.connect(self.matrix.cells[w][b].dehighlight)
 
     def recolor(self, M, w, b):
-        self.cells[w][b].recolor(M)
+        self.matrix.cells[w][b].recolor(M)
 
     def dummySlot(self):
         pass
@@ -164,8 +140,8 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
             g.maxW=maxW
             g.maxB=maxB
 
-            self.devTopLeft=self.cells[minW][minB]
-            self.devBotRight=self.cells[maxW][maxB]
+            self.devTopLeft=self.matrix.cells[minW][minB]
+            self.devBotRight=self.matrix.cells[maxW][maxB]
 
             x1=self.devTopLeft.x()-4
             y1=self.devTopLeft.y()-4

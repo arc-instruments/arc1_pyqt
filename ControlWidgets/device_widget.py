@@ -18,10 +18,11 @@ import Globals.GlobalVars as g
 
 class DeviceWidget(QtWidgets.QWidget):
 
-    def __init__(self, r, c):
+    def __init__(self, r, c, passive=False):
         super(DeviceWidget, self).__init__()
         self.r=r
         self.c=c
+        self.passive = passive
         self.initUI()
 
     def initUI(self):
@@ -101,6 +102,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.update()
 
     def enterEvent(self, event):
-        f.hoverAntenna.displayHoverPanel.emit(self.r, self.c, self.geometry().x(),
-                self.geometry().y(),self.geometry().width(),self.geometry().height())
+        if not self.passive:
+            f.hoverAntenna.displayHoverPanel.emit(self.r, self.c, self.geometry().x(),
+                    self.geometry().y(),self.geometry().width(),self.geometry().height())
 

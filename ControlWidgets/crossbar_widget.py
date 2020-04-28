@@ -39,6 +39,7 @@ class CrossbarWidget(QtWidgets.QWidget):
 
         wordline=QtWidgets.QLabel()
         wordline.setText("W\no\nr\nd\nl\ni\nn\ne")
+        wordline.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
         bitline=QtWidgets.QLabel()
         bitline.setText("Bitline")
 
