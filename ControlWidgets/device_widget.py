@@ -104,12 +104,3 @@ class DeviceWidget(QtWidgets.QWidget):
         f.hoverAntenna.displayHoverPanel.emit(self.r, self.c, self.geometry().x(),
                 self.geometry().y(),self.geometry().width(),self.geometry().height())
 
-        pass
-
-
-class lineNr(QtWidgets.QLabel):
-
-    def __init__(self,n):
-        super(lineNr, self).__init__()
-        self.setText(str(n))
-
