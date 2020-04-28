@@ -44,12 +44,6 @@ class DeviceWidget(QtWidgets.QWidget):
         qp.setPen(self.pen)
         qp.setBrush(self.brush)
 
-        if size.width()/size.height()>2:
-            self.setWidth(size.height())
-
-        if size.height()/size.width()>2:
-            self.setHeight(size.width())
-
         # Draw the new rectangle which fills the entire widget
         qp.drawRect(0,0,size.width(),size.height())
 
