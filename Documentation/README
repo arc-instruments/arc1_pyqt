@@ -1,0 +1,4 @@
+Documentation should be populated from the respective arc1-docs repository
+instead of putting binary PDFs in this folder. To assemble the final Windows
+executable the manual should be present in this folder and be named
+`ArC_ONE.pdf`.
