@@ -14,6 +14,7 @@ import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -21,24 +22,16 @@ tag="Read"
 g.tagDict.update({tag:"Read"})
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    updateTree=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, Vread, readType):
         super().__init__()
         self.Vread=Vread
         self.readType=readType
 
+    @BaseThreadWrapper.runner
     def run(self):
 
-        self.disableInterface.emit(True)
         global tag
 
         needsUpdate=False
@@ -55,11 +48,6 @@ class ThreadWrapper(QtCore.QObject):
         g.ser.write_b(str(g.w)+"\n")
         g.ser.write_b(str(g.b)+"\n")
 
-        # try:
-        #     currentline='%.10f' % float(g.ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
-        # except ValueError:
-        #     currentline='%.10f' % 0.0
-
         Mnow=f.getFloats(1)
 
         tag='S R'+str(self.readType)+' V='+str(self.Vread)
@@ -75,10 +63,6 @@ class ThreadWrapper(QtCore.QObject):
             g.ser.write_b(job+"\n")
             g.ser.write_b(str(float(g.readOption))+"\n")
             g.ser.write_b(str(float(g.Vread))+"\n") 
-
-        self.disableInterface.emit(False)
-
-        self.finished.emit()
 
 
 class READ(QtWidgets.QWidget):

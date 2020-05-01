@@ -14,6 +14,7 @@ import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -21,23 +22,15 @@ tag="FF"
 g.tagDict.update({tag:"FormFinder"})
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    updateTree=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self,deviceList):
         super().__init__()
         self.deviceList=deviceList
 
+    @BaseThreadWrapper.runner
     def run(self):
 
-        self.disableInterface.emit(True)
         global tag
 
         g.ser.write_b(str(int(len(self.deviceList)))+"\n")
@@ -85,10 +78,6 @@ class ThreadWrapper(QtCore.QObject):
                 #print valuesNew
                 #print "End command " + str(endCommand)
             self.updateTree.emit(w,b)
-
-        self.disableInterface.emit(False)
-        
-        self.finished.emit()
 
 
 class FormFinder(QtWidgets.QWidget):

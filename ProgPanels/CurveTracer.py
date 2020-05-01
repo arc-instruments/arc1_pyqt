@@ -19,6 +19,7 @@ import numpy as np
 import Graphics
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 import ProgPanels
@@ -55,26 +56,17 @@ def _min_without_inf(lst, exclude):
     return maxim
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    updateTree=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
-    changeArcStatus=QtCore.pyqtSignal(str)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, deviceList, totalCycles):
         super().__init__()
         self.deviceList=deviceList
         self.totalCycles=totalCycles
 
+    @BaseThreadWrapper.runner
     def run(self):
 
         self.disableInterface.emit(True)
-        #self.changeArcStatus.emit('Busy')
         global tag
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
@@ -122,9 +114,6 @@ class ThreadWrapper(QtCore.QObject):
                         self.displayData.emit()
                         endCommand=1
             self.updateTree.emit(w,b)
-
-        self.disableInterface.emit(False)
-        self.finished.emit()
 
 
 class CurveTracer(QtWidgets.QWidget):
@@ -467,7 +456,6 @@ class CurveTracer(QtWidgets.QWidget):
         self.threadWrapper.displayData.connect(f.displayUpdate.cast)
         self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
         self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.threadWrapper.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def makeDeviceList(self,isRange):

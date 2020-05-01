@@ -31,6 +31,7 @@ import pyqtgraph
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -41,16 +42,7 @@ tag="CRA"
 g.tagDict.update({tag:"ChronoAmperometry*"})
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished = QtCore.pyqtSignal()
-    sendData = QtCore.pyqtSignal(int, int, float, float, float, str)
-    sendDataCT = QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight = QtCore.pyqtSignal(int,int)
-    displayData = QtCore.pyqtSignal()
-    updateTree = QtCore.pyqtSignal(int, int)
-    disableInterface = QtCore.pyqtSignal(bool)
-    getDevices = QtCore.pyqtSignal(int)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, deviceList, params = {}):
         super().__init__()
@@ -98,11 +90,10 @@ class ThreadWrapper(QtCore.QObject):
         g.ser.write_b(str(len(self.deviceList)) + "\n")
         self.log("Parameters written")
 
+    @BaseThreadWrapper.runner
     def run(self):
 
         self.DBG = bool(os.environ.get('CRADBG', False))
-
-        self.disableInterface.emit(True)
 
         self.sendParams()
 
@@ -113,9 +104,6 @@ class ThreadWrapper(QtCore.QObject):
             self.chronoamperometry(w, b)
             self.updateTree.emit(w, b)
 
-        self.disableInterface.emit(False)
-
-        self.finished.emit()
         self.log("ChronoAmperometry finished")
 
     def chronoamperometry(self, w, b):

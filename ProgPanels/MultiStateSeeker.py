@@ -18,6 +18,7 @@ import pyqtgraph
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -29,15 +30,8 @@ g.tagDict.update({tag+"1":"MultiState Polarity Inference"})
 g.tagDict.update({tag+"2":"MultiState Retention"})
 g.tagDict.update({tag+"3":"MultiState Calculation*"})
 
-class ThreadWrapper(QtCore.QObject):
 
-    finished = QtCore.pyqtSignal()
-    sendData = QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight = QtCore.pyqtSignal(int,int)
-    displayData = QtCore.pyqtSignal()
-    updateTree = QtCore.pyqtSignal(int, int)
-    disableInterface = QtCore.pyqtSignal(bool)
-    getDevices = QtCore.pyqtSignal(int)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, deviceList, params = {}):
         super().__init__()
@@ -309,9 +303,8 @@ class ThreadWrapper(QtCore.QObject):
 
         return states
 
+    @BaseThreadWrapper.runner
     def run(self):
-
-        self.disableInterface.emit(True)
 
         DBG = bool(os.environ.get('MSSDBG', False))
 
@@ -358,9 +351,6 @@ class ThreadWrapper(QtCore.QObject):
 
             self.updateTree.emit(w, b)
 
-        self.disableInterface.emit(False)
-
-        self.finished.emit()
         print("### MultiStateSeeker finished!")
 
 

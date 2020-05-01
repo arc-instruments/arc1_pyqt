@@ -21,6 +21,7 @@ import copy
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 import Graphics
@@ -566,28 +567,20 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
         return (Spos, Sneg, tp, tn, a0p, a1p, a0n, a1n, sgnPOS, sgnNEG, t[0])
 
 
-class ThreadWrapper(QtCore.QObject):
+class ThreadWrapper(BaseThreadWrapper):
 
-    finished = QtCore.pyqtSignal()
-    sendData = QtCore.pyqtSignal(int, int, float, float, float, str)
     sendDataCT = QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight = QtCore.pyqtSignal(int,int)
-    displayData = QtCore.pyqtSignal()
-    updateTree = QtCore.pyqtSignal(int, int)
-    disableInterface = QtCore.pyqtSignal(bool)
-    getDevices = QtCore.pyqtSignal(int)
 
     def __init__(self, deviceList, params = {}):
         super().__init__()
         self.deviceList = deviceList
         self.params = params
 
+    @BaseThreadWrapper.runner
     def run(self):
 
         global tag
         midTag = "%s_%%s_i" % tag
-
-        self.disableInterface.emit(True)
 
         DBG = bool(os.environ.get('PFDBG', False))
 
@@ -630,9 +623,6 @@ class ThreadWrapper(QtCore.QObject):
 
             self.updateTree.emit(w, b)
 
-        self.disableInterface.emit(False)
-
-        self.finished.emit()
 
     def curveTracer(self, w, b, vPos, vNeg, vStart, vStep, interpulse, pwstep, ctType, startTag, midTag, endTag):
 

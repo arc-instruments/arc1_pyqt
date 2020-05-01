@@ -14,6 +14,7 @@ import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -21,15 +22,8 @@ tag="MB"
 g.tagDict.update({tag:"MultiBias"})
 
 
-class ThreadWrapper(QtCore.QObject):
+class ThreadWrapper(BaseThreadWrapper):
 
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    updateTree=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
     updateCurrentRead=QtCore.pyqtSignal(float)
 
     def __init__(self, wLines, bLine, RW, V, pw):
@@ -40,9 +34,9 @@ class ThreadWrapper(QtCore.QObject):
         self.V=V
         self.pw=pw
 
+    @BaseThreadWrapper.runner
     def run(self):
 
-        self.disableInterface.emit(True)
         global tag
 
         if (self.RW==1): # READ operation
@@ -62,9 +56,6 @@ class ThreadWrapper(QtCore.QObject):
                 else:
                     self.sendData.emit(device,self.bLine,valuesNew[0],self.V/2,self.pw,"P")
                 self.updateTree.emit(device,self.bLine)
-
-        self.disableInterface.emit(False)
-        self.finished.emit()
 
 
 class MultiBias(QtWidgets.QWidget):

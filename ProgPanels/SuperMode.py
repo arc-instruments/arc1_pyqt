@@ -13,6 +13,7 @@ import ProgPanels.Basic.Loops
 from ProgPanels.Basic.Loops import Loop, End
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -68,14 +69,10 @@ tag="SM"
 g.tagDict.update({tag:"SuperMode"})
 
 
-class ThreadWrapper(QtCore.QObject):
+class ThreadWrapper(BaseThreadWrapper):
     global mutex
 
-    finished=QtCore.pyqtSignal()
-
     updateAddress=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    changeArcStatus=QtCore.pyqtSignal(str)
     globalDisableInterface=QtCore.pyqtSignal(bool)
 
     execute=QtCore.pyqtSignal(int)
@@ -85,8 +82,8 @@ class ThreadWrapper(QtCore.QObject):
         self.mainChain_indexes=mainChain_indexes
         self.deviceList=deviceList
 
+    @BaseThreadWrapper.runner
     def run(self):
-        self.disableInterface.emit(True)
         self.globalDisableInterface.emit(True)
 
         global tag
@@ -96,9 +93,6 @@ class ThreadWrapper(QtCore.QObject):
             self.ping_and_resolveLoops(self.mainChain_indexes)
 
         self.globalDisableInterface.emit(False)
-        self.disableInterface.emit(False)
-
-        self.finished.emit()
 
     def ping_and_resolveLoops(self, chain):
         i=0

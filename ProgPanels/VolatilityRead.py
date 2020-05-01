@@ -7,6 +7,7 @@ import numpy as np
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -14,16 +15,7 @@ tag="VOL"
 g.tagDict.update({tag:"VolatilityMeas"})
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    updateTree=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
-    changeArcStatus=QtCore.pyqtSignal(str)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, deviceList, A, pw, B, stopTime, stopConf, stopTol, stopOpt):
         super().__init__()
@@ -39,10 +31,10 @@ class ThreadWrapper(QtCore.QObject):
         # taken for t-test.
         self.ttestsamp = 25
 
+    @BaseThreadWrapper.runner
     def run(self):
 
         self.disableInterface.emit(True)
-        self.changeArcStatus.emit('Busy')
         global tag
 
         g.ser.write_b(str(int(len(self.deviceList)))+"\n")
@@ -157,11 +149,7 @@ class ThreadWrapper(QtCore.QObject):
 
             self.updateTree.emit(w,b)
 
-        self.disableInterface.emit(False)
-        self.changeArcStatus.emit('Ready')
         self.displayData.emit()
-
-        self.finished.emit()
 
 
 class VolatilityRead(QtWidgets.QWidget):

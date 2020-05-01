@@ -17,6 +17,7 @@ import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -25,15 +26,7 @@ tag="stdp"
 g.tagDict.update({tag:"STDP*"})
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    updateTree=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, deviceList, values, timeSteps):
         super().__init__()
@@ -47,9 +40,9 @@ class ThreadWrapper(QtCore.QObject):
         self.post_voltage=values[6]
         self.timeSteps=timeSteps
 
+    @BaseThreadWrapper.runner
     def run(self):
 
-        self.disableInterface.emit(True)
         global tag
 
         g.ser.write_b(str(int(len(self.deviceList)))+"\n")
@@ -107,10 +100,7 @@ class ThreadWrapper(QtCore.QObject):
             self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
             self.displayData.emit()
 
-        self.updateTree.emit(w,b)
-
-        self.disableInterface.emit(False)
-        self.finished.emit()
+            self.updateTree.emit(w,b)
 
     def make_time_series(self, dt, gain, warp, self_max_spike_time, self_pre_time, \
                          self_pre_voltage, self_post_time, self_post_voltage):

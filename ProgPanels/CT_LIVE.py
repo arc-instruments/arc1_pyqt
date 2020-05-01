@@ -17,6 +17,7 @@ import queue
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 import Graphics
@@ -32,9 +33,9 @@ class StartLiveThreadWrapper(QtCore.QObject):
     global mutex
     global global_stop
 
-    finished=QtCore.pyqtSignal()
-    disableInterface=QtCore.pyqtSignal(bool)
-    execute=QtCore.pyqtSignal(int)
+    finished = QtCore.pyqtSignal()
+    disableInterface = QtCore.pyqtSignal(bool)
+    execute = QtCore.pyqtSignal(int)
 
     def __init__(self):
         super().__init__()
@@ -56,15 +57,7 @@ class StartLiveThreadWrapper(QtCore.QObject):
         self.stop=True
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
-    changeArcStatus=QtCore.pyqtSignal(str)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self,deviceList,totalCycles):
         super().__init__()
@@ -72,6 +65,10 @@ class ThreadWrapper(QtCore.QObject):
         self.totalCycles=totalCycles
         self.stop=False
 
+    # NOTE: We do not decorate this class with @BaseThreadWrapper.runner
+    # because if we do the main interface will be enabled and disabled at
+    # **every** I-V which is annoying. Instead interfacing locking is
+    # governed by the `StartLiveThreadWrapper` thread instead.
     def run(self):
 
         global tag
@@ -526,7 +523,6 @@ class CT_LIVE(QtWidgets.QWidget):
         self.threadWrapper.highlight.connect(f.cbAntenna.cast)
         self.threadWrapper.displayData.connect(self.display_data)
         self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.threadWrapper.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def display_data(self):

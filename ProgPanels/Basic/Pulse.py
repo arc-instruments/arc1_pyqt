@@ -16,6 +16,7 @@ import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -23,24 +24,16 @@ tag="P"
 g.tagDict.update({tag:"Pulse"})
 
 
-class ThreadWrapper(QtCore.QObject):
+class ThreadWrapper(BaseThreadWrapper):
 
-    finished=QtCore.pyqtSignal()
-    sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight=QtCore.pyqtSignal(int,int)
-    displayData=QtCore.pyqtSignal()
-    updateTree=QtCore.pyqtSignal(int, int)
-    disableInterface=QtCore.pyqtSignal(bool)
-    getDevices=QtCore.pyqtSignal(int)
-
-    def __init__(self,amplitude,pw):
+    def __init__(self, amplitude, pw):
         super().__init__()
         self.amplitude=amplitude
         self.pw=pw
 
+    @BaseThreadWrapper.runner
     def run(self):
 
-        self.disableInterface.emit(True)
         global tag
 
         ser=g.ser                   # simplify the namespace
@@ -53,8 +46,6 @@ class ThreadWrapper(QtCore.QObject):
         ser.write_b(str(float(self.pw))+"\n")
 
         # Read the value of M after the pulse
-        
-        #currentline='%.0f' % float(ser.readline().rstrip())     # currentline contains the new Mnow value followed by 2 \n characters
         Mnow=f.getFloats(1)
         tag='P'
         self.sendData.emit(g.w,g.b,Mnow,self.amplitude,self.pw,tag)
@@ -64,9 +55,6 @@ class ThreadWrapper(QtCore.QObject):
         self.displayData.emit()
         self.updateTree.emit(g.w,g.b)
 
-        self.disableInterface.emit(False)
-        
-        self.finished.emit()
 
 class Pulse(QtWidgets.QWidget):
     

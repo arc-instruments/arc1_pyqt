@@ -50,6 +50,7 @@ import pyqtgraph
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
+from Globals.modutils import BaseThreadWrapper
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -60,16 +61,7 @@ tag="CTS"
 g.tagDict.update({tag:"Converge to State"})
 
 
-class ThreadWrapper(QtCore.QObject):
-
-    finished = QtCore.pyqtSignal()
-    sendData = QtCore.pyqtSignal(int, int, float, float, float, str)
-    sendDataCT = QtCore.pyqtSignal(int, int, float, float, float, str)
-    highlight = QtCore.pyqtSignal(int,int)
-    displayData = QtCore.pyqtSignal()
-    updateTree = QtCore.pyqtSignal(int, int)
-    disableInterface = QtCore.pyqtSignal(bool)
-    getDevices = QtCore.pyqtSignal(int)
+class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, deviceList, params = {}):
         super().__init__()
@@ -126,11 +118,10 @@ class ThreadWrapper(QtCore.QObject):
         g.ser.write_b("%d\n" % p["init_pol"])
         g.ser.write_b(str(len(self.deviceList)) + "\n")
 
+    @BaseThreadWrapper.runner
     def run(self):
 
         self.DBG = bool(os.environ.get('CTSDBG', False))
-
-        self.disableInterface.emit(True)
 
         self.sendParams()
 
@@ -141,9 +132,6 @@ class ThreadWrapper(QtCore.QObject):
             self.convergeToState(w, b)
             self.updateTree.emit(w, b)
 
-        self.disableInterface.emit(False)
-
-        self.finished.emit()
         self.log("ConvergeToState finished")
 
     def convergeToState(self, w, b):

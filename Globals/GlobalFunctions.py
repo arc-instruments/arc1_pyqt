@@ -11,7 +11,7 @@
 from . import GlobalVars as g
 from ._antennae import CBAntenna, DisplayUpdateAntenna, HistoryTreeAntenna
 from ._antennae import InterfaceAntenna, SAantenna, HoverAntenna, AddressAntenna
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 import numpy as np
 import collections
 import struct
@@ -108,4 +108,3 @@ def getFloats(n):
         extracted = g.ser.read(n)
     # returns a list of these floats
     return extracted
-
