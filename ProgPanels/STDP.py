@@ -15,6 +15,7 @@ import numpy as np
 import pyqtgraph as pg
 import time
 
+import Graphics
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
 from Globals.modutils import BaseThreadWrapper
@@ -794,7 +795,7 @@ class STDP(QtWidgets.QWidget):
         layout.addWidget(view)
         layout.setContentsMargins(0,0,0,0)
 
-        resultWindow.setLayout(resLayout)
+        resultWindow.setLayout(layout)
 
         return resultWindow
 
