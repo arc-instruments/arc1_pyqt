@@ -197,19 +197,19 @@ class HistoryWidget(QtWidgets.QWidget):
         currentTagKey=[]
         tagPartsUnder = str(tagString).split("_") # underscore delimited tags
         for tagKey in g.tagDict.keys():
-            # As the program stands we have two sets of tags
-            # either the regular XYZ_s, XYZ_i, XYZ_e for most
-            # modules, or space delimited for reads and stdp
-            # so first check the most standard case
-            if len(tagPartsUnder) > 1 and tagPartsUnder[0] == tagKey:
+            # check for standard read/pulse tags
+            if tagString.startswith(('P', 'S R', 'F R')):
                 tag.append(g.tagDict[tagKey])
                 currentTagKey=tagKey
                 break
-            # and the just revert to the old behaviour
-            elif str(tagString).startswith(tagKey):
-                tag.append(g.tagDict[tagKey])
-                currentTagKey=tagKey
-                break
+            # then any regular '_'-delimited tags
+            elif len(tagPartsUnder) > 1 and tagPartsUnder[0] == tagKey:
+                    tag.append(g.tagDict[tagKey])
+                    currentTagKey=tagKey
+                    break
+            # ignore unknown or intermediate tags
+            else:
+                pass
 
 
         # if the operation is a custom pulsing script (such as SS or CT or FF
@@ -224,9 +224,7 @@ class HistoryWidget(QtWidgets.QWidget):
         for point in auxArr:
             tagList.append(str(point[3]))
 
-
         if tag:
-
             if tag[0]!='Read' and tag[0]!='Pulse':
                 results=1
                 indexList[1]=len(g.Mhistory[w][b])-1
@@ -241,7 +239,6 @@ class HistoryWidget(QtWidgets.QWidget):
                     # This should not happen but in case it does drop back to the
                     # legacy behaviour
                     if lastIndex is None:
-                        print("index is NONE!!!")
                         lastIndex = tagList.index(currentTagKey+'_s')
 
                     indexList[0] = indexList[1] - lastIndex
