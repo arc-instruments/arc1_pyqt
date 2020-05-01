@@ -170,7 +170,6 @@ class draggableButton(QtWidgets.QPushButton):
         #thisID=QtCore.QByteArray(self.ID)
         thisID=self.ID.encode()
         module_id_dict[self.ID]=self.associate()
-        print("Placed with id ", self.ID, " associated with ", module_id_dict[self.ID])
         globalID+=1
 
         mimeData = QtCore.QMimeData()
@@ -260,7 +259,6 @@ class draggableButtonPlaced(QtWidgets.QPushButton):
             self.setStyleSheet(s.loop_style_bot_selected)
         else:
             self.setStyleSheet(s.selectedStyle)
-        print(self.module, " emitted")
 
 class draggableLoopPlaced(draggableButtonPlaced):
     def __init__(self, *args):
@@ -346,7 +344,6 @@ class dropZone(QtWidgets.QWidget):
 
             if index!='':
 
-                print("Dummy at index ", index, " | widget ", widg)
                 self.vbox.insertWidget(index, self.dummyBtn)
                 event.accept()
 
