@@ -4,6 +4,7 @@ import numpy as np
 import collections
 import struct
 from . import GlobalVars as g
+from . import GlobalFunctions as f
 from VirtualArC import VirtualArC
 
 
@@ -107,5 +108,5 @@ class AddressAntenna(QObject):
 
     def update(self, w,b):
         g.w,g.b=w,b
-        cbAntenna.selectDeviceSignal.emit(w, b)
+        f.cbAntenna.selectDeviceSignal.emit(w, b)
 
