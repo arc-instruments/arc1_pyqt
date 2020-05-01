@@ -23,7 +23,7 @@ import Globals.GlobalFunctions as f
 class NewSessionDialog(QtWidgets.QDialog):
 
     def __init__(self):
-        super(NewSessionDialog, self).__init__()
+        super().__init__()
 
         self.initUI()
 

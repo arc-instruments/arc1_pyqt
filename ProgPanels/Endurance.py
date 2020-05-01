@@ -31,7 +31,7 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
 
     def __init__(self,deviceList):
-        super(getData,self).__init__()
+        super().__init__()
         self.deviceList=deviceList
 
     def getIt(self):
@@ -82,7 +82,7 @@ class getData(QtCore.QObject):
 class Endurance(QtWidgets.QWidget):
 
     def __init__(self, short=False):
-        super(Endurance, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
 

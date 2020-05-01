@@ -17,15 +17,15 @@ import Globals.GlobalStyles as s
 
 
 class Loop(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
-        super(Loop, self).__init__()
+        super().__init__()
 
         self.short=short
-        
+
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 

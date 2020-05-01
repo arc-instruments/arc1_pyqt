@@ -53,7 +53,7 @@ class ThreadWrapper(QtCore.QObject):
     getDevices = QtCore.pyqtSignal(int)
 
     def __init__(self, deviceList, params = {}):
-        super(ThreadWrapper, self).__init__()
+        super().__init__()
         self.deviceList = deviceList
         self.params = params
         self.DBG = False
@@ -163,7 +163,7 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
     PROGRAM_ALL = 0x3
 
     def __init__(self, short=False):
-        super(ChronoAmperometry, self).__init__()
+        super().__init__()
         self.short = short
         self.thread = None
         self.threadWrapper = None

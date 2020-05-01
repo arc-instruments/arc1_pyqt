@@ -21,7 +21,7 @@ class CBAntenna(QObject):
     recolor=pyqtSignal(float, int, int)
 
     def __init__(self):
-        super(CBAntenna,self).__init__()
+        super().__init__()
 
     def cast(self,w,b):
         self.selectDeviceSignal.emit(w,b)
@@ -34,7 +34,7 @@ class DisplayUpdateAntenna(QObject):
     updateLog=pyqtSignal(int)
 
     def __init__(self):
-        super(DisplayUpdateAntenna,self).__init__()
+        super().__init__()
 
     def cast(self):
         self.updateSignal_short.emit()
@@ -49,7 +49,7 @@ class HistoryTreeAntenna(QObject):
     changeSessionName=pyqtSignal()
 
     def __init__(self):
-        super(HistoryTreeAntenna,self).__init__()
+        super().__init__()
 
 
 class InterfaceAntenna(QObject):
@@ -63,7 +63,7 @@ class InterfaceAntenna(QObject):
     globalDisable=False
 
     def __init__(self):
-        super(InterfaceAntenna,self).__init__()
+        super().__init__()
 
     def wakeUp(self):
         g.waitCondition.wakeAll()
@@ -89,7 +89,7 @@ class SAantenna(QObject):
     enable=pyqtSignal(int, int)
 
     def __init__(self):
-        super(SAantenna,self).__init__()
+        super().__init__()
 
 
 class HoverAntenna(QObject):
@@ -98,12 +98,12 @@ class HoverAntenna(QObject):
     hideHoverPanel=pyqtSignal()
 
     def __init__(self):
-        super(HoverAntenna,self).__init__()
+        super().__init__()
 
 
 class AddressAntenna(QObject):
     def __init__(self):
-        super(AddressAntenna,self).__init__()
+        super().__init__()
 
     def update(self, w,b):
         g.w,g.b=w,b

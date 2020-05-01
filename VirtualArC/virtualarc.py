@@ -15,10 +15,9 @@ write_scheme={'V/2':0.5}
 Vread=0.5
 
 
-class VirtualArC(object):
+class VirtualArC:
 
     def __init__(self, option):
-        super(VirtualArC, self).__init__()
         self.port="not none"
         self.crossbar=[[] for x in range(33)]
         self.counter=0

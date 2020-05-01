@@ -66,8 +66,8 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
     changeArcStatus=QtCore.pyqtSignal(str)
 
-    def __init__(self,deviceList,totalCycles):
-        super(getData,self).__init__()
+    def __init__(self, deviceList, totalCycles):
+        super().__init__()
         self.deviceList=deviceList
         self.totalCycles=totalCycles
 
@@ -129,7 +129,7 @@ class getData(QtCore.QObject):
 class CurveTracer(QtWidgets.QWidget):
 
     def __init__(self, short=False):
-        super(CurveTracer, self).__init__()
+        super().__init__()
 
         self.short=short
         self.initUI()

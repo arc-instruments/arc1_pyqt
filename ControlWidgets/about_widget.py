@@ -21,8 +21,8 @@ import Graphics
 
 class AboutWidget(QtWidgets.QWidget):
 
-    def __init__(self):
-        super(AboutWidget, self).__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
 
         self.initUI()
 

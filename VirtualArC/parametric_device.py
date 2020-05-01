@@ -1,11 +1,10 @@
 import numpy as np
 import collections
 
-class ParametricDevice(object):
+class ParametricDevice:
 
     def __init__(self, Ap, An, a0p, a1p, a0n, a1n, tp, tn):
 
-        super(ParametricDevice, self).__init__()
         self.Ap = Ap
         self.An = An
         self.a0p = a0p

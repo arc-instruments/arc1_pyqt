@@ -72,7 +72,7 @@ class ThreadWrapper(QtCore.QObject):
     getDevices = QtCore.pyqtSignal(int)
 
     def __init__(self, deviceList, params = {}):
-        super(ThreadWrapper, self).__init__()
+        super().__init__()
         self.deviceList = deviceList
         self.params = params
         self.DBG = False
@@ -191,7 +191,8 @@ class ConvergeToState(Ui_CTSParent, QtWidgets.QWidget):
     PROGRAM_ALL = 0x3
 
     def __init__(self, short=False):
-        super(ConvergeToState, self).__init__()
+        Ui_CTSParent.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.short = short
         self.thread = None
         self.threadWrapper = None

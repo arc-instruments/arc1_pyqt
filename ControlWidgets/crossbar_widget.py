@@ -23,7 +23,7 @@ from . import CrossbarContainerWidget
 class CrossbarWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(CrossbarWidget, self).__init__()
+        super().__init__()
 
         self.initUI()
 

@@ -21,7 +21,7 @@ import Globals.GlobalStyles as s
 class CrossbarContainerWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(CrossbarContainerWidget, self).__init__()
+        super().__init__()
 
         self.initUI()
 

@@ -165,7 +165,7 @@ def _curve_fit(func, x, y, **kwargs):
 class ModelWidget(QtWidgets.QWidget):
 
     def __init__(self, parameters, func, expression="", parent=None):
-        super(ModelWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.expressionLabel = QtWidgets.QLabel("Model expression: %s" % expression)
         self.parameterTable = QtWidgets.QTableWidget(len(parameters), 2, parent=self)
         self.parameterTable.horizontalHeader().setVisible(True)
@@ -208,7 +208,8 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
     mechanismParams = {'pos': None, 'neg': None}
 
     def __init__(self, w, b, raw_data, parent=None):
-        super(FitDialog, self).__init__(parent=parent)
+        Ui_FitDialogParent.__init__(self)
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Parameter fit for W=%d | B=%d" % (w, b))
         self.setWindowIcon(Graphics.getIcon('appicon'))
@@ -577,7 +578,7 @@ class ThreadWrapper(QtCore.QObject):
     getDevices = QtCore.pyqtSignal(int)
 
     def __init__(self, deviceList, params = {}):
-        super(ThreadWrapper, self).__init__()
+        super().__init__()
         self.deviceList = deviceList
         self.params = params
 
@@ -758,7 +759,7 @@ class ParameterFit(Ui_PFParent, QtWidgets.QWidget):
     PROGRAM_ALL = 0x3
 
     def __init__(self, short=False):
-        super(ParameterFit, self).__init__()
+        super().__init__()
         self.short = short
 
         self.setupUi(self)

@@ -25,7 +25,7 @@ class getData(QtCore.QObject):
     changeArcStatus=QtCore.pyqtSignal(str)
 
     def __init__(self, deviceList, A, pw, B, stopTime, stopConf, stopTol, stopOpt):
-        super(getData,self).__init__()
+        super().__init__()
         self.A=A
         self.pw=pw
         self.B=B
@@ -166,7 +166,7 @@ class getData(QtCore.QObject):
 class VolatilityRead(QtWidgets.QWidget):
 
     def __init__(self, short=False):
-        super(VolatilityRead, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
 

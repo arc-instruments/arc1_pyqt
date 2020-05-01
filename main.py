@@ -77,7 +77,7 @@ def write_b(ser, what):
 class Arcontrol(QtWidgets.QMainWindow):
 
     def __init__(self):
-        super(Arcontrol, self).__init__()
+        super().__init__()
 
         self.initUI()
 

@@ -3,7 +3,7 @@ import collections
 
 #with homeostasis
 
-class BiolekDevice(object):
+class BiolekDevice:
 
     def __init__(self, Ron=1e5, \
                        Roff=1e6, \
@@ -13,8 +13,6 @@ class BiolekDevice(object):
                        Vthrp=1, \
                        Vthrn=-1, \
                        p=1):
-
-        super(BiolekDevice, self).__init__()
 
         self.Ron=Ron
         self.Roff=Roff

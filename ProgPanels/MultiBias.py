@@ -32,7 +32,7 @@ class getData(QtCore.QObject):
     updateCurrentRead=QtCore.pyqtSignal(float)
 
     def __init__(self, wLines, bLine, RW, V, pw):
-        super(getData,self).__init__()
+        super().__init__()
         self.wLines=wLines
         self.bLine=bLine
         self.RW=RW
@@ -69,7 +69,7 @@ class getData(QtCore.QObject):
 class MultiBias(QtWidgets.QWidget):
 
     def __init__(self, short=False):
-        super(MultiBias, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
 

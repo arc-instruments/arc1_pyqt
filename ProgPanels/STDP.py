@@ -36,7 +36,7 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
 
     def __init__(self, deviceList, values, timeSteps):
-        super(getData,self).__init__()
+        super().__init__()
         self.deviceList=deviceList
         self.gain=values[0]
         self.warp=values[1]
@@ -193,7 +193,7 @@ class getData(QtCore.QObject):
 class STDP(QtWidgets.QWidget):
 
     def __init__(self, short=False):
-        super(STDP, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
 

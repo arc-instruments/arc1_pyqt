@@ -36,8 +36,8 @@ class getData(QtCore.QObject):
     disableInterface=QtCore.pyqtSignal(bool)
     getDevices=QtCore.pyqtSignal(int)
 
-    def __init__(self,deviceList):
-        super(getData,self).__init__()
+    def __init__(self, deviceList):
+        super().__init__()
         self.deviceList=deviceList
 
     def getIt(self):
@@ -89,7 +89,7 @@ class getData(QtCore.QObject):
 class SwitchSeeker(QtWidgets.QWidget):
 
     def __init__(self, short=False):
-        super(SwitchSeeker, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
 

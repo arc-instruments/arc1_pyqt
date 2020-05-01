@@ -31,7 +31,7 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
 
     def __init__(self, Vread, readType):
-        super(getData,self).__init__()
+        super().__init__()
         self.Vread=Vread
         self.readType=readType
 
@@ -83,7 +83,7 @@ class getData(QtCore.QObject):
 class READ(QtWidgets.QWidget):
     
     def __init__(self, short=False):
-        super(READ, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
         

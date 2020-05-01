@@ -19,7 +19,7 @@ import Globals.GlobalVars as g
 class DeviceWidget(QtWidgets.QWidget):
 
     def __init__(self, r, c, passive=False):
-        super(DeviceWidget, self).__init__()
+        super().__init__()
         self.r=r
         self.c=c
         self.passive = passive

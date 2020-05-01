@@ -35,8 +35,8 @@ class getData(QtCore.QObject):
     disableInterface=QtCore.pyqtSignal(bool)
     getDevices=QtCore.pyqtSignal(int)
 
-    def __init__(self,deviceList,every,duration,Vread):
-        super(getData,self).__init__()
+    def __init__(self, deviceList, every, duration, Vread):
+        super().__init__()
         self.deviceList=deviceList
         self.every=every
         self.duration=duration
@@ -112,7 +112,7 @@ class getData(QtCore.QObject):
 class Retention(QtWidgets.QWidget):
 
     def __init__(self, short=False):
-        super(Retention, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
 

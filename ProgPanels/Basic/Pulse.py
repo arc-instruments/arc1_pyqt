@@ -33,7 +33,7 @@ class getData(QtCore.QObject):
     getDevices=QtCore.pyqtSignal(int)
 
     def __init__(self,amplitude,pw):
-        super(getData,self).__init__()
+        super().__init__()
         self.amplitude=amplitude
         self.pw=pw
 
@@ -70,7 +70,7 @@ class getData(QtCore.QObject):
 class Pulse(QtWidgets.QWidget):
     
     def __init__(self, short=False):
-        super(Pulse, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
         

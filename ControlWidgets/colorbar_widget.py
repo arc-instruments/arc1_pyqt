@@ -13,7 +13,7 @@ from PyQt5 import QtGui, QtWidgets
 class ColorbarWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(ColorbarWidget, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):

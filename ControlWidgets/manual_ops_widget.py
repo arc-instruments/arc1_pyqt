@@ -28,7 +28,7 @@ class _ReadAllWorker(QtCore.QObject):
     tag='F R'+str(g.readOption)+' V='+str(Vread)
 
     def __init__(self):
-        super(_ReadAllWorker,self).__init__()
+        super().__init__()
 
     def readAll(self):
         self.w_old=g.w
@@ -74,7 +74,7 @@ class _ReadAllWorker(QtCore.QObject):
 
 class ManualOpsWidget(QtWidgets.QWidget):
     def __init__(self):
-        super(ManualOpsWidget, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):

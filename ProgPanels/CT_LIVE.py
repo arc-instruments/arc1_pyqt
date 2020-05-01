@@ -36,7 +36,7 @@ class startLive(QtCore.QObject):
     execute=QtCore.pyqtSignal(int)
 
     def __init__(self):
-        super(startLive,self).__init__()
+        super().__init__()
         self.stop=False
 
     def getIt(self):
@@ -66,7 +66,7 @@ class getData(QtCore.QObject):
     changeArcStatus=QtCore.pyqtSignal(str)
 
     def __init__(self,deviceList,totalCycles):
-        super(getData,self).__init__()
+        super().__init__()
         self.deviceList=deviceList
         self.totalCycles=totalCycles
         self.stop=False
@@ -129,7 +129,7 @@ class CT_LIVE(QtWidgets.QWidget):
     stop_signal=QtCore.pyqtSignal()
 
     def __init__(self, short=False):
-        super(CT_LIVE, self).__init__()
+        super().__init__()
 
         self.short=short
 

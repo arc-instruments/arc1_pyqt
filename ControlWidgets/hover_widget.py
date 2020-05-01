@@ -17,7 +17,7 @@ import Globals.GlobalFunctions as f
 class HoverWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(HoverWidget, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):

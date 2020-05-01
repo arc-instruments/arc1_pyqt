@@ -18,7 +18,7 @@ import Globals.GlobalFunctions as f
 class ConfigHardwareWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(ConfigHardwareWidget, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):

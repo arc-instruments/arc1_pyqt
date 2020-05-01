@@ -13,7 +13,7 @@ from PyQt5 import QtGui, QtWidgets
 class CellWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(CellWidget, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):

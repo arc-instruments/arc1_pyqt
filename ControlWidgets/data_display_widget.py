@@ -24,7 +24,7 @@ import Globals.GlobalStyles as s
 class DataDisplayWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(DataDisplayWidget, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):

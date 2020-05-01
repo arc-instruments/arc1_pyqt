@@ -21,7 +21,7 @@ import Globals.GlobalVars as g
 class ProgPanelWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(ProgPanelWidget, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):

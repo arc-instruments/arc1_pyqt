@@ -28,7 +28,7 @@ class getData(QtCore.QObject):
     disableInterface=QtCore.pyqtSignal(bool)
 
     def __init__(self,delay):
-        super(getData,self).__init__()
+        super().__init__()
         self.delay=delay
 
     def getIt(self):
@@ -44,7 +44,7 @@ class getData(QtCore.QObject):
 class Delay(QtWidgets.QWidget):
     
     def __init__(self, short=False):
-        super(Delay, self).__init__()
+        super().__init__()
         self.short=short
         self.initUI()
         

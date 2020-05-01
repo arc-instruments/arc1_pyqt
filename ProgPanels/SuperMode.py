@@ -79,8 +79,8 @@ class getData(QtCore.QObject):
 
     execute=QtCore.pyqtSignal(int)
 
-    def __init__(self,mainChain_indexes, deviceList):
-        super(getData,self).__init__()
+    def __init__(self, mainChain_indexes, deviceList):
+        super().__init__()
         self.mainChain_indexes=mainChain_indexes
         self.deviceList=deviceList
 
@@ -146,7 +146,7 @@ class draggableButton(QtWidgets.QPushButton):
     def __init__(self, moduleName):
         self.what = moduleName
         self.name = self.what.split(".")[-1]
-        super(draggableButton,self).__init__(self.name)
+        super().__init__(self.name)
         self.setStyleSheet("font-size: 7pt; min-height: 15px;")
         if moduleName=='Loop':
             self.setText("Start Loop")
@@ -206,7 +206,7 @@ class draggableButtonPlaced(QtWidgets.QPushButton):
 
     what="A Draggable Button"
     def __init__(self, *args):
-        super(draggableButtonPlaced,self).__init__(*args)
+        super().__init__(*args)
         self.what=args[0]
         try:
             self.module=args[1]
@@ -265,7 +265,7 @@ class draggableButtonPlaced(QtWidgets.QPushButton):
 class draggableLoopPlaced(draggableButtonPlaced):
     def __init__(self, *args):
         global loop_style_top
-        super(draggableLoopPlaced,self).__init__(*args)
+        super().__init__(*args)
         self.setStyleSheet(s.loop_style_top)
         self.setFixedHeight(16)
         self.setFixedWidth(120)
@@ -274,7 +274,7 @@ class draggableLoopPlaced(draggableButtonPlaced):
 class draggableLoopPlacedEnd(draggableButtonPlaced):
     def __init__(self, *args):
         global loop_style_top
-        super(draggableLoopPlacedEnd,self).__init__(*args)
+        super().__init__(*args)
         self.setStyleSheet(s.loop_style_bot)
         self.setFixedHeight(16)
         self.setFixedWidth(120)
@@ -282,7 +282,7 @@ class draggableLoopPlacedEnd(draggableButtonPlaced):
 
 class draggableButtonPlacedDummy(draggableButtonPlaced):
     def __init__(self, *args):
-        super(draggableButtonPlacedDummy,self).__init__("")
+        super().__init__("")
         self.setStyleSheet(s.dummy_style)
         self.setFixedWidth(100)
 
@@ -292,7 +292,7 @@ class dropZone(QtWidgets.QWidget):
 
     lastPosition=0
     def __init__(self):
-        super(dropZone, self).__init__()
+        super().__init__()
         self.setFixedWidth(100)
         self.setMinimumHeight(100)
         self.setAcceptDrops(True)
@@ -443,7 +443,7 @@ class dropZone(QtWidgets.QWidget):
 
 class centerWidget(QtWidgets.QWidget):
     def __init__(self, btn):
-        super(QtWidgets.QWidget,self).__init__()
+        super().__init__()
         self.setFixedHeight(placed_module_height)
         self.setContentsMargins(0,0,0,0)
         self.btn=btn
@@ -466,7 +466,7 @@ class centerWidget(QtWidgets.QWidget):
 class SuperMode(QtWidgets.QWidget):
 
     def __init__(self):
-        super(SuperMode, self).__init__()
+        super().__init__()
         self.initUI()
 
     def initUI(self):
