@@ -22,7 +22,8 @@ import Globals.GlobalStyles as s
 tag="P"
 g.tagDict.update({tag:"Pulse"})
 
-class getData(QtCore.QObject):
+
+class ThreadWrapper(QtCore.QObject):
 
     finished=QtCore.pyqtSignal()
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
@@ -37,7 +38,7 @@ class getData(QtCore.QObject):
         self.amplitude=amplitude
         self.pw=pw
 
-    def getIt(self):
+    def run(self):
 
         self.disableInterface.emit(True)
         global tag
@@ -222,17 +223,17 @@ class Pulse(QtWidgets.QWidget):
         #duration=float(self.leftEdits[1].text())*60
         self.extractParams()
         self.thread=QtCore.QThread()
-        self.getData=getData(self.amplitude, self.pw)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.threadWrapper=ThreadWrapper(self.amplitude, self.pw)
+        self.threadWrapper.moveToThread(self.thread)
+        self.thread.started.connect(self.threadWrapper.run)
+        self.threadWrapper.finished.connect(self.thread.quit)
+        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
+        self.thread.finished.connect(self.threadWrapper.deleteLater)
+        self.threadWrapper.sendData.connect(f.updateHistory)
+        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
+        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
+        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
         self.thread.start()

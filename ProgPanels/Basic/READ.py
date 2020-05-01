@@ -20,7 +20,8 @@ import Globals.GlobalStyles as s
 tag="Read"
 g.tagDict.update({tag:"Read"})
 
-class getData(QtCore.QObject):
+
+class ThreadWrapper(QtCore.QObject):
 
     finished=QtCore.pyqtSignal()
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
@@ -35,7 +36,7 @@ class getData(QtCore.QObject):
         self.Vread=Vread
         self.readType=readType
 
-    def getIt(self):
+    def run(self):
 
         self.disableInterface.emit(True)
         global tag
@@ -47,7 +48,7 @@ class getData(QtCore.QObject):
             job='01'
             g.ser.write_b(job+"\n")
             g.ser.write_b(str(float(self.readType))+"\n")
-            g.ser.write_b(str(float(self.Vread))+"\n")       
+            g.ser.write_b(str(float(self.Vread))+"\n")
 
         job="1"
         g.ser.write_b(job+"\n")
@@ -76,7 +77,7 @@ class getData(QtCore.QObject):
             g.ser.write_b(str(float(g.Vread))+"\n") 
 
         self.disableInterface.emit(False)
-        
+
         self.finished.emit()
 
 
@@ -234,17 +235,17 @@ class READ(QtWidgets.QWidget):
     def programOne(self):
 
         self.thread=QtCore.QThread()
-        self.getData=getData(self.Vread, self.readOption)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.threadWrapper=ThreadWrapper(self.Vread, self.readOption)
+        self.threadWrapper.moveToThread(self.thread)
+        self.thread.started.connect(self.threadWrapper.run)
+        self.threadWrapper.finished.connect(self.thread.quit)
+        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
+        self.thread.finished.connect(self.threadWrapper.deleteLater)
+        self.threadWrapper.sendData.connect(f.updateHistory)
+        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
+        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
+        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
 

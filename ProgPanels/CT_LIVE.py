@@ -27,7 +27,8 @@ global_stop=False
 tag="CT"
 g.tagDict.update({tag:"CurveTracer*"})
 
-class startLive(QtCore.QObject):
+
+class StartLiveThreadWrapper(QtCore.QObject):
     global mutex
     global global_stop
 
@@ -39,7 +40,7 @@ class startLive(QtCore.QObject):
         super().__init__()
         self.stop=False
 
-    def getIt(self):
+    def run(self):
         self.disableInterface.emit(True)
         while not self.stop:
             mutex.lock()
@@ -55,7 +56,7 @@ class startLive(QtCore.QObject):
         self.stop=True
 
 
-class getData(QtCore.QObject):
+class ThreadWrapper(QtCore.QObject):
 
     finished=QtCore.pyqtSignal()
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
@@ -71,7 +72,7 @@ class getData(QtCore.QObject):
         self.totalCycles=totalCycles
         self.stop=False
 
-    def getIt(self):
+    def run(self):
 
         global tag
 
@@ -441,23 +442,23 @@ class CT_LIVE(QtWidgets.QWidget):
             self.push_one.setEnabled(False)
             self.push_save.setEnabled(False)
 
-            self.startLive=startLive()
-            self.startLive.moveToThread(self.live_thread)
-            self.live_thread.started.connect(self.startLive.getIt)
-            self.startLive.finished.connect(self.live_thread.quit)
-            self.startLive.finished.connect(self.startLive.deleteLater)
-            self.live_thread.finished.connect(self.startLive.deleteLater)
-            self.startLive.disableInterface.connect(f.interfaceAntenna.cast)
-            self.startLive.execute.connect(self.programOne)
+            self.startLiveWrapper=StartLiveThreadWrapper()
+            self.startLiveWrapper.moveToThread(self.live_thread)
+            self.live_thread.started.connect(self.startLiveWrapper.run)
+            self.startLiveWrapper.finished.connect(self.live_thread.quit)
+            self.startLiveWrapper.finished.connect(self.startLiveWrapper.deleteLater)
+            self.live_thread.finished.connect(self.startLiveWrapper.deleteLater)
+            self.startLiveWrapper.disableInterface.connect(f.interfaceAntenna.cast)
+            self.startLiveWrapper.execute.connect(self.programOne)
 
-            self.stop_signal.connect(self.startLive.stop_live)
+            self.stop_signal.connect(self.startLiveWrapper.stop_live)
 
             self.live_thread.start()
 
         else:
             self.is_live=False
             global_stop=True
-            self.startLive.stop=True
+            self.startLiveWrapper.stop=True
             self.push_live.setStyleSheet(s.btnStyle)
             self.push_live.setText("GO LIVE!")
             self.push_one.setEnabled(True)
@@ -509,23 +510,23 @@ class CT_LIVE(QtWidgets.QWidget):
             self.sendParams(totalCycles)
 
             self.thread=QtCore.QThread()
-            self.getData=getData([[g.w,g.b]],totalCycles)
+            self.threadWrapper=ThreadWrapper([[g.w,g.b]],totalCycles)
             self.finalise_thread_initialisation()
 
             self.thread.start()
 
 
     def finalise_thread_initialisation(self):
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(self.record_data)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(self.display_data)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
-        self.getData.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
+        self.threadWrapper.moveToThread(self.thread)
+        self.thread.started.connect(self.threadWrapper.run)
+        self.threadWrapper.finished.connect(self.thread.quit)
+        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
+        self.thread.finished.connect(self.threadWrapper.deleteLater)
+        self.threadWrapper.sendData.connect(self.record_data)
+        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(self.display_data)
+        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
+        self.threadWrapper.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def display_data(self):

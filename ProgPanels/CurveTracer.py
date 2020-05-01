@@ -55,7 +55,7 @@ def _min_without_inf(lst, exclude):
     return maxim
 
 
-class getData(QtCore.QObject):
+class ThreadWrapper(QtCore.QObject):
 
     finished=QtCore.pyqtSignal()
     sendData=QtCore.pyqtSignal(int, int, float, float, float, str)
@@ -71,7 +71,7 @@ class getData(QtCore.QObject):
         self.deviceList=deviceList
         self.totalCycles=totalCycles
 
-    def getIt(self):
+    def run(self):
 
         self.disableInterface.emit(True)
         #self.changeArcStatus.emit('Busy')
@@ -125,6 +125,7 @@ class getData(QtCore.QObject):
 
         self.disableInterface.emit(False)
         self.finished.emit()
+
 
 class CurveTracer(QtWidgets.QWidget):
 
@@ -418,7 +419,7 @@ class CurveTracer(QtWidgets.QWidget):
             self.sendParams()
 
             self.thread=QtCore.QThread()
-            self.getData=getData([[g.w,g.b]],totalCycles)
+            self.threadWrapper=ThreadWrapper([[g.w,g.b]],totalCycles)
             self.finalise_thread_initialisation()
 
             self.thread.start()
@@ -435,7 +436,7 @@ class CurveTracer(QtWidgets.QWidget):
             self.sendParams()
 
             self.thread=QtCore.QThread()
-            self.getData=getData(rangeDev,totalCycles)
+            self.threadWrapper=ThreadWrapper(rangeDev,totalCycles)
             self.finalise_thread_initialisation()
 
             self.thread.start()
@@ -450,23 +451,23 @@ class CurveTracer(QtWidgets.QWidget):
 
             self.sendParams()
             self.thread=QtCore.QThread()
-            self.getData=getData(rangeDev,totalCycles)
+            self.threadWrapper=ThreadWrapper(rangeDev,totalCycles)
             self.finalise_thread_initialisation()
 
             self.thread.start()
 
     def finalise_thread_initialisation(self):
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.sendData.connect(f.updateHistory_CT)
-        self.getData.highlight.connect(f.cbAntenna.cast)
-        self.getData.displayData.connect(f.displayUpdate.cast)
-        self.getData.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
-        self.getData.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
+        self.threadWrapper.moveToThread(self.thread)
+        self.thread.started.connect(self.threadWrapper.run)
+        self.threadWrapper.finished.connect(self.thread.quit)
+        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
+        self.thread.finished.connect(self.threadWrapper.deleteLater)
+        self.threadWrapper.sendData.connect(f.updateHistory_CT)
+        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
+        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
+        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
+        self.threadWrapper.changeArcStatus.connect(f.interfaceAntenna.castArcStatus)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
     def makeDeviceList(self,isRange):

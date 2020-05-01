@@ -22,7 +22,8 @@ import Globals.GlobalStyles as s
 tag="DEL"
 g.tagDict.update({tag:"Delay"})
 
-class getData(QtCore.QObject):
+
+class ThreadWrapper(QtCore.QObject):
 
     finished=QtCore.pyqtSignal()
     disableInterface=QtCore.pyqtSignal(bool)
@@ -31,15 +32,16 @@ class getData(QtCore.QObject):
         super().__init__()
         self.delay=delay
 
-    def getIt(self):
+    def run(self):
 
         self.disableInterface.emit(True)
 
         time.sleep(self.delay)
 
         self.disableInterface.emit(False)
-        
+
         self.finished.emit()
+
 
 class Delay(QtWidgets.QWidget):
     
@@ -180,13 +182,13 @@ class Delay(QtWidgets.QWidget):
     def programOne(self):
         self.extractParams()
         self.thread=QtCore.QThread()
-        self.getData=getData(self.delay)
-        self.getData.moveToThread(self.thread)
-        self.thread.started.connect(self.getData.getIt)
-        self.getData.finished.connect(self.thread.quit)
-        self.getData.finished.connect(self.getData.deleteLater)
-        self.thread.finished.connect(self.getData.deleteLater)
-        self.getData.disableInterface.connect(f.interfaceAntenna.cast)
+        self.threadWrapper=ThreadWrapper(self.delay)
+        self.threadWrapper.moveToThread(self.thread)
+        self.thread.started.connect(self.threadWrapper.run)
+        self.threadWrapper.finished.connect(self.thread.quit)
+        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
+        self.thread.finished.connect(self.threadWrapper.deleteLater)
+        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
         self.thread.finished.connect(f.interfaceAntenna.wakeUp)
 
         self.thread.start()
