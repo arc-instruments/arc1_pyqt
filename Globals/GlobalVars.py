@@ -8,6 +8,8 @@
 ####################################
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import matplotlib
+matplotlib.rcParams['backend'] = 'Qt5Agg'
 import matplotlib.pyplot as mpl
 import numpy as np
 import serial
