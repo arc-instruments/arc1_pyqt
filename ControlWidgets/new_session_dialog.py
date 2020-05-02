@@ -37,28 +37,6 @@ class NewSessionDialog(QtWidgets.QDialog):
         logoTop.setPixmap(Graphics.getPixmap('new-session-banner'))
         mainLayout.addWidget(logoTop)
 
-        if sys.version_info.major == 2:
-            self.pythonWarningGroupBox = QtGui.QGroupBox('Python migration')
-            self.pythonWarningGroupBox.setStyleSheet(s.groupStyleNewSesh)
-            self.pythonWarningGroupBox.setFont(fonts.font2)
-            warningLabelText = "ArC ONE is migrating to Python 3.x. Python 2.x "+ \
-                    "will not be supported past August 31, 2019." + \
-                    "This <b>will not affect you</b> if you are running the built-in "+ \
-                    "modules, but <b>if you have custom modules</b> you should "+ \
-                    "prepare to migrate them to Python 3.6+. The ArC Instruments "+ \
-                    "team can help you during the transition. If you need any "+ \
-                    "help send us an e-mail at <b>py3migrate@arc-instruments.co.uk</b>."
-            warningLabel = QtGui.QLabel(self)
-            warningLabel.setText(warningLabelText)
-            warningLabel.setFont(fonts.font3)
-            warningLabel.setStyleSheet(" color: #CC0000; ")
-            warningLabel.setWordWrap(True)
-            warningLayout = QtGui.QGridLayout()
-            warningLayout.setContentsMargins(10, 10, 10, 5)
-            warningLayout.addWidget(warningLabel, 0, 0)
-            self.pythonWarningGroupBox.setLayout(warningLayout)
-            mainLayout.addWidget(self.pythonWarningGroupBox)
-
         # Setup general settings
         self.generalSettings = QtWidgets.QGroupBox('General Settings')
         self.generalSettings.setStyleSheet(s.groupStyleNewSesh)
