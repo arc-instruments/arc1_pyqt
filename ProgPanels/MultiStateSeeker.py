@@ -677,7 +677,8 @@ class MultiStateSeeker(Ui_MSSParent, QtWidgets.QWidget):
 
     @staticmethod
     def display(w, b, data, parent=None):
-        dialog = QtWidgets.QDialog(parent, QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowSystemMenuHint)
+        dialog = QtWidgets.QDialog(parent)
+        dialog.setWindowFlag(QtCore.Qt.WindowContextHelpButtonHint, False)
         containerLayout = QtWidgets.QHBoxLayout()
         dialog.setLayout(containerLayout)
         tabs = QtWidgets.QTabWidget(dialog)
