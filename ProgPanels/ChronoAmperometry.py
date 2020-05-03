@@ -31,7 +31,7 @@ import pyqtgraph
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
-from Globals.modutils import BaseThreadWrapper
+from Globals.modutils import BaseThreadWrapper, BaseProgPanel
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -144,17 +144,17 @@ class ThreadWrapper(BaseThreadWrapper):
         self.log("ChronoAmperometry on (W=%d, B=%d) finished..." % (w, b))
 
 
-class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
+class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
 
     PROGRAM_ONE = 0x1
     PROGRAM_RANGE = 0x2
     PROGRAM_ALL = 0x3
 
     def __init__(self, short=False):
-        super().__init__()
-        self.short = short
-        self.thread = None
-        self.threadWrapper = None
+        Ui_ChronoAmpParent.__init__(self)
+        BaseProgPanel.__init__(self, title="ChronoAmperometry", \
+                description="Read a device continuously under bias", \
+                short=short)
 
         self.setupUi(self)
 
@@ -167,11 +167,15 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
         self.applyValidators()
 
         if not self.short:
-            self.applyOneButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ONE))
-            self.applyAllButton.clicked.connect(partial(self.programDevs, self.PROGRAM_ALL))
-            self.applyRangeButton.clicked.connect(partial(self.programDevs, self.PROGRAM_RANGE))
+            self.applyOneButton.clicked.connect(partial(self.programDevs, \
+                    self.PROGRAM_ONE))
+            self.applyAllButton.clicked.connect(partial(self.programDevs, \
+                    self.PROGRAM_ALL))
+            self.applyRangeButton.clicked.connect(partial(self.programDevs, \
+                    self.PROGRAM_RANGE))
         else:
-            for wdg in [self.applyOneButton, self.applyAllButton, self.applyRangeButton]:
+            for wdg in [self.applyOneButton, self.applyAllButton, \
+                    self.applyRangeButton]:
                 wdg.hide()
 
     def applyValidators(self):
@@ -264,64 +268,17 @@ class ChronoAmperometry(Ui_ChronoAmpParent, QtWidgets.QWidget):
             devs = [[g.w, g.b]]
         else:
             if programType == self.PROGRAM_RANGE:
-                devs = self.makeDeviceList(True)
+                devs = makeDeviceList(True)
             else:
-                devs = self.makeDeviceList(False)
+                devs = makeDeviceList(False)
 
         allData = self.gatherData()
 
-        self.thread = QtCore.QThread()
-        self.threadWrapper = ThreadWrapper(devs, allData)
-
-        self.threadWrapper.moveToThread(self.thread)
-        self.thread.started.connect(self.threadWrapper.run)
-        self.threadWrapper.finished.connect(self.thread.quit)
-        self.threadWrapper.finished.connect(self.threadWrapperFinished)
-        self.thread.finished.connect(self.threadFinished)
-        self.threadWrapper.sendData.connect(f.updateHistory)
-        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
-
-        self.thread.start()
-
-    def threadFinished(self):
-        self.thread.wait()
-        self.thread = None
-
-    def threadWrapperFinished(self):
-        self.threadWrapper = None
+        wrapper = ThreadWrapper(devs, allData)
+        self.execute(wrapper, wrapper.run)
 
     def disableProgPanel(self, state):
         self.hboxProg.setEnabled(not state)
 
-    def makeDeviceList(self,isRange):
-        rangeDev = []
-        if isRange == False:
-            minW = 1
-            maxW = g.wline_nr
-            minB = 1
-            maxB = g.bline_nr
-        else:
-            minW = g.minW
-            maxW = g.maxW
-            minB = g.minB
-            maxB = g.maxB
-
-        # Find how many SA devices are contained in the range
-        if g.checkSA == False:
-            for w in range(minW, maxW + 1):
-                for b in range(minB, maxB + 1):
-                    rangeDev.append([w, b])
-        else:
-            for w in range(minW, maxW + 1):
-                for b in range(minB, maxB + 1):
-                    for cell in g.customArray:
-                        if (cell[0] == w and cell[1] == b):
-                            rangeDev.append(cell)
-
-        return rangeDev
 
 g.DispCallbacks[tag] = ChronoAmperometry.display

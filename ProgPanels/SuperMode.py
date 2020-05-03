@@ -13,7 +13,7 @@ import ProgPanels.Basic.Loops
 from ProgPanels.Basic.Loops import Loop, End
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
-from Globals.modutils import BaseThreadWrapper
+from Globals.modutils import BaseThreadWrapper, makeDeviceList
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -778,42 +778,30 @@ class SuperMode(QtWidgets.QWidget):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
 
     def programOne(self):
-        if g.ser.port != None:
-            mainChain_indexes = self.extractModuleChain()
-
-            if mainChain_indexes==False:
-                self.throw_wrong_loops_dialogue()
-            else:
-                self.thread=QtCore.QThread()
-                self.threadWrapper=ThreadWrapper(mainChain_indexes, [[g.w,g.b]])
-                self.finalise_thread_initialisation()
-                self.thread.start()
+        devs = [[g.w, g.b]]
+        self.programDevs(devs)
 
     def programRange(self):
-        if g.ser.port != None:
-            rangeDev=self.makeDeviceList(True)
-            mainChain_indexes = self.extractModuleChain()
-
-            if mainChain_indexes==False:
-                self.throw_wrong_loops_dialogue(self)
-            else:
-                self.thread=QtCore.QThread()
-                self.threadWrapper=ThreadWrapper(mainChain_indexes, rangeDev)
-                self.finalise_thread_initialisation()
-                self.thread.start()
+        devs = makeDeviceList(True)
+        self.programDevs(devs)
 
     def programAll(self):
-        if g.ser.port != None:
-            rangeDev=self.makeDeviceList(False)
-            mainChain_indexes = self.extractModuleChain()
+        devs = makeDeviceList(False)
+        self.programDevs(devs)
 
-            if mainChain_indexes==False:
-                self.throw_wrong_loops_dialogue()
-            else:
-                self.thread=QtCore.QThread()
-                self.threadWrapper=ThreadWrapper(mainChain_indexes, rangeDev)
-                self.finalise_thread_initialisation()
-                self.thread.start()
+    def programDevs(self, devs):
+        if g.ser.port is None:
+            return
+
+        mainChain_indexes = self.extractModuleChain()
+
+        if mainChain_indexes == False:
+            self.throw_wrong_loops_dialogue()
+        else:
+            self.thread = QtCore.QThread()
+            self.threadWrapper = ThreadWrapper(mainChain_indexes, devs)
+            self.finalise_thread_initialisation()
+            self.thread.start()
 
     def finalise_thread_initialisation(self):
         self.threadWrapper.moveToThread(self.thread)
@@ -830,33 +818,4 @@ class SuperMode(QtWidgets.QWidget):
         #print "###### EXECUTING ", index
         #time.sleep(0.001)
         self.mainChain[index].programOne()
-
-    def makeDeviceList(self,isRange):
-        #if g.checkSA=False:
-        rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0
-        if isRange==False:
-            minW=1
-            maxW=g.wline_nr
-            minB=1
-            maxB=g.bline_nr
-        else:
-            minW=g.minW
-            maxW=g.maxW
-            minB=g.minB
-            maxB=g.maxB
-
-        # Find how many SA devices are contained in the range
-        if g.checkSA==False:
-            for w in range(minW,maxW+1):
-                for b in range(minB,maxB+1):
-                    rangeDev.append([w,b])
-        else:
-            for w in range(minW,maxW+1):
-                for b in range(minB,maxB+1):
-                    for cell in g.customArray:
-                        if (cell[0]==w and cell[1]==b):
-                            rangeDev.append(cell)
-
-        return rangeDev
 

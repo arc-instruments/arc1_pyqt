@@ -7,7 +7,7 @@ import numpy as np
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
-from Globals.modutils import BaseThreadWrapper
+from Globals.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -152,20 +152,21 @@ class ThreadWrapper(BaseThreadWrapper):
         self.displayData.emit()
 
 
-class VolatilityRead(QtWidgets.QWidget):
+class VolatilityRead(BaseProgPanel):
 
     def __init__(self, short=False):
-        super().__init__()
-        self.short=short
+        super().__init__(title="VolatilityRead", \
+                description="Measurement protocol for volatile memristors.", \
+                short=short)
         self.initUI()
 
     def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtWidgets.QLabel('VolatilityRead')
+        titleLabel = QtWidgets.QLabel(self.title)
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtWidgets.QLabel('Measurement protocol for volatile memristors.')
+        descriptionLabel = QtWidgets.QLabel(self.description)
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -278,18 +279,12 @@ class VolatilityRead(QtWidgets.QWidget):
         if self.short==False:
             self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtWidgets.QPushButton('Apply to One')
-            push_range=QtWidgets.QPushButton('Apply to Range')
-            push_all=QtWidgets.QPushButton('Apply to All')
-
-            push_single.setStyleSheet(s.btnStyle)
-            push_range.setStyleSheet(s.btnStyle)
-            push_all.setStyleSheet(s.btnStyle)
-
-            push_single.clicked.connect(self.programOne)
-            push_range.clicked.connect(self.programRange)
-
-            push_all.clicked.connect(self.programAll)
+            push_single = self.makeControlButton('Appy to One', \
+                    self.programOne)
+            push_range = self.makeControlButton('Apply to Range', \
+                    self.programRange)
+            push_all = self.makeControlButton('Apply to All', \
+                    self.programAll)
 
             self.hboxProg.addWidget(push_single)
             self.hboxProg.addWidget(push_range)
@@ -354,28 +349,34 @@ class VolatilityRead(QtWidgets.QWidget):
         g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
 
     def programOne(self):
-        if g.ser.port != None:
-            B=int(self.leftEdits[2].text())
-            stopTime=int(self.rightEdits[0].text())
-            stopConf=float(self.rightEdits[1].text())
-            stopTol = float(self.rightEdits[2].text())/100
+        self.programDevs([[g.w, g.b]])
 
-            A=float(self.leftEdits[0].text())
-            pw=float(self.leftEdits[1].text())/1000000
+    def programRange(self):
+        devs = makeDeviceList(True)
+        self.programDevs(devs)
 
-            job="33"
-            g.ser.write_b(job+"\n")
+    def programAll(self):
+        devs = makeDeviceList(False)
+        self.programDevs(devs)
 
-            self.sendParams()
+    def programDevs(self, devs):
 
-            self.thread=QtCore.QThread()
-            self.threadWrapper=\
-                    ThreadWrapper([[g.w,g.b]], A, pw, B, stopTime, stopConf, \
-                    stopTol, self.combo_stopOptions.currentText())
-            self.threadWrapper.moveToThread(self.thread)
-            self.finalise_thread_initialisation()
+        B = int(self.leftEdits[2].text())
+        stopTime = int(self.rightEdits[0].text())
+        stopConf = float(self.rightEdits[1].text())
+        stopTol = float(self.rightEdits[2].text())/100
 
-            self.thread.start()
+        A = float(self.leftEdits[0].text())
+        pw = float(self.leftEdits[1].text())/1000000
+
+        job="33"
+        g.ser.write_b(job+"\n")
+
+        self.sendParams()
+
+        wrapper = ThreadWrapper(devs, A, pw, B, stopTime, stopConf, \
+                stopTol, self.combo_stopOptions.currentText())
+        self.execute(wrapper, wrapper.run)
 
     def disableProgPanel(self,state):
         if state==True:
@@ -383,93 +384,3 @@ class VolatilityRead(QtWidgets.QWidget):
         else:
             self.hboxProg.setEnabled(True)
 
-    def programRange(self):
-        if g.ser.port != None:
-            B=int(self.leftEdits[2].text())
-            stopTime=int(self.rightEdits[0].text())
-            stopConf=float(self.rightEdits[1].text())
-            stopTol = float(self.rightEdits[2].text())/100 #Convert % into normal.
-
-            A=float(self.leftEdits[0].text())
-            pw=float(self.leftEdits[1].text())/1000000
-
-            rangeDev=self.makeDeviceList(True)
-
-            job="33"
-            g.ser.write_b(job+"\n")
-
-            self.sendParams()
-
-            self.thread=QtCore.QThread()
-            self.threadWrapper=\
-                    ThreadWrapper(rangeDev, A, pw, B, stopTime, stopConf, \
-                    stopTol, self.combo_stopOptions.currentText())
-            self.finalise_thread_initialisation()
-
-            self.thread.start()
-
-    def programAll(self):
-        if g.ser.port != None:
-            B=int(self.leftEdits[2].text())
-            stopTime=int(self.rightEdits[0].text())
-            stopConf=float(self.rightEdits[1].text())
-            stopTol = float(self.rightEdits[2].text())/100
-
-            A=float(self.leftEdits[0].text())
-            pw=float(self.leftEdits[1].text())/1000000
-
-            rangeDev=self.makeDeviceList(False)
-
-            job="33"
-            g.ser.write_b(job+"\n")
-
-            self.sendParams()
-
-            self.thread=QtCore.QThread()
-            self.threadWrapper=\
-                    ThreadWrapper(rangeDev, A, pw, B, stopTime, stopConf, \
-                    stopTol, self.combo_stopOptions.currentText())
-            self.finalise_thread_initialisation()
-
-            self.thread.start()
-
-    def finalise_thread_initialisation(self):
-        self.threadWrapper.moveToThread(self.thread)
-        self.thread.started.connect(self.threadWrapper.run)
-        self.threadWrapper.finished.connect(self.thread.quit)
-        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
-        self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.sendData.connect(f.updateHistory)
-        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
-
-    def makeDeviceList(self,isRange):
-
-        rangeDev=[]
-        if isRange==False:
-            minW=1
-            maxW=g.wline_nr
-            minB=1
-            maxB=g.bline_nr
-        else:
-            minW=g.minW
-            maxW=g.maxW
-            minB=g.minB
-            maxB=g.maxB
-
-        # Find how many SA devices are contained in the range
-        if g.checkSA==False:
-            for w in range(minW,maxW+1):
-                for b in range(minB,maxB+1):
-                    rangeDev.append([w,b])
-        else:
-            for w in range(minW,maxW+1):
-                for b in range(minB,maxB+1):
-                    for cell in g.customArray:
-                        if (cell[0]==w and cell[1]==b):
-                            rangeDev.append(cell)
-
-        return rangeDev

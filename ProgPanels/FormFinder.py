@@ -14,7 +14,7 @@ import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
-from Globals.modutils import BaseThreadWrapper
+from Globals.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -80,20 +80,21 @@ class ThreadWrapper(BaseThreadWrapper):
             self.updateTree.emit(w,b)
 
 
-class FormFinder(QtWidgets.QWidget):
+class FormFinder(BaseProgPanel):
 
     def __init__(self, short=False):
-        super().__init__()
-        self.short=short
+        super().__init__(title="FormFinder", \
+                description="Applies a pulsed voltage ramp. Can be used "
+                "for electroforming", short=short)
         self.initUI()
 
     def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtWidgets.QLabel('FormFinder')
+        titleLabel = QtWidgets.QLabel(self.title)
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtWidgets.QLabel('Applies a pulsed voltage ramp. Can be utilised when electroforming.')
+        descriptionLabel = QtWidgets.QLabel(self.description)
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -230,18 +231,12 @@ class FormFinder(QtWidgets.QWidget):
 
             self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single=QtWidgets.QPushButton('Apply to One')
-            push_range=QtWidgets.QPushButton('Apply to Range')
-            push_all=QtWidgets.QPushButton('Apply to All')
-
-            push_single.setStyleSheet(s.btnStyle)
-            push_range.setStyleSheet(s.btnStyle)
-            push_all.setStyleSheet(s.btnStyle)
-
-            push_single.clicked.connect(self.programOne)
-            push_range.clicked.connect(self.programRange)
-
-            push_all.clicked.connect(self.programAll)
+            push_single = self.makeControlButton('Apply to One', \
+                    self.programOne)
+            push_range = self.makeControlButton('Apply to Range', \
+                    self.programRange)
+            push_all = self.makeControlButton('Apply to All', \
+                    self.programAll)
 
             self.hboxProg.addWidget(push_single)
             self.hboxProg.addWidget(push_range)
@@ -345,92 +340,29 @@ class FormFinder(QtWidgets.QWidget):
         g.ser.write_b(str(int(self.rightEdits[0].text()))+"\n")
         time.sleep(0.05)
 
+    def programDevs(self, devs):
+
+        idx = self.pulsingModeCombo.currentIndex()
+        job = self.pulsingModeCombo.itemData(idx)["job"]
+        self.sendParams(str(job))
+
+        wrapper = ThreadWrapper(devs)
+        self.execute(wrapper, wrapper.run)
+
     def programOne(self):
-        if g.ser.port != None:
-            idx = self.pulsingModeCombo.currentIndex()
-            job = self.pulsingModeCombo.itemData(idx)["job"]
-            self.sendParams(str(job))
+        self.programDevs([[g.w, g.b]])
 
-            self.thread=QtCore.QThread()
-            self.threadWrapper=ThreadWrapper([[g.w,g.b]])
-            self.finalise_thread_initialisation()
+    def programRange(self):
+        devs = makeDeviceList(True)
+        self.programDevs(devs)
 
-            self.thread.start()
+    def programAll(self):
+        devs = makeDeviceList(False)
+        self.programDevs(devs)
 
     def disableProgPanel(self,state):
         if state==True:
             self.hboxProg.setEnabled(False)
         else:
             self.hboxProg.setEnabled(True)
-
-    def programRange(self):
-        if g.ser.port != None:
-
-            rangeDev=self.makeDeviceList(True)
-
-            idx = self.pulsingModeCombo.currentIndex()
-            job = self.pulsingModeCombo.itemData(idx)["job"]
-            self.sendParams(str(job))
-
-            self.thread=QtCore.QThread()
-            self.threadWrapper=ThreadWrapper(rangeDev)
-            self.finalise_thread_initialisation()
-
-            self.thread.start()
-
-    def programAll(self):
-        if g.ser.port != None:
-            rangeDev=self.makeDeviceList(False)
-
-            idx = self.pulsingModeCombo.currentIndex()
-            job = self.pulsingModeCombo.itemData(idx)["job"]
-            self.sendParams(str(job))
-
-            self.thread=QtCore.QThread()
-            self.threadWrapper=ThreadWrapper(rangeDev)
-            self.finalise_thread_initialisation()
-            self.thread.start()
-
-    def finalise_thread_initialisation(self):
-        self.threadWrapper.moveToThread(self.thread)
-        self.thread.started.connect(self.threadWrapper.run)
-        self.threadWrapper.finished.connect(self.thread.quit)
-        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
-        self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.sendData.connect(f.updateHistory)
-        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
-
-    def makeDeviceList(self,isRange):
-        #if g.checkSA=False:
-        rangeDev=[] # initialise list which will contain the SA devices contained in the user selected range of devices
-        #rangeMax=0
-        if isRange==False:
-            minW=1
-            maxW=g.wline_nr
-            minB=1
-            maxB=g.bline_nr
-        else:
-            minW=g.minW
-            maxW=g.maxW
-            minB=g.minB
-            maxB=g.maxB            
-
-        # Find how many SA devices are contained in the range
-        if g.checkSA==False:
-            for w in range(minW,maxW+1):
-                for b in range(minB,maxB+1):
-                    rangeDev.append([w,b])
-            #rangeMax=(wMax-wMin+1)*(bMax-bMin+1)
-        else:
-            for w in range(minW,maxW+1):
-                for b in range(minB,maxB+1):
-                    for cell in g.customArray:
-                        if (cell[0]==w and cell[1]==b):
-                            rangeDev.append(cell)
-
-        return rangeDev
 

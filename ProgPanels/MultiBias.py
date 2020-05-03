@@ -14,7 +14,7 @@ import time
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
-from Globals.modutils import BaseThreadWrapper
+from Globals.modutils import BaseThreadWrapper, BaseProgPanel
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
@@ -58,20 +58,21 @@ class ThreadWrapper(BaseThreadWrapper):
                 self.updateTree.emit(device,self.bLine)
 
 
-class MultiBias(QtWidgets.QWidget):
+class MultiBias(BaseProgPanel):
 
     def __init__(self, short=False):
-        super().__init__()
-        self.short=short
+        super().__init__(title="MultiBias", \
+                description="Apply WRITE or READ pulses to multiple active "
+                "wordlines. Read from one bitline.", short=short)
         self.initUI()
 
     def initUI(self):
 
         vbox1=QtWidgets.QVBoxLayout()
 
-        titleLabel = QtWidgets.QLabel('MultiBias')
+        titleLabel = QtWidgets.QLabel(self.title)
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtWidgets.QLabel('Apply WRITE or READ pulses to multiple active wordlines. Read from one bitline.')
+        descriptionLabel = QtWidgets.QLabel(self.description)
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
 
@@ -179,14 +180,8 @@ class MultiBias(QtWidgets.QWidget):
 
             self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_write=QtWidgets.QPushButton('WRITE')
-            push_read=QtWidgets.QPushButton('READ')
-
-            push_write.setStyleSheet(s.btnStyle)
-            push_read.setStyleSheet(s.btnStyle)
-
-            push_write.clicked.connect(self.apply_write)
-            push_read.clicked.connect(self.apply_read)
+            push_write = self.makeControlButton('WRITE', self.apply_write)
+            push_read = self.makeControlButton('READ', self.apply_read)
 
             self.hboxProg.addWidget(push_write)
             self.hboxProg.addWidget(push_read)
@@ -195,7 +190,6 @@ class MultiBias(QtWidgets.QWidget):
 
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
-
 
     def apply_multiBias(self, RW):
         wLines=self.extract_wordlines()
@@ -215,15 +209,18 @@ class MultiBias(QtWidgets.QWidget):
                 for nr in wLines:
                     g.ser.write_b(str(nr)+"\n")
 
-
-                self.thread=QtCore.QThread()
-                self.threadWrapper=ThreadWrapper(wLines, \
+                wrapper = ThreadWrapper(wLines, \
                         int(self.edit_blines.value()), RW, \
                         float(self.leftEdits[0].text()), \
                         float(self.leftEdits[1].text())/1000000)
-                self.finalise_thread_initialisation()
 
-                self.thread.start()
+                # Another signal to connect. As the thread created by the
+                # execute method takes ownership of the wrapper it does not
+                # get destroyed when the var goes out of scope. It will only
+                # happen when it goes out of scope later when the tread
+                # is finished.
+                wrapper.updateCurrentRead.connect(self.updateCurrentRead)
+                self.execute(wrapper, wrapper.run)
 
     def sendParams(self):
         g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
@@ -287,20 +284,6 @@ class MultiBias(QtWidgets.QWidget):
             self.hboxProg.setEnabled(False)
         else:
             self.hboxProg.setEnabled(True)
-
-    def finalise_thread_initialisation(self):
-        self.threadWrapper.moveToThread(self.thread)
-        self.thread.started.connect(self.threadWrapper.run)
-        self.threadWrapper.finished.connect(self.thread.quit)
-        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
-        self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.sendData.connect(f.updateHistory)
-        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
-        self.threadWrapper.updateCurrentRead.connect(self.updateCurrentRead)
 
     def throwError(self):
         reply = QtWidgets.QMessageBox.question(self, "Error",
