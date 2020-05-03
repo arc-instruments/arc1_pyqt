@@ -58,6 +58,12 @@ def _min_without_inf(lst, exclude):
 
 class ThreadWrapper(BaseThreadWrapper):
 
+    # As CurveTracer has a programmable Vread we need to override the
+    # sendData signal to use the full form of `GlobalFunctions.updateHistory`
+    # which also accepts an additional argument at the end for the current
+    # Vread.
+    sendData = QtCore.pyqtSignal(int, int, float, float, float, str, float)
+
     def __init__(self, deviceList, totalCycles):
         super().__init__()
         self.deviceList=deviceList
@@ -66,7 +72,6 @@ class ThreadWrapper(BaseThreadWrapper):
     @BaseThreadWrapper.runner
     def run(self):
 
-        self.disableInterface.emit(True)
         global tag
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
@@ -102,7 +107,7 @@ class ThreadWrapper(BaseThreadWrapper):
                     valuesNew=f.getFloats(3)
 
                     if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
-                        self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
+                        self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_,valuesOld[1])
                         self.displayData.emit()
                         tag_=tag+'_i_'+str(cycle)
                     else:
@@ -110,7 +115,7 @@ class ThreadWrapper(BaseThreadWrapper):
                             tag_=tag+'_e'
                         else:
                             tag_=tag+'_i_'+str(cycle)
-                        self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
+                        self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_,valuesOld[1])
                         self.displayData.emit()
                         endCommand=1
             self.updateTree.emit(w,b)

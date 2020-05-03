@@ -29,28 +29,13 @@ addressAntenna = AddressAntenna()
 
 
 # Update history function
-def updateHistory(w,b,m,a,pw,tag):
+def updateHistory(w,b,m,a,pw,tag,Vread=g.Vread):
     readTag='R'+str(g.readOption)
     if g.sessionMode==1:
         g.Mnow=m/2
     else:
         g.Mnow=m
-    g.Mhistory[w][b].append([g.Mnow,a,pw,tag,readTag,g.Vread])
-
-    g.w=w
-    g.b=b
-    cbAntenna.recolor.emit(m,w,b)
-
-
-def updateHistory_CT(w,b,m,a,pw,tag):
-    readTag='R2'
-
-    if g.sessionMode==1:
-        g.Mnow=m/2
-    else:
-        g.Mnow=m
-
-    g.Mhistory[w][b].append([g.Mnow,a,pw,tag,readTag,a])
+    g.Mhistory[w][b].append([g.Mnow,a,pw,tag,readTag,Vread])
 
     g.w=w
     g.b=b
