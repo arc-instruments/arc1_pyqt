@@ -1,2 +1,2 @@
 DO NOT MODIFY!
-1.5.0-rc2
+1.5.0
