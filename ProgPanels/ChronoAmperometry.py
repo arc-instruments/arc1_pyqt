@@ -31,7 +31,7 @@ import pyqtgraph
 
 import Globals.GlobalFonts as fonts
 import Globals.GlobalFunctions as f
-from Globals.modutils import BaseThreadWrapper, BaseProgPanel
+from Globals.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
 import Globals.GlobalVars as g
 import Globals.GlobalStyles as s
 
