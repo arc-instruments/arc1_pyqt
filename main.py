@@ -359,28 +359,17 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def launch_manager(self):
         self.check_for_updates()
-        if vercmp(g.local_version, '1.4.2') >= 0:
+
+        if vercmp(g.local_version, g.remote_version) > 0:
             msg = QtGui.QMessageBox()
             msg.setWindowTitle("ArC ONE Upgrade")
-            msg.setIcon(QtGui.QMessageBox.Warning)
-            msg.setText("""Your version is <b>%s</b>. Upgrading from 1.4.2 """
-                        """to any newer requires a <b>fresh installation</b>. Please """
-                        """follow the details at """
-                        """<a href="http://www.arc-instruments.co.uk/blog/upgrade-from-142/">"""
-                        """http://www.arc-instruments.co.uk/blog/upgrade-from-142/</a> """
-                        """for further information.""" % g.local_version)
+            msg.setText(("""Your version is <b>%s</b>. There is a new """ +
+                        """version available: <b>%s</b>. Please visit """ +
+                        """<a href="https://github.com/arc-instruments/arc1_pyqt/releases">""" +
+                        """https://github.com/arc-instruments/arc1_pyqt/releases</a> """ +
+                        """to download a new version.""")
+                        % (g.local_version, g.remote_version))
             msg.exec_()
-            return
-        reply = QtGui.QMessageBox.question(self, "Launch ArC Platform Manager",
-                "This will delete all saved data and proceed with a platform update.",
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
-        if reply==QtWidgets.QMessageBox.Yes:
-            directory=os.path.abspath(os.path.join(os.path.dirname(__file__),
-                os.pardir, "ArC Platform Manager"))
-            os.chdir(directory)
-            launcher_path=os.path.join(directory,"ArC Platform Manager.exe")
-            subprocess.Popen([launcher_path, g.local_version])
-            QtCore.QCoreApplication.instance().quit()
 
     def showConfig(self):
         from ControlWidgets import ConfigHardwareWidget
