@@ -22,5 +22,8 @@ MANIFEST
 tags
 *.egg-info
 deps/*
-GeneratedUiElements/*.py
-!GeneratedUiElements/__init__.py
+arc1pyqt/GeneratedUiElements/*.py
+!arc1pyqt/GeneratedUiElements/__init__.py
+arc1_docs/*
+arc1docs/*
+arc1pyqt/Documentation/*

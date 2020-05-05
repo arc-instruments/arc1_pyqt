@@ -15,21 +15,20 @@ except KeyError:
 
 CONSOLE = bool(int(os.environ.get('ARC_PYI_CONSOLE', 1)))
 
-added_files = [('Graphics/*.png','Graphics'),
-        ('Documentation/ArC_ONE.pdf','Documentation'),
-        ('ProgPanels/*.py','ProgPanels'),
-        ('GeneratedUiElements/*.py','GeneratedUiElements'),
-        ('ProgPanels/Basic/*.py','ProgPanels/Basic'),
-        ('ProgPanels/Basic/Loops/*.py','ProgPanels/Basic/Loops'),
-        ('Helper/*.txt','Helper'),
-        ('source/*.*','source')]
+added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
+        ('arc1pyqt/ProgPanels/*.py','arc1pyqt/ProgPanels'),
+        ('arc1pyqt/GeneratedUiElements/*.py','arc1pyqt/GeneratedUiElements'),
+        ('arc1pyqt/ProgPanels/Basic/*.py','arc1pyqt/ProgPanels/Basic'),
+        ('arc1pyqt/ProgPanels/Basic/Loops/*.py','arc1pyqt/ProgPanels/Basic/Loops'),
+        ('arc1pyqt/Helper/*.txt','arc1pyqt/Helper'),
+        ('arc1pyqt/source.txt','arc1pyqt')]
 
 
 a = Analysis(['main.py'],
         pathex=[PATHEX],
         binaries=None,
         datas=added_files,
-        hiddenimports=['Globals.modutils', 'scipy', 'scipy.optimize',
+        hiddenimports=['arc1pyqt', 'scipy', 'scipy.optimize',
             'scipy.linalg', 'scipy.stats'],
         hookspath=[],
         runtime_hooks=[],
