@@ -21,11 +21,13 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 from arc1pyqt import ProgPanels
+from .CT_LIVE import CT_LIVE
 
-tag="CT"
-g.tagDict.update({tag:"CurveTracer*"})
+
+tag = "CT"
 
 
 def _max_without_inf(lst, exclude):
@@ -141,6 +143,7 @@ class CurveTracer(BaseProgPanel):
 
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
+        self.liveWindow = CT_LIVE(short=True)
 
         leftLabels=['Positive voltage max (V)', \
                     'Negative voltage max (V)', \
@@ -298,9 +301,7 @@ class CurveTracer(BaseProgPanel):
         self.gridLayout=gridLayout
 
     def goLive(self):
-        thisPanel = importlib.import_module(".".join([ProgPanels.__name__, "CT_LIVE"]))
-        panel_class = getattr(thisPanel, "CT_LIVE")
-        self.widg=panel_class(short=True)
+        self.liveWindow.show()
 
     def imposeLimitsOnStepWidth(self):
         currentText=float(self.leftEdits[4].text())
@@ -551,4 +552,4 @@ class CurveTracer(BaseProgPanel):
         return resultWindow
 
 
-g.DispCallbacks[tag] = CurveTracer.display
+tags = { 'top': ModTag(tag, "CurveTracer", CurveTracer.display) }

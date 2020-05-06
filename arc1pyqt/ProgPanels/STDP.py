@@ -20,11 +20,11 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 
 tag="stdp"
-g.tagDict.update({tag:"STDP*"})
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -724,4 +724,4 @@ class STDP(BaseProgPanel):
         return resultWindow
 
 
-g.DispCallbacks[tag] = STDP.display
+tags = { 'top': ModTag(tag, "STDP", STDP.display) }

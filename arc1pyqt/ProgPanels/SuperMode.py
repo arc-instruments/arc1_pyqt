@@ -16,7 +16,8 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 
 progPanelList=[]
@@ -65,8 +66,7 @@ module_id_dict={}
 globalID=0
 
 
-tag="SM"
-g.tagDict.update({tag:"SuperMode"})
+tag = "SM"
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -85,8 +85,6 @@ class ThreadWrapper(BaseThreadWrapper):
     @BaseThreadWrapper.runner
     def run(self):
         self.globalDisableInterface.emit(True)
-
-        global tag
 
         for device in self.deviceList:
             self.updateAddress.emit(device[0],device[1])
@@ -462,10 +460,13 @@ class CenterWidget(QtWidgets.QWidget):
         self.deleteLater()
 
 
-class SuperMode(QtWidgets.QWidget):
+class SuperMode(BaseProgPanel):
 
     def __init__(self):
-        super().__init__()
+        super().__init__(\
+                title='SuperMode', \
+                description='Make sequence of tests', \
+                short=False)
         self.initUI()
 
     def initUI(self):
@@ -812,10 +813,12 @@ class SuperMode(QtWidgets.QWidget):
         self.threadWrapper.updateAddress.connect(f.addressAntenna.update)
         self.threadWrapper.globalDisableInterface.connect(f.interfaceAntenna.toggleGlobalDisable)
         self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.threadWrapper.execute.connect(self.execute)
+        self.threadWrapper.execute.connect(self.singleExecute)
 
-    def execute(self, index):
+    def singleExecute(self, index):
         #print "###### EXECUTING ", index
         #time.sleep(0.001)
         self.mainChain[index].programOne()
 
+
+tags = { 'top': ModTag(tag, "SuperMode", None) }

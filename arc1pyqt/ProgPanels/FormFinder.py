@@ -16,11 +16,11 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 
 tag="FF"
-g.tagDict.update({tag:"FormFinder"})
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -367,3 +367,5 @@ class FormFinder(BaseProgPanel):
         else:
             self.hboxProg.setEnabled(True)
 
+
+tags = { 'top': ModTag(tag, "FormFinder", None) }

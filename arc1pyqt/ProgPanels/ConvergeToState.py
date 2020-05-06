@@ -52,13 +52,13 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 from arc1pyqt.GeneratedUiElements.convergeToState import Ui_CTSParent
 
 
-tag="CTS"
-g.tagDict.update({tag:"Converge to State"})
+tag = "CTS"
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -278,3 +278,5 @@ class ConvergeToState(Ui_CTSParent, BaseProgPanel):
     def disableProgPanel(self, state):
         self.hboxProg.setEnabled(not state)
 
+
+tags = { 'top': ModTag(tag, "ConvergeToState", None) }

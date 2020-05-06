@@ -36,13 +36,12 @@ class ProgPanelWidget(QtWidgets.QWidget):
         self.prog_panelList.setStyleSheet(s.comboStyle)
         self.prog_panelList.setMinimumWidth(150*g.scaling_factor)
 
-        # List all non-package modules in `ProgPanels`
-        for (_, modname, ispkg) in pkgutil.iter_modules(ProgPanels.__path__):
-            if ispkg:
+        for (tag, mod) in g.modules.items():
+            if mod.module is None or tag == "CTLive":
                 continue
-            name = modname.split(".")[-1]
-            if name != "CT_LIVE":
-                self.prog_panelList.addItem(name)
+
+            if mod.toplevel is not None:
+                self.prog_panelList.addItem(mod.name, mod)
 
         boldFont=QtGui.QFont("FontFamily")
         boldFont.setBold(True)
@@ -74,14 +73,11 @@ class ProgPanelWidget(QtWidgets.QWidget):
 
     def addPanel(self):
 
-        baseModule = str(self.prog_panelList.currentText())
-        moduleName = ".".join([ProgPanels.__name__, baseModule])
-        thisPanel = importlib.import_module(moduleName)
-        panel_class = getattr(thisPanel, baseModule)
-        widg=panel_class()
-        self.tabFrame.addTab(widg, baseModule)
-
-        self.tabFrame.setCurrentWidget(widg)
+        mod = self.prog_panelList.currentData()
+        topKlass = mod.toplevel
+        widget = topKlass()
+        self.tabFrame.addTab(widget, mod.name)
+        self.tabFrame.setCurrentWidget(widget)
 
     def setEnabled(self, state):
         for child in range(self.tabFrame.count()):

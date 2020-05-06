@@ -9,11 +9,11 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 
-tag="VOL"
-g.tagDict.update({tag:"VolatilityMeas"})
+tag = "VOL"
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -385,3 +385,5 @@ class VolatilityRead(BaseProgPanel):
         else:
             self.hboxProg.setEnabled(True)
 
+
+tags = { 'top': ModTag(tag, "Volatile Read", None) }

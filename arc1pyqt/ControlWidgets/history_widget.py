@@ -174,8 +174,13 @@ class HistoryWidget(QtWidgets.QWidget):
 
             raw=g.Mhistory[w][b][startPoint:endPoint+1]
 
-            if str(tagKey) in g.DispCallbacks:
-                widget = g.DispCallbacks[tagKey](w, b, raw, self)
+            if str(tagKey) in g.modules.keys():
+                cb = g.modules[tagKey].callback
+
+                if cb is None:
+                    return
+
+                widget = cb(w, b, raw, self)
                 self.resultWindow.append(widget)
                 widget.show()
                 widget.update()
@@ -196,15 +201,15 @@ class HistoryWidget(QtWidgets.QWidget):
         tagString=g.Mhistory[w][b][-1][3]
         currentTagKey=[]
         tagPartsUnder = str(tagString).split("_") # underscore delimited tags
-        for tagKey in g.tagDict.keys():
+        for tagKey in g.modules.keys():
             # check for standard read/pulse tags
             if tagString.startswith(('P', 'S R', 'F R')):
-                tag.append(g.tagDict[tagKey])
+                tag.append(g.modules[tagKey].display)
                 currentTagKey=tagKey
                 break
             # then any regular '_'-delimited tags
             elif len(tagPartsUnder) > 1 and tagPartsUnder[0] == tagKey:
-                    tag.append(g.tagDict[tagKey])
+                    tag.append(g.modules[tagKey].display)
                     currentTagKey=tagKey
                     break
             # ignore unknown or intermediate tags

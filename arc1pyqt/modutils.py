@@ -1,8 +1,142 @@
+import os.path
+import collections
+import inspect
+from pkgutil import iter_modules
+import importlib.util as imputil
+from glob import glob
+
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from .Globals import GlobalVars as VARS
 from .Globals import GlobalStyles as STYLE
 from .Globals import GlobalFunctions as FUNCS
+
+
+ModDescriptor = collections.namedtuple('ModDescriptor', \
+        ['module', 'name', 'display', 'toplevel', 'callback'])
+"""
+ModDescriptor describes everything the interface needs to create
+programming panels. The fields of this named tuple are
+
+* ``module``: actual module object
+* ``name``: name of the module
+* ``display``: display label for the tree
+* ``toplevel``: toplevel widget for the toplevel tag; can be ``None``
+* ``callback``: callback for data display; can be ``None``
+
+Users typically don't need to make descriptors. They will be created
+accordingly on program load.
+"""
+
+ModTag = collections.namedtuple('ModTag', ['tag', 'name', 'callback'])
+"""
+A module tag. Every module needs to provide a toplevel tag under a module-local
+variable named ``tags``. For instance a module named `TestModule` may have
+the following ``tags`` setup.
+
+>>> tags = { 'top': ModTag('TM', 'TestModule', TestModule.showData) }
+
+Additional subtags can be provided if functionality of the modules may be
+split in multiple entities (see for example
+`arc1pyqt.ProgPanels.MultiStateSeeker`). These can be added as ``subtags``
+which is again a list of `ModTag`s. Of course ``subtags`` can be omitted
+if no such functionality is wanted (probably for most cases).
+
+>>> tags = {
+>>>     'top': ModTag('TM', 'TestModule', None),
+>>>     'subtags': [ ModTag('TSM', 'TestSubModule', TestModule.subModData) ]
+>>> }
+
+"""
+
+
+def __registerTagsFromModule(module, kls=None):
+    """
+    Add all compatible tags for module in the global tag registry. Modules
+    that actually want to display something in the GUI should also point the
+    the toplevel widget that should be displayed through the ``kls`` variable.
+    If ``kls`` is None then ``module`` is a hidden module (read-outs and
+    pulses are such).
+    """
+
+    # top tag
+    top = module.tags['top']
+    if top.callback is not None:
+        display = "%s*" % top.name
+    else:
+        display = top.name
+
+    descriptor = ModDescriptor(module, top.name, display, kls, top.callback)
+    VARS.modules[top.tag] = descriptor
+
+    if 'subtags' not in module.tags.keys():
+        return
+
+    for tag in module.tags['subtags']:
+        if tag.callback is not None:
+            display = "%s*" % tag.name
+        else:
+            display = tag.name
+        descriptor = ModDescriptor(module, tag.name, display, None,\
+                tag.callback)
+        VARS.modules[tag.tag] = descriptor
+
+
+def discoverModules(paths, namespace=""):
+    """
+    Discover modules under ``paths`` and load them into the global
+    module list if possible. Argument ``namespace`` provides the
+    module (either real or not) that these modules will be loaded
+    under. If empty they are added to the toplevel module (not
+    recommended).
+
+    Compatible modules should
+
+    * Have a set of tags associated with them under the ``tags``
+      variable (see `arc1pyqt.modutils.ModTag`).
+    * Have a main class with the same name as the name of the
+      file (sans the .py extension, obviously). For instance
+      TestModule.py should contain a TestModule class as a
+      top level entry point.
+    * Said class should inherit from `arc1pyqt.modutils.BaseProgPanel`.
+    """
+
+    for p in paths:
+        for (finder, name, ispkg) in iter_modules([p]):
+            if ispkg:
+                continue
+            loader = finder.find_module(name)
+            try:
+                if namespace != "":
+                    mod_full = '%s.%s' % (namespace, name)
+                else:
+                    mod_full = name
+
+                spec = imputil.spec_from_file_location(mod_full, loader.path)
+                mod = imputil.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+
+                # we need a tag defined
+                if not hasattr(mod, 'tags'):
+                    continue
+
+                # now check containing classes
+                for _, kls in inspect.getmembers(mod, inspect.isclass):
+
+                    # entry point should be a class named after the file
+                    if kls.__name__ != name:
+                        continue
+
+                    # and subclass ``BaseProgPanel``
+                    if not issubclass(kls, BaseProgPanel):
+                        continue
+
+                    # if we made it here, add the module to the modlist
+                    __registerTagsFromModule(mod, kls)
+
+            except Exception as exc:
+                print("Exception encountered while importing module")
+                continue
 
 
 def makeDeviceList(isRange):

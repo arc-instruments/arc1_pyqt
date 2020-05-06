@@ -52,12 +52,12 @@ minB = 1
 maxW = 1
 maxB = 1
 
-# Tag dictionaries
-tagDict={'S R':'Read',\
-         'P':'Pulse'}
-
-# Data display callbacks
-DispCallbacks = {}
+# This will be populated during system startup
+# format: { 'tag': (module, name, display label, callback)  }
+# module can be None, in this case module won't be visible on
+# the programming panel.
+# callback can be None, if the modules has no data to display
+modules = { }
 
 # number of points to plot
 dispPoints = 100

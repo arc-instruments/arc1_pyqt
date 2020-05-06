@@ -26,6 +26,7 @@ import types
 import warnings
 from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import QStandardPaths
 from .VirtualArC import VirtualArC
 from . import Graphics
 from . import ProgPanels
@@ -43,6 +44,7 @@ from .Globals import GlobalVars as g
 from .Globals import GlobalFonts as fonts
 from .Globals import GlobalStyles as s
 from .Globals import GlobalFunctions as f
+from . import modutils
 
 try:
     from arc1docs import start_docs
@@ -640,15 +642,6 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def findAndLoadFile(self):
 
-        # Import all programming panels in order to get all tags
-        for (_, modname, ispkg) in pkgutil.iter_modules(ProgPanels.__path__):
-            if ispkg:
-                continue
-            try:
-                importlib.import_module(".".join([ProgPanels.__name__, modname]))
-            except ModuleNotFoundError as exc:
-                print("Could not load module %s: %s" % (modname, exc))
-
         path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
                 getOpenFileName(self, 'Open file','', g.OPEN_FI_PATTERN)[0])
 
@@ -885,6 +878,30 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName("arc1pyqt")
     Graphics.initialise()
+
+    # Add standard readout and pulse. These are never top-level modules and
+    # have no callbacks
+    g.modules['S R'] = modutils.ModDescriptor(None, 'Read', 'Read', False, None)
+    g.modules['P'] = modutils.ModDescriptor(None, 'Pulse', 'Pulse', False, None)
+
+    # Get all possible locations for data files as long as it includes
+    # a "ProgPanels" directory under it.
+    paths = QStandardPaths.locateAll(QStandardPaths.AppDataLocation, \
+            'ProgPanels', \
+            QStandardPaths.LocateDirectory)
+
+    # QStandardPaths.locateAll follows the following priority (high to low)
+    # $HOME/.local/share/<app>, /usr/local/share/<app>, /usr/share/<app>
+    #       idx = 0                   idx = 1              idx = 2
+    # In order to make sure that the most local module will always overwrite
+    # a less local we need to make sure that the most local modules are always
+    # loaded LAST and hence we reverse the list reported by `locateAll`.
+    paths.reverse()
+
+    # built-in modules first (under `ProgPanels`)
+    modutils.discoverModules(ProgPanels.__path__, 'arc1pyqt.ProgPanels')
+    # and all user-supplied modules (under a non-physical module `ExtPanels`)
+    modutils.discoverModules(paths, 'arc1pyqt.ExtPanels')
 
     # Determine the scaling factor
     if sys.platform == "win32":

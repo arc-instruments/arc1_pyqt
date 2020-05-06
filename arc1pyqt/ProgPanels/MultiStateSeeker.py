@@ -18,7 +18,8 @@ import pyqtgraph
 
 from arc1pyqt import Graphics
 from arc1pyqt.GeneratedUiElements.mss import Ui_MSSParent
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
@@ -26,9 +27,6 @@ import arc1pyqt.Globals.GlobalStyles as s
 
 
 tag="MSS"
-g.tagDict.update({tag+"1":"MultiState Polarity Inference"})
-g.tagDict.update({tag+"2":"MultiState Retention"})
-g.tagDict.update({tag+"3":"MultiState Calculation*"})
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -708,5 +706,11 @@ class MultiStateSeeker(Ui_MSSParent, BaseProgPanel):
         return dialog
 
 
-# Add the display function to the display dictionary
-g.DispCallbacks[tag+"3"] = MultiStateSeeker.display
+tags = {
+    'top': ModTag(tag, "MultiStateSeeker", None),
+    'subtags': [
+        ModTag(tag+"1", "MultiState Polarity Inference", None),
+        ModTag(tag+"2", "MultiState Retention", None),
+        ModTag(tag+"3", "MultiState Calculation", MultiStateSeeker.display)
+    ]
+}

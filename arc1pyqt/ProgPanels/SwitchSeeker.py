@@ -20,11 +20,11 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 
-tag="SS2"
-g.tagDict.update({tag:"SwitchSeeker*"})
+tag = "SS2"
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -442,4 +442,4 @@ class SwitchSeeker(BaseProgPanel):
         return resultWindow
 
 
-g.DispCallbacks[tag] = SwitchSeeker.display
+tags = { 'top': ModTag(tag, "SwitchSeeker", SwitchSeeker.display) }

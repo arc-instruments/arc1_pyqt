@@ -22,11 +22,12 @@ import copy
 from arc1pyqt import Graphics
 from arc1pyqt.GeneratedUiElements.pf import Ui_PFParent
 from arc1pyqt.GeneratedUiElements.fitdialog import Ui_FitDialogParent
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 
 MODEL_TMPL="""//////////////////////////////////////////////////
@@ -152,7 +153,6 @@ endmodule"""
 
 
 tag="MPF"
-g.tagDict.update({tag:"Parameter Fit*"})
 
 
 def _curve_fit(func, x, y, **kwargs):
@@ -877,5 +877,5 @@ class ParameterFit(Ui_PFParent, BaseProgPanel):
 
         return dialog
 
-# Add the display function to the display dictionary
-g.DispCallbacks[tag] = ParameterFit.display
+
+tags = { 'top': ModTag(tag, "ParameterFit", ParameterFit.display) }

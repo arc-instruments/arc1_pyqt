@@ -33,13 +33,13 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 from arc1pyqt.GeneratedUiElements.chronoamperometry import Ui_ChronoAmpParent
 
 
-tag="CRA"
-g.tagDict.update({tag:"ChronoAmperometry*"})
+tag = "CRA"
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -281,4 +281,4 @@ class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
         self.hboxProg.setEnabled(not state)
 
 
-g.DispCallbacks[tag] = ChronoAmperometry.display
+tags = { 'top': ModTag(tag, "ChronoAmperometry", ChronoAmperometry.display) }

@@ -16,11 +16,11 @@ import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
 import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
-from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, makeDeviceList
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
+        makeDeviceList, ModTag
 
 
-tag="MB"
-g.tagDict.update({tag:"MultiBias"})
+tag = "MB"
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -294,3 +294,5 @@ class MultiBias(BaseProgPanel):
             QtWidgets.QMessageBox.Ok)
         event.ignore()
 
+
+tags = { 'top': ModTag(tag, "MultiBias", None) }
