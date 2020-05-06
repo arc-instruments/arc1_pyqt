@@ -22,11 +22,9 @@ import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt import Graphics
 from arc1pyqt.modutils import BaseThreadWrapper
 
+
 mutex = QtCore.QMutex()
 global_stop=False
-
-tag="CT"
-g.tagDict.update({tag:"CurveTracer*"})
 
 
 class StartLiveThreadWrapper(QtCore.QObject):
@@ -71,7 +69,7 @@ class ThreadWrapper(BaseThreadWrapper):
     # governed by the `StartLiveThreadWrapper` thread instead.
     def run(self):
 
-        global tag
+        tag = 'CT'
 
         readTag='R'+str(g.readOption)+' V='+str(g.Vread)
 
@@ -126,8 +124,8 @@ class CT_LIVE(QtWidgets.QWidget):
     global global_stop
     stop_signal=QtCore.pyqtSignal()
 
-    def __init__(self, short=False):
-        super().__init__()
+    def __init__(self, short=False, parent=None):
+        super().__init__(parent=parent)
 
         self.short=short
 
@@ -377,8 +375,6 @@ class CT_LIVE(QtWidgets.QWidget):
 
         self.initialise_variables()
 
-        self.show()
-
     def closeEvent(self, event):
         # What to do when the user closer the window and there's either
         # a live measurement run in progress or there is unsaved data
@@ -625,3 +621,4 @@ class CT_LIVE(QtWidgets.QWidget):
             self.c_n=float(value)
         except:
             pass
+
