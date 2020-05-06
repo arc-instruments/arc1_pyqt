@@ -16,10 +16,6 @@ import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 
 
-tag="DEL"
-g.tagDict.update({tag:"Delay"})
-
-
 class ThreadWrapper(QtCore.QObject):
 
     finished=QtCore.pyqtSignal()

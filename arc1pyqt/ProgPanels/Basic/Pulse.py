@@ -16,10 +16,6 @@ import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper
 
 
-tag="P"
-g.tagDict.update({tag:"Pulse"})
-
-
 class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, amplitude, pw):

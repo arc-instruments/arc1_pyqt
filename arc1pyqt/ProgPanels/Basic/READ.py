@@ -19,10 +19,6 @@ import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper
 
 
-tag="Read"
-g.tagDict.update({tag:"Read"})
-
-
 class ThreadWrapper(BaseThreadWrapper):
 
     def __init__(self, Vread, readType):
