@@ -16,7 +16,6 @@ import serial
 
 baudrate = '921600'
 
-readOptions = ['Classic', 'TIA', 'TIA4P']
 readOption = 0
 
 # active wordline

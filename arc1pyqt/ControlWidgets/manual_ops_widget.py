@@ -120,7 +120,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
         # Read-out type options drop-down.
         combo_readType=QtWidgets.QComboBox()
         combo_readType.setStyleSheet(s.comboStyle)
-        combo_readType.insertItems(1,g.readOptions)
+        combo_readType.insertItems(1, ['Classic', 'TIA', 'TIA4P'])
         combo_readType.currentIndexChanged.connect(self.updateReadType)
         combo_readType.setCurrentIndex(2)
         g.readOption=combo_readType.currentIndex()

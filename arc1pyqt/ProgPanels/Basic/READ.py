@@ -109,7 +109,7 @@ class READ(QtWidgets.QWidget):
         # ========== ComboBox ===========
         self.combo_readType=QtWidgets.QComboBox()
         self.combo_readType.setStyleSheet(s.comboStyle)
-        self.combo_readType.insertItems(1,g.readOptions)
+        self.combo_readType.insertItems(1, ['Classic', 'TIA', 'TIA4P'])
         self.combo_readType.currentIndexChanged.connect(self.updateReadType)
         self.combo_readType.setCurrentIndex(2)
         #g.readOption=combo_readType.currentIndex()
