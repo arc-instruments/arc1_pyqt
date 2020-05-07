@@ -34,8 +34,9 @@ def updateHistory(w,b,m,a,pw,tag,Vread=g.Vread):
     if g.sessionMode==1:
         g.Mnow=m/2
     else:
-        g.Mnow=m
-    g.Mhistory[w][b].append([g.Mnow,a,pw,tag,readTag,Vread])
+        res = m
+
+    g.Mhistory[w][b].append([res, a, pw, tag, readTag, Vread])
 
     g.w=w
     g.b=b

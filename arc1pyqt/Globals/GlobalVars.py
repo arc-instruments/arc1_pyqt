@@ -14,8 +14,6 @@ import matplotlib.pyplot as mpl
 import numpy as np
 import serial
 
-Mnow = 1000
-
 baudrate = '921600'
 
 readOptions = ['Classic', 'TIA', 'TIA4P']

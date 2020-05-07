@@ -81,12 +81,12 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
         # Setup position and resistance labels
         self.position = QtWidgets.QLabel(self)
-        self.position.setText('W=0 | B=0')
+        self.position.setText('')
         self.position.setFont(fonts.font2)
         self.position.setStyleSheet(s.style1)
 
         self.resistance = QtWidgets.QLabel(self)
-        self.resistance.setText(str(g.Mnow))
+        self.resistance.setText("---")
         self.resistance.setFont(fonts.font1)
         self.resistance.setStyleSheet(s.style1)
 
@@ -393,8 +393,8 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
     def setM(self,w,b):
         try:
-            g.Mnow=g.Mhistory[w][b][-1][0]
-            self.resistance.setText(str('%.0f' % g.Mnow)+' Ohms')
+            res = g.Mhistory[w][b][-1][0]
+            self.resistance.setText(str('%.0f' % res)+' Ohms')
         except IndexError:
             self.resistance.setText('Not Read')
         self.position.setText('W='+str(w)+ ' | ' + 'B='+str(b))
@@ -414,6 +414,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
             g.Mnow=currentM
             tag='S R'+str(g.readOption)+' V='+str(g.Vread)
             f.updateHistory(g.w,g.b,currentM,float(g.Vread),0,tag)
+            f.updateHistory(g.w, g.b, currentM, float(g.Vread), 0, tag)
             self.setM(g.w,g.b)
 
             f.displayUpdate.updateSignal.emit(g.w,g.b,2,g.dispPoints,99)
@@ -513,8 +514,8 @@ class ManualOpsWidget(QtWidgets.QWidget):
         self.pulse()
 
     def pulse(self):
-        if g.ser.port != None:
-            ser=g.ser
+        if g.ArC is not None:
+            ser = g.ArC
             job="3"
             ser.write_b(job+"\n")
             ser.write_b(str(g.w)+"\n")
@@ -523,10 +524,10 @@ class ManualOpsWidget(QtWidgets.QWidget):
             ser.write_b(str(float(self.amplitude))+"\n")
             ser.write_b(str(float(self.pw))+"\n")
 
-            g.Mnow=float(f.getFloats(1))
+            res = float(f.getFloats(1))
 
             tag='P'
-            f.updateHistory(g.w,g.b,g.Mnow,self.amplitude,self.pw,tag)
+            f.updateHistory(g.w, g.b, res, self.amplitude, self.pw, tag)
             self.setM(g.w,g.b)
             f.displayUpdate.updateSignal.emit(g.w, g.b, 2, g.dispPoints, 99)
             f.historyTreeAntenna.updateTree.emit(g.w,g.b)
