@@ -17,6 +17,7 @@ from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 from ..Globals import GlobalFunctions as f
 from .. import Graphics
+from ..version import VersionInfo
 
 
 class AboutWidget(QtWidgets.QWidget):
@@ -69,10 +70,11 @@ class AboutWidget(QtWidgets.QWidget):
 
         system = "%s %s" % (platform.system(), platform.architecture()[0])
         pyver = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
+        version = VersionInfo().local
 
         line0.setText("ArC ONE: <b>%s</b> System: <b>%s</b> "
                 "Python: <b>%s</b> Qt: <b>%s</b>  " %
-                (g.local_version, system, pyver, QtCore.QT_VERSION_STR))
+                (version, system, pyver, QtCore.QT_VERSION_STR))
         line1.setText('75 Sirocco, 33 Channel Way')
         line2.setText('Ocean Village')
         line3.setText('Southampton, UK')

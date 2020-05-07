@@ -19,7 +19,6 @@ import pkgutil
 import importlib
 import csv
 import time
-import requests
 import subprocess
 import gzip
 import types
@@ -31,7 +30,6 @@ from .VirtualArC import VirtualArC
 from . import Graphics
 from . import ProgPanels
 import ctypes
-import semver
 
 from .ControlWidgets import CrossbarWidget
 from .ControlWidgets import DataDisplayWidget
@@ -45,6 +43,7 @@ from .Globals import GlobalFonts as fonts
 from .Globals import GlobalStyles as s
 from .Globals import GlobalFunctions as f
 from . import modutils
+from .version import VersionInfo, vercmp
 
 try:
     from arc1docs import start_docs
@@ -66,14 +65,6 @@ warnings.filterwarnings('ignore',
 # Platform dependent configuration
 if sys.platform == "win32":
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
-
-# Version comparison
-# If `target` is newer than `orig` -> 1
-# If `target` is older than `orig` -> -1
-# If `target` is same version as `orig` -> 0
-def vercmp(orig, target):
-    return semver.compare(target, orig)
 
 
 def write_b(ser, what):
@@ -342,32 +333,25 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.newSessionStart()
 
     def check_for_updates(self):
-        # check local version:
-        thisdir = os.path.dirname(os.path.abspath(__file__))
-        with open(os.path.join(thisdir, "version.txt"), "r") as f:
-            g.local_version=str(f.read().split("\n")[1])
 
-        connection=False
-        # check remote version:
-        version_url="http://files.arc-instruments.co.uk/release/version.txt"
+        vinfo = VersionInfo()
+
         try:
-            response = requests.get(version_url, stream=True, timeout=2)
-            g.remote_version=str(response.text.split("\n")[1])
-            if response.status_code < 400:
-                connection=True
+            local = vinfo.local
+            remote = vinfo.remote
         except Exception as exc:
-            pass
+            print("Could not load versions")
+            return
 
-        # if there is an internet connection and the remote version has been retrieved
-        if connection:
-            status = vercmp(g.local_version, g.remote_version)
-            if status > 0:
-                self.updateAction.setEnabled(True)
+        if vercmp(local, remote) > 0:
+            self.updateAction.setEnabled(True)
+
+        return (local, remote)
 
     def launch_manager(self):
-        self.check_for_updates()
+        (local, remote) = self.check_for_updates()
 
-        if vercmp(g.local_version, g.remote_version) > 0:
+        if vercmp(local, remote) > 0:
             msg = QtGui.QMessageBox()
             msg.setWindowTitle("ArC ONE Upgrade")
             msg.setText(("""Your version is <b>%s</b>. There is a new """ +
@@ -375,7 +359,7 @@ class Arcontrol(QtWidgets.QMainWindow):
                         """<a href="https://github.com/arc-instruments/arc1_pyqt/releases">""" +
                         """https://github.com/arc-instruments/arc1_pyqt/releases</a> """ +
                         """to download a new version.""")
-                        % (g.local_version, g.remote_version))
+                        % (local, remote))
             msg.exec_()
 
     def showConfig(self):
