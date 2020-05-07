@@ -14,6 +14,7 @@ from PyQt5 import QtGui, QtWidgets
 from .. import Globals
 from ..Globals import GlobalFunctions as f
 from ..Globals import GlobalVars as g
+from .common import resistanceColorGradient
 
 
 class DeviceWidget(QtWidgets.QWidget):
@@ -87,7 +88,7 @@ class DeviceWidget(QtWidgets.QWidget):
             try:
                 # get the log index out of 255 max values
                 idx = int((np.log10(M)-minMlog)*255/(normMlog))
-                color = g.qColorList[idx]
+                color = resistanceColorGradient[idx]
             except OverflowError:
                 # Inf
                 color = QtGui.QColor(125, 125, 125)
@@ -96,7 +97,7 @@ class DeviceWidget(QtWidgets.QWidget):
                 color = QtGui.QColor(125, 125, 125)
             except IndexError:
                 # Above 100M but still measurable
-                color = g.qColorList[-1]
+                color = resistanceColorGradient[-1]
 
         self.brush.setColor(color)
         self.update()

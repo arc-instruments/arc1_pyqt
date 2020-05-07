@@ -16,6 +16,7 @@ from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 from . import CrossbarContainerWidget
+from .common import resistanceColorGradient
 
 
 class CrossbarWidget(QtWidgets.QWidget):
@@ -67,11 +68,12 @@ class CrossbarWidget(QtWidgets.QWidget):
         lay1.addStretch()
 
         # Colorbar setup
-        colorBarLay=QtWidgets.QHBoxLayout()
-        colorBarLeft=QtWidgets.QVBoxLayout()
-        for i in range(len(g.qColorList)):
+        colorBarLay = QtWidgets.QHBoxLayout()
+        colorBarLeft = QtWidgets.QVBoxLayout()
+        for color in reversed(resistanceColorGradient):
             aux = ColorbarWidget()
-            aux.recolor(g.qColorList[255-i])
+            #print(resistanceColorGradient[255-i])
+            aux.recolor(color)
             aux.setMinimumWidth(20)
             aux.setMaximumWidth(20)
             colorBarLeft.addWidget(aux)
