@@ -16,8 +16,11 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
+from .. import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalStyles as s
 
 
@@ -150,12 +153,12 @@ class DataDisplayWidget(QtWidgets.QWidget):
         self.plot_width.linkedViewChanged(self.plot_pls.getViewBox(),self.plot_width.XAxis)
 
     def last_updateDisplay_short(self):
-        self.bulk_updateDisplay(g.w,g.b,2,g.dispPoints,99)
+        self.bulk_updateDisplay(CB.word, CB.bit, 2, APP.displayPoints, 99)
 
     def updateDisplay_short(self):
-        self.updateDisplay(g.w,g.b,2,g.dispPoints,99)
+        self.updateDisplay(CB.word, CB.bit, 2, APP.displayPoints, 99)
 
-    def updateDisplay(self,w,b,type,points,slider):
+    def updateDisplay(self, w, b, type, points, slider):
 
         # type = 1: display all data
         # type = 2: display a nr of points
@@ -175,20 +178,20 @@ class DataDisplayWidget(QtWidgets.QWidget):
 
     def bulk_updateDisplay(self,w,b,type,points,slider):
 
-        lastPoint2=len(g.Mhistory[g.w][g.b])
-        lastPoint=lastPoint2
-        firstPoint=lastPoint-points+1
-        if firstPoint<0:
-            firstPoint=0
-        if lastPoint<1:
-            lastPoint=1
+        lastPoint2 = len(CB.history[CB.word][CB.bit])
+        lastPoint = lastPoint2
+        firstPoint = lastPoint-points+1
+        if firstPoint < 0:
+            firstPoint = 0
+        if lastPoint < 1:
+            lastPoint = 1
 
         if lastPoint2:
-            if type==1:
-                firstPoint=0
-                lastPoint=lastPoint2
-                self.plot_mem.setXRange(0,lastPoint-1)
-                self.plot_pls.setXRange(0,lastPoint-1)
+            if type == 1:
+                firstPoint = 0
+                lastPoint = lastPoint2
+                self.plot_mem.setXRange(0, lastPoint-1)
+                self.plot_pls.setXRange(0, lastPoint-1)
             else:
                 self.plot_mem.setXRange(max(lastPoint-points,0),lastPoint-1)
                 self.plot_pls.setXRange(max(lastPoint-points,0),lastPoint-1)
@@ -199,7 +202,7 @@ class DataDisplayWidget(QtWidgets.QWidget):
             PMarkerList=[]
             ReadMarkerList=[]
 
-            for item in g.Mhistory[g.w][g.b][firstPoint:lastPoint]:
+            for item in CB.history[CB.word][CB.bit][firstPoint:lastPoint]:
                 Mlist.append(item[0])
                 PList.append(0)
                 PList.append(item[1])

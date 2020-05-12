@@ -26,10 +26,16 @@ import warnings
 from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QStandardPaths
-from .VirtualArC import VirtualArC
-from . import Graphics
-from . import ProgPanels
 import ctypes
+# ensure we are using the `Qt5Agg` backend only
+import matplotlib
+matplotlib.rcParams['backend'] = 'Qt5Agg'
+
+from . import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
+from . import constants
 
 from .ControlWidgets import CrossbarWidget
 from .ControlWidgets import DataDisplayWidget
@@ -38,12 +44,15 @@ from .ControlWidgets import ManualOpsWidget
 from .ControlWidgets import ProgPanelWidget
 from .ControlWidgets import NewSessionDialog
 from .ControlWidgets import AboutWidget
-from .Globals import GlobalVars as g
 from .Globals import GlobalFonts as fonts
 from .Globals import GlobalStyles as s
 from .Globals import GlobalFunctions as f
 from . import modutils
+from .instrument import ArC1
 from .version import VersionInfo, vercmp
+from .VirtualArC import VirtualArC
+from . import Graphics
+from . import ProgPanels
 
 try:
     from arc1docs import start_docs
@@ -101,7 +110,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.newAction.setShortcut('Ctrl+N')
         self.newAction.setStatusTip('Start a new session')
         self.newAction.triggered.connect(self.newSession)
-
 
         self.openAction = QtWidgets.QAction(Graphics.getIcon('open'), 'Open', self)
         self.openAction.setShortcut('Ctrl+O')
@@ -201,8 +209,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.comPorts = QtWidgets.QComboBox()
         self.comPorts.setStyleSheet(s.toolCombo)
         self.comPorts.insertItems(1,self.scanSerials())
-        self.comPorts.currentIndexChanged.connect(self.updateComPort)
-        g.COM=self.comPorts.currentText()
 
         self.refresh=QtWidgets.QPushButton('Refresh')
         self.refresh.clicked.connect(self.updateCOMList)
@@ -227,7 +233,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.toolbar.addWidget(spacer)
 
         self.arcStatusLabel=QtWidgets.QLabel()
-        self.arcStatusLabel.setMinimumWidth(int(200*g.scaling_factor))
+        self.arcStatusLabel.setMinimumWidth(int(200*APP.scalingFactor))
         self.arcStatusLabel.setStyleSheet(s.arcStatus_disc)
         self.arcStatusLabel.setText('Disconnected')
         self.arcStatusLabel.setFont(fonts.font1)
@@ -280,12 +286,12 @@ class Arcontrol(QtWidgets.QMainWindow):
         splitter.setCollapsible(1,False)
 
         # Setup size constraints for each compartment of the UI
-        hp.setMinimumWidth(int(150*g.scaling_factor))
-        hp.setMaximumWidth(int(300*g.scaling_factor))
-        hp.setMinimumHeight(int(700*g.scaling_factor))
+        hp.setMinimumWidth(int(150*APP.scalingFactor))
+        hp.setMaximumWidth(int(300*APP.scalingFactor))
+        hp.setMinimumHeight(int(700*APP.scalingFactor))
 
-        self.mo.setFixedWidth(int(300*g.scaling_factor))
-        dd.setMinimumWidth(int(650*g.scaling_factor))
+        self.mo.setFixedWidth(int(300*APP.scalingFactor))
+        dd.setMinimumWidth(int(650*APP.scalingFactor))
 
         # define how scaling the window scales the two sections
         layoutRight.setStretchFactor(layoutTop, 5)
@@ -295,8 +301,8 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.layoutBot.setStretchFactor(self.pp, 6)
         self.layoutBot.setStretchFactor(self.cp, 6)
 
-        self.pp.setMinimumWidth(int(700*g.scaling_factor))
-        self.cp.setMinimumWidth(int(600*g.scaling_factor))
+        self.pp.setMinimumWidth(int(700*APP.scalingFactor))
+        self.cp.setMinimumWidth(int(600*APP.scalingFactor))
 
         layoutTop.setSpacing(0)
         self.layoutBot.setSpacing(0)
@@ -318,8 +324,8 @@ class Arcontrol(QtWidgets.QMainWindow):
         f.cbAntenna.recolor.connect(self.updateSaveButton)
 
         # Setup main window geometry
-        self.setGeometry(100, 100, int(g.scaling_factor*1500),
-                int(g.scaling_factor*800))
+        self.setGeometry(100, 100, int(APP.scalingFactor*1500),
+                int(APP.scalingFactor*800))
         self.setWindowTitle('ArC One - Control Panel')
         self.setWindowIcon(Graphics.getIcon('appicon'))
 
@@ -363,7 +369,7 @@ class Arcontrol(QtWidgets.QMainWindow):
             msg.exec_()
 
     def showConfig(self):
-        from ControlWidgets import ConfigHardwareWidget
+        from .ControlWidgets import ConfigHardwareWidget
         self.cfgHW = ConfigHardwareWidget()
         self.cfgHW.setFixedWidth(500)
         self.cfgHW.setFixedHeight(150)
@@ -379,12 +385,12 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def updateHW(self):
         # only connect if it's disconnected
-        if g.ser.port != None:
+        if HW.ArC is not None:
             job="011"
             # Initial parameters job
-            g.ser.write_b(job+"\n")
-            g.ser.write_b(str(int(g.readCycles))+"\n")
-            g.ser.write_b(str(int(g.sneakPathOption))+"\n")
+            ArC.write_b(job+"\n")
+            ArC.write_b(str(int(HW.conf.cycles))+"\n")
+            ArC.write_b(str(int(HW.conf.sneakpath))+"\n")
 
     def showAbout(self):
         self.aboutSesh = AboutWidget()
@@ -433,9 +439,6 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         self.arcStatusLabel.update()
 
-    def replaceCBwithBNC(self):
-        pass
-
     def redrawCrossbar(self):
         self.cp.deleteLater()
         self.cp = CrossbarWidget()
@@ -449,15 +452,12 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.mo.pulsePanel.setEnabled(False)
         self.pp.setEnabled(False)
         self.update()
-        pass
 
     def setModeBNCtoLocal(self):
         self.mo.readPanel.setEnabled(False)
         self.mo.pulsePanel.setEnabled(False)
         self.pp.setEnabled(False)
         self.update()
-        pass
-
 
     def toggleEnable(self,state):
         if (state==True):
@@ -509,7 +509,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.deleteAllData()
         newSession = NewSessionDialog()
         newSession.setFixedWidth(500)
-        newSession.setMaximumHeight(int(850*g.scaling_factor))
+        newSession.setMaximumHeight(int(850*APP.scalingFactor))
 
         frameGm = newSession.frameGeometry()
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
@@ -518,32 +518,35 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         newSession.setWindowTitle("New Session")
         newSession.setWindowIcon(Graphics.getIcon('appicon'))
-        g.ser.close()
-        g.ser.port=None
+        if HW.ArC is not None:
+            HW.ArC.close()
+            HW.ArC = None
 
         newSession.exec_()
 
     def reformatInterface(self):
         f.interfaceAntenna.disable.emit(False)
-        if g.sessionMode==0:  # mode is Live: Local (Normal operation)
+
+        session = HW.conf.sessionmode
+
+        if session == 0:  # mode is Live: Local (Normal operation)
             self.redrawCrossbar()
             f.historyTreeAntenna.changeSessionName.emit()
             f.interfaceAntenna.changeArcStatus.emit('Disc')
             f.interfaceAntenna.changeSessionMode.emit('Live: Local')
 
-        elif g.sessionMode==1:  # mode is Live: External BNC
-            self.replaceCBwithBNC()
+        elif session == 1:  # mode is Live: External BNC
             f.historyTreeAntenna.changeSessionName.emit()
             f.interfaceAntenna.changeArcStatus.emit('Disc')
             f.interfaceAntenna.changeSessionMode.emit('Live: External BNC')
             # restrict to 1,1
-            g.wline_nr=1
-            g.bline_nr=1
-            g.w=1
-            g.b=1
+            HW.conf.words = 1
+            HW.conf.bits = 1
+            CB.word = 1
+            CB.bit = 1
             self.redrawCrossbar()
 
-        elif g.sessionMode==2:  # mode is Live: BNC to local
+        elif session == 2:  # mode is Live: BNC to local
             f.historyTreeAntenna.changeSessionName.emit()
             f.interfaceAntenna.changeArcStatus.emit('Disc')
             f.interfaceAntenna.changeSessionMode.emit('Live: BNC to Local')
@@ -551,9 +554,9 @@ class Arcontrol(QtWidgets.QMainWindow):
             self.setModeBNCtoLocal()
             self.redrawCrossbar()
 
-        elif g.sessionMode==3:  # mode is offline
-            g.wline=32
-            g.bline=32
+        elif session == 3:  # mode is offline
+            HW.conf.words = 32
+            HW.conf.bits = 32
             self.setModeOffline()
             self.findAndLoadFile()
             self.redrawCrossbar()
@@ -595,7 +598,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         for (counter, values) in enumerate(rdr):
             if (counter == 0):
-                g.sessionName=str(values[0])
+                APP.sessionName=str(values[0])
                 f.historyTreeAntenna.changeSessionName.emit()
             else:
                 if counter > 2:
@@ -608,7 +611,7 @@ class Arcontrol(QtWidgets.QMainWindow):
                         tag = str(values[5])
                         readTag = str(values[6])
                         readVoltage = float(values[7])
-                        g.Mhistory[w][b].append([m, a, pw, str(tag), readTag, readVoltage])
+                        CB.history[w][b].append([m, a, pw, str(tag), readTag, readVoltage])
 
                         # ignore Read All points
                         if 'S R' in tag or tag[-1]=='e' or tag[0]=='P':
@@ -627,7 +630,7 @@ class Arcontrol(QtWidgets.QMainWindow):
     def findAndLoadFile(self):
 
         path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
-                getOpenFileName(self, 'Open file','', g.OPEN_FI_PATTERN)[0])
+                getOpenFileName(self, 'Open file','', constants.OPEN_FI_PATTERN)[0])
 
         if not os.path.isfile(path.filePath()):
             return
@@ -654,26 +657,25 @@ class Arcontrol(QtWidgets.QMainWindow):
         else:
             for w in range(1,33):
                 for b in range(1,33):
-                    if g.Mhistory[w][b]:
-                        #for dataPoint in g.Mhistory[w][b]:
-                        f.cbAntenna.recolor.emit(g.Mhistory[w][b][-1][0],w,b)
+                    if CB.history[w][b]:
+                        f.cbAntenna.recolor.emit(CB.history[w][b][-1][0],w,b)
 
             f.interfaceAntenna.changeArcStatus.emit('Disc')
 
             return True
 
     def deleteAllData(self):
-        g.Mhistory=[[[] for bit in range(33)] for word in range(33)]
+        CB.history=[[[] for bit in range(33)] for word in range(33)]
 
-        if g.customArray:
-            for w in range(1,g.wline_nr+1):
-                for b in range(1,g.bline_nr+1):
+        if CB.customArray:
+            for w in range(1,HW.conf.words+1):
+                for b in range(1,HW.conf.bits+1):
                     f.SAantenna.disable.emit(w,b)
-            for device in g.customArray:
+            for device in CB.customArray:
                 f.SAantenna.enable.emit(device[0],device[1])
         else:
-            for w in range(1,g.wline_nr+1):
-                for b in range(1,g.bline_nr+1):
+            for w in range(1,HW.conf.words+1):
+                for b in range(1,HW.conf.bits+1):
                     f.SAantenna.enable.emit(w,b)
 
         f.historyTreeAntenna.clearTree.emit()
@@ -686,26 +688,26 @@ class Arcontrol(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
         if reply == QtWidgets.QMessageBox.Yes:
             self.deleteAllData()
-            g.saveFileName=[]
+            APP.saveFileName=[]
         else:
             pass
 
     def saveSession(self, new=False):
-        if g.workingDirectory:
-            if (not new) and g.saveFileName:
-                path=g.workingDirectory
+        if APP.workingDirectory:
+            if (not new) and APP.saveFileName:
+                path = APP.workingDirectory
             else:
                 path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, \
-                    'Save File', g.workingDirectory, g.SAVE_FI_PATTERN)[0])
-                path=path_.filePath()
-                g.saveFileName=path_.fileName()
-                g.workingDirectory=path_.filePath()
+                    'Save File', APP.workingDirectory, constants.SAVE_FI_PATTERN)[0])
+                path = path_.filePath()
+                APP.saveFileName = path_.fileName()
+                APP.workingDirectory = path_.filePath()
         else:
             path_ = QtCore.QFileInfo(QtWidgets.QFileDialog.getSaveFileName(self, \
-                'Save File', '', g.SAVE_FI_PATTERN)[0])
-            path=path_.filePath()
-            g.saveFileName=path_.fileName()
-            g.workingDirectory=path_.filePath()
+                'Save File', '', constants.SAVE_FI_PATTERN)[0])
+            path = path_.filePath()
+            APP.saveFileName=path_.fileName()
+            APP.workingDirectory=path_.filePath()
 
         if len(path) > 0:
             if str(path).endswith('csv.gz'):
@@ -717,17 +719,17 @@ class Arcontrol(QtWidgets.QMainWindow):
                 writer = csv.writer(stream)
 
                 # Header
-                writer.writerow([g.sessionName])
+                writer.writerow([APP.sessionName])
                 writer.writerow([time.strftime("%c")])
                 writer.writerow(['Wordline', 'Bitline', 'Resistance', 'Amplitude (V)',
                     'Pulse width (s)', 'Tag', 'ReadTag', 'ReadVoltage'])
 
                 # Actual data
-                for w in range(1,g.wline_nr+1):
-                    for b in range(1,g.bline_nr+1):
-                        for row in range(len(g.Mhistory[w][b])):
-                            rowdata = [w,b]
-                            for item in g.Mhistory[w][b][row]:
+                for w in range(1,HW.conf.words+1):
+                    for b in range(1,HW.conf.bits+1):
+                        for row in range(len(CB.history[w][b])):
+                            rowdata = [w, b]
+                            for item in CB.history[w][b][row]:
                                 if item is not None:
                                     rowdata.append(item)
                                 else:
@@ -745,97 +747,49 @@ class Arcontrol(QtWidgets.QMainWindow):
             pass
 
     def setCWD(self):
-        if g.workingDirectory:
-            wdirectory = str(QtWidgets.QFileDialog.getExistingDirectory(self,  "Select Directory", g.workingDirectory,))
+        if APP.workingDirectory:
+            wdirectory = str(QtWidgets.QFileDialog.getExistingDirectory(self, \
+                    "Select Directory", APP.workingDirectory,))
         else:
-            wdirectory = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
-        g.workingDirectory=wdirectory
-
-    def configCB(self):
-        pass
+            wdirectory = str(QtWidgets.QFileDialog.getExistingDirectory(self, \
+                    "Select Directory"))
+        APP.workingDirectory = wdirectory
 
     def connectArC(self):
-        if g.COM=="VirtualArC":
-            g.ser = VirtualArC([])
-        elif g.ser.port == None:  # only connect if disconnected
-            job="0"
-            try:
-                g.ser=serial.Serial(port=str(g.COM), baudrate=g.baudrate, timeout=7, parity=serial.PARITY_EVEN, \
-                                stopbits=serial.STOPBITS_ONE)
-                g.ser.write_b = types.MethodType(write_b, g.ser)
 
-                # Reset mbed
-                g.ser.write_b("00\n")
+        port = self.comPorts.currentText()
+        if port == "VirtualArC":
+            HW.ArC = VirtualArC()
+            return
 
-                time.sleep(1)
+        try:
+            HW.ArC = ArC1(port)
+            HW.ArC.initialise(HW.conf)
 
-                # Send initial parameters
-                g.ser.write_b(job+"\n")
-                # Read Cycles and array size
-                g.ser.write_b(str(float(g.readCycles))+"\n")
-                # Word lines
-                g.ser.write_b(str(float(g.wline_nr))+"\n")
-                # Bit lines
-                g.ser.write_b(str(float(g.bline_nr))+"\n")
+            # if mode is bnc-to-local update interface accordingly
+            if HW.conf.sessionmode == 2:
+                self.setModeBNCtoLocal()
 
-                # Read mode
-                g.ser.write_b(str(float(g.readOption))+"\n")
-                # Session type
-                g.ser.write_b(str(float(g.sessionMode))+"\n")
-                # Sneak path option
-                g.ser.write_b(str(float(g.sneakPathOption))+"\n")
-                # Read-out voltage
-                g.ser.write_b(str(float(g.Vread))+"\n")
-
-
-                confirmation=[]
-                try:
-                    confirmation=int(g.ser.readline())
-                    if (confirmation==1):
-                        f.interfaceAntenna.disable.emit(False)
-
-                        job='01'
-                        g.ser.write_b(job+"\n")
-                        g.ser.write_b(str(g.readOption)+"\n")
-                        g.ser.write_b(str(g.Vread)+"\n")
-
-                        # disable interface on BNC-to-Local
-                        if g.sessionMode == 2:
-                            self.setModeBNCtoLocal()
-
-                    else:
-                        try:
-                            g.ser.close()
-                            g.ser.port=None
-                        except SerialException:
-                            pass
-                        reply = QtWidgets.QMessageBox.question(self, "Connect to ArC One",
-                            "Connection failed. Please check if ArC One is connected via the USB cable, and try another COM port. If the problem persists, restart this program with ArC One connected.",
-                            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-                except ValueError:
-                    reply = QtWidgets.QMessageBox.question(self, "Connect to ArC One",
-                        "Connection failed. Please check if ArC One is connected via the USB cable, and try another COM port. If the problem persists, restart this program with ArC One connected.",
-                        QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-                    try:
-                        g.ser.close()
-                        g.ser.port=None
-                    except serial.serialutil.SerialException:
-                        pass
-
-            except serial.serialutil.SerialException:
-                reply = QtWidgets.QMessageBox.question(self, "Connect to ArC ONE",
-                    "Connection failed due to non-existent COM port. Is Arc ONE connected?",
-                    QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        except Exception as exc:
+            print("Error while initialising ArC1:", exc)
+            reply = QtWidgets.QMessageBox.question(self, "Connect to ArC One",
+                "Connection failed. Please check if ArC One is connected via the "
+                "USB cable, and try another COM port. If the problem persists, "
+                "restart this program with ArC One connected.",
+                QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+            HW.ArC = None
 
 
     def discArC(self):
-        g.ser.close()
-        g.ser.port=None
+        if HW.ArC is None:
+            return
+
+        HW.ArC.close()
+        #ArC.port=None
         f.interfaceAntenna.changeArcStatus.emit('Disc')
 
     def resetArC(self):
-        job="00"
-        g.ser.write_b(job+"\n")
+        HW.ArC.reset()
 
     # Scan for available ports. returns a list of tuples (num, name)
     def scanSerials(self):
@@ -850,9 +804,6 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         return available
 
-    def updateComPort(self):
-        g.COM=self.comPorts.currentText()
-
     def updateSaveButton(self):
         self.saveAction.setEnabled(True)
 
@@ -865,8 +816,8 @@ def main():
 
     # Add standard readout and pulse. These are never top-level modules and
     # have no callbacks
-    g.modules['S R'] = modutils.ModDescriptor(None, 'Read', 'Read', False, None)
-    g.modules['P'] = modutils.ModDescriptor(None, 'Pulse', 'Pulse', False, None)
+    APP.modules['S R'] = modutils.ModDescriptor(None, 'Read', 'Read', False, None)
+    APP.modules['P'] = modutils.ModDescriptor(None, 'Pulse', 'Pulse', False, None)
 
     # Get all possible locations for data files as long as it includes
     # a "ProgPanels" directory under it.
@@ -897,7 +848,7 @@ def main():
         monitor_width = monitor.width()
         monitor_height = monitor.height()
 
-    g.scaling_factor=float(monitor_height)/1200
+    APP.scalingFactor=float(monitor_height)/1200
 
     ex = Arcontrol()
     sys.exit(app.exec_())

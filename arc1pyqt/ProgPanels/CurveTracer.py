@@ -17,9 +17,12 @@ import pyqtgraph as pg
 import numpy as np
 
 from arc1pyqt import Graphics
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -76,24 +79,24 @@ class ThreadWrapper(BaseThreadWrapper):
 
         global tag
 
-        readTag='R'+str(g.readOption)+' V='+str(g.Vread)
+        readTag='R'+str(HW.conf.readmode)+' V='+str(HW.conf.Vread)
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
+        HW.ArC.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
             firstPoint=1
             for cycle in range(1,self.totalCycles+1):
 
                 endCommand=0
 
-                valuesNew=f.getFloats(3)
+                valuesNew=HW.ArC.read_floats(3)
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     if (firstPoint==1):
@@ -106,7 +109,7 @@ class ThreadWrapper(BaseThreadWrapper):
 
                 while(endCommand==0):
                     valuesOld=valuesNew
-                    valuesNew=f.getFloats(3)
+                    valuesNew=HW.ArC.read_floats(3)
 
                     if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                         self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_,valuesOld[1])
@@ -374,12 +377,12 @@ class CurveTracer(BaseProgPanel):
         pass
 
     def sendParams(self):
-        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[1].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write_b(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
-        g.ser.write_b(str(float(self.rightEdits[1].text())/1000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[1].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[3].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[2].text()))+"\n")
+        HW.ArC.write_b(str((float(self.leftEdits[4].text())-2)/1000)+"\n")
+        HW.ArC.write_b(str(float(self.rightEdits[1].text())/1000)+"\n")
         time.sleep(0.01)
         CSp=float(self.rightEdits[2].text())
         CSn=float(self.rightEdits[3].text())
@@ -390,16 +393,16 @@ class CurveTracer(BaseProgPanel):
             CSn=10.1
 
 
-        g.ser.write_b(str(CSp/1000000)+"\n")
-        g.ser.write_b(str(CSn/-1000000)+"\n")
+        HW.ArC.write_b(str(CSp/1000000)+"\n")
+        HW.ArC.write_b(str(CSn/-1000000)+"\n")
 
-        g.ser.write_b(str(int(self.rightEdits[0].text()))+"\n")
-        g.ser.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
-        g.ser.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
-        g.ser.write_b(str(int(self.returnCheck))+"\n")
+        HW.ArC.write_b(str(int(self.rightEdits[0].text()))+"\n")
+        HW.ArC.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
+        HW.ArC.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        HW.ArC.write_b(str(int(self.returnCheck))+"\n")
 
     def programOne(self):
-        self.programDevs([[g.w, g.b]])
+        self.programDevs([[CB.word, CB.bit]])
 
     def programRange(self):
         devs = makeDeviceList(True)
@@ -413,7 +416,7 @@ class CurveTracer(BaseProgPanel):
         totalCycles = int(self.rightEdits[0].text())
 
         job="201"
-        g.ser.write_b(job+"\n")   # sends the job
+        HW.ArC.write_b(job+"\n")   # sends the job
 
         self.sendParams()
         wrapper = ThreadWrapper(devs, totalCycles)
@@ -468,7 +471,7 @@ class CurveTracer(BaseProgPanel):
 
         # setup display
         resultWindow = QtWidgets.QWidget()
-        resultWindow.setGeometry(100,100,1000*g.scaling_factor,400)
+        resultWindow.setGeometry(100,100,1000*APP.scalingFactor,400)
         resultWindow.setWindowTitle("Curve Tracer: W="+ str(w) + " | B=" + str(b))
         resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
         resultWindow.show()

@@ -12,9 +12,12 @@ import sys
 import os
 import time
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -34,23 +37,23 @@ class ThreadWrapper(BaseThreadWrapper):
 
         global tag
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
+        HW.ArC.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
             firstPoint=1
             endCommand=0
 
-            valuesNew=f.getFloats(3)
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
-            # valuesNew.append(float(g.ser.readline().rstrip()))
+            valuesNew=HW.ArC.read_floats(3)
+            # valuesNew.append(float(HW.ArC.readline().rstrip()))
+            # valuesNew.append(float(HW.ArC.readline().rstrip()))
+            # valuesNew.append(float(HW.ArC.readline().rstrip()))
 
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
@@ -60,10 +63,10 @@ class ThreadWrapper(BaseThreadWrapper):
             while(endCommand==0):
                 valuesOld=valuesNew
 
-                valuesNew=f.getFloats(3)
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
-                # valuesNew.append(float(g.ser.readline().rstrip()))
+                valuesNew=HW.ArC.read_floats(3)
+                # valuesNew.append(float(HW.ArC.readline().rstrip()))
+                # valuesNew.append(float(HW.ArC.readline().rstrip()))
+                # valuesNew.append(float(HW.ArC.readline().rstrip()))
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -296,49 +299,49 @@ class FormFinder(BaseProgPanel):
         if (self.checkNeg.isChecked()):
             polarity=-1
 
-        g.ser.write_b(job+"\n")   # sends the job
+        HW.ArC.write_b(job+"\n")   # sends the job
 
         pmodeIdx = self.pulsingModeCombo.currentIndex()
         pmode = self.pulsingModeCombo.itemData(pmodeIdx)["mode"]
 
-        g.ser.write_b(str(float(self.leftEdits[0].text())*polarity)+"\n")
-        g.ser.write_b(str(float(self.leftEdits[1].text())*polarity)+"\n")
-        g.ser.write_b(str(float(self.leftEdits[2].text())*polarity)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[0].text())*polarity)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[1].text())*polarity)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[2].text())*polarity)+"\n")
 
         time.sleep(0.05)
 
-        g.ser.write_b(str(float(self.leftEdits[3].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[3].text())/1000000)+"\n")
 
         # Determine the step
         if job != "14": # modal formfinder
             if pmode == 1:
                 # if step is time make it into seconds
-                g.ser.write_b(str(float(self.leftEdits[4].text())/1000000)+"\n")
+                HW.ArC.write_b(str(float(self.leftEdits[4].text())/1000000)+"\n")
             else:
                 # else it is percentage, leave it as is
-                g.ser.write_b(str(float(self.leftEdits[4].text()))+"\n")
+                HW.ArC.write_b(str(float(self.leftEdits[4].text()))+"\n")
         else: # legacy behaviour
-            g.ser.write_b(str(float(self.leftEdits[4].text()))+"\n")
+            HW.ArC.write_b(str(float(self.leftEdits[4].text()))+"\n")
 
-        g.ser.write_b(str(float(self.leftEdits[5].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[5].text())/1000000)+"\n")
 
-        g.ser.write_b(str(float(self.leftEdits[6].text())/1000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[6].text())/1000)+"\n")
         time.sleep(0.05)
         
-        g.ser.write_b(str(float(self.rightEdits[1].text()))+"\n")
-        #g.ser.write_b(str(float(self.rightEdits[2].text()))+"\n")
+        HW.ArC.write_b(str(float(self.rightEdits[1].text()))+"\n")
+        #HW.ArC.write_b(str(float(self.rightEdits[2].text()))+"\n")
         time.sleep(0.05)
         if self.checkRthr.isChecked():
-            g.ser.write_b(str(float(self.rightEdits[2].text()))+"\n")
+            HW.ArC.write_b(str(float(self.rightEdits[2].text()))+"\n")
         else:
-            g.ser.write_b(str(float(0))+"\n")
+            HW.ArC.write_b(str(float(0))+"\n")
         time.sleep(0.05)
 
         if job != "14": # newer version of formfinder
-            g.ser.write_b(str(int(pmode))+"\n")
+            HW.ArC.write_b(str(int(pmode))+"\n")
 
-        g.ser.write_b(str(int(self.rightEdits[3].text()))+"\n")
-        g.ser.write_b(str(int(self.rightEdits[0].text()))+"\n")
+        HW.ArC.write_b(str(int(self.rightEdits[3].text()))+"\n")
+        HW.ArC.write_b(str(int(self.rightEdits[0].text()))+"\n")
         time.sleep(0.05)
 
     def programDevs(self, devs):
@@ -351,7 +354,7 @@ class FormFinder(BaseProgPanel):
         self.execute(wrapper, wrapper.run)
 
     def programOne(self):
-        self.programDevs([[g.w, g.b]])
+        self.programDevs([[CB.word, CB.bit]])
 
     def programRange(self):
         devs = makeDeviceList(True)

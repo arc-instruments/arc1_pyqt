@@ -9,8 +9,11 @@
 
 from PyQt5 import QtGui, QtWidgets
 
+from .. import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 
@@ -44,7 +47,7 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
 
         self.readCyclesEntry=QtWidgets.QLineEdit()
         self.readCyclesEntry.setFixedWidth(320)
-        self.readCyclesEntry.setText(str(g.readCycles))
+        self.readCyclesEntry.setText(str(HW.conf.cycles))
         self.readCyclesEntry.setFont(fonts.font3)
 
         self.sneakCombo=QtWidgets.QComboBox(self)
@@ -52,7 +55,7 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
         self.sneakCombo.addItem("Write: V/3")
         self.sneakCombo.addItem("Write: V/2")
         self.sneakCombo.setFont(fonts.font3)
-        self.sneakCombo.setCurrentIndex(g.sneakPathOption)
+        self.sneakCombo.setCurrentIndex(HW.conf.sneakpath)
 
         hwSetLayout.addWidget(readCyclesLabel,0,0)
         hwSetLayout.addWidget(sneakLabel,1,0)
@@ -98,8 +101,8 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
 
     def updateHW(self):
 
-        g.readCycles=int(self.readCyclesEntry.text())
-        g.sneakPathOption=self.sneakCombo.currentIndex()
+        HW.conf.cycles = int(self.readCyclesEntry.text())
+        HW.conf.sneakpath = self.sneakCombo.currentIndex()
 
         f.interfaceAntenna.updateHW.emit()
 

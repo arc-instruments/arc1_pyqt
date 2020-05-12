@@ -15,9 +15,12 @@ import numpy as np
 import pyqtgraph as pg
 
 from arc1pyqt import Graphics
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -49,12 +52,12 @@ class ThreadWrapper(BaseThreadWrapper):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b("1\n")
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b("1\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
-            Mnow=f.getFloats(1)
-            tag_=tag+"_s"
+            Mnow = HW.ArC.read_floats(1)
+            tag_ = tag+"_s"
             self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
             self.displayData.emit()
 
@@ -66,11 +69,11 @@ class ThreadWrapper(BaseThreadWrapper):
                 b=device[1]
                 self.highlight.emit(w,b)
 
-                g.ser.write_b("1\n")
-                g.ser.write_b(str(int(w))+"\n")
-                g.ser.write_b(str(int(b))+"\n")
+                HW.ArC.write_b("1\n")
+                HW.ArC.write_b(str(int(w))+"\n")
+                HW.ArC.write_b(str(int(b))+"\n")
 
-                Mnow=f.getFloats(1)
+                Mnow=HW.ArC.read_floats(1)
                 tag_=tag+"_"+ str(time.time())
                 self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
                 self.displayData.emit()
@@ -88,11 +91,11 @@ class ThreadWrapper(BaseThreadWrapper):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b("1\n")
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b("1\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
-            Mnow=f.getFloats(1)
+            Mnow=HW.ArC.read_floats(1)
             tag_=tag+"_e"
             self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
             self.displayData.emit()
@@ -277,11 +280,11 @@ class Retention(BaseProgPanel):
         unit=float(self.multiply[self.duration_dropDown.currentIndex()])
         duration=time_mag*unit
 
-        wrapper = ThreadWrapper(devs, every, duration, g.Vread)
+        wrapper = ThreadWrapper(devs, every, duration, HW.conf.Vread)
         self.execute(wrapper, wrapper.run)
 
     def programOne(self):
-        self.programDevs([[g.w, g.b]])
+        self.programDevs([[CB.word, CB.bit]])
 
     def programRange(self):
         rangeDev = makeDeviceList(True)
@@ -327,7 +330,7 @@ class Retention(BaseProgPanel):
         resLayout.setContentsMargins(0, 0, 0, 0)
 
         resultWindow = QtWidgets.QWidget()
-        resultWindow.setGeometry(100,100,1000*g.scaling_factor, 400)
+        resultWindow.setGeometry(100,100,1000*APP.scalingFactor, 400)
         resultWindow.setWindowTitle("Retention: W="+ str(w) + " | B=" + str(b))
         resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
         resultWindow.show()

@@ -15,8 +15,11 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
+from .. import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 from .. import Graphics
@@ -57,16 +60,16 @@ class HistoryWidget(QtWidgets.QWidget):
         self.setLayout(mainLayout)
 
     def changeSessionNameManualy(self, txt):
-        g.sessionName=txt
+        APP.sessionName = txt
 
     def changeSessionName(self):
-        self.dieName.setText(g.sessionName)
+        self.dieName.setText(APP.sessionName)
 
     def clearTree(self):
         self.historyTree.clear()
 
     def updateTree_short(self):
-        self.updateTree(g.w,g.b)
+        self.updateTree(CB.word, CB.bit)
 
     def updateTree(self,w,b):
         existingItem=self.historyTree.findItems("W=" + str(w) + " | B=" + str(b), QtCore.Qt.MatchExactly,0)
@@ -172,10 +175,10 @@ class HistoryWidget(QtWidgets.QWidget):
             endPoint=int(item.whatsThis(4))
             tagKey=str(item.whatsThis(5))
 
-            raw=g.Mhistory[w][b][startPoint:endPoint+1]
+            raw=CB.history[w][b][startPoint:endPoint+1]
 
-            if str(tagKey) in g.modules.keys():
-                cb = g.modules[tagKey].callback
+            if str(tagKey) in APP.modules.keys():
+                cb = APP.modules[tagKey].callback
 
                 if cb is None:
                     return
@@ -198,18 +201,18 @@ class HistoryWidget(QtWidgets.QWidget):
 
     def formatItemText(self,w,b):
         tag=[]
-        tagString=g.Mhistory[w][b][-1][3]
+        tagString=CB.history[w][b][-1][3]
         currentTagKey=[]
         tagPartsUnder = str(tagString).split("_") # underscore delimited tags
-        for tagKey in g.modules.keys():
+        for tagKey in APP.modules.keys():
             # check for standard read/pulse tags
             if tagString.startswith(('P', 'S R', 'F R')):
-                tag.append(g.modules[tagKey].display)
+                tag.append(APP.modules[tagKey].display)
                 currentTagKey=tagKey
                 break
             # then any regular '_'-delimited tags
             elif len(tagPartsUnder) > 1 and tagPartsUnder[0] == tagKey:
-                    tag.append(g.modules[tagKey].display)
+                    tag.append(APP.modules[tagKey].display)
                     currentTagKey=tagKey
                     break
             # ignore unknown or intermediate tags
@@ -224,7 +227,7 @@ class HistoryWidget(QtWidgets.QWidget):
         results=0
 
         #make a list of just the tags
-        auxArr=g.Mhistory[w][b][::-1]
+        auxArr=CB.history[w][b][::-1]
         tagList=[]
         for point in auxArr:
             tagList.append(str(point[3]))
@@ -232,7 +235,7 @@ class HistoryWidget(QtWidgets.QWidget):
         if tag:
             if tag[0]!='Read' and tag[0]!='Pulse':
                 results=1
-                indexList[1]=len(g.Mhistory[w][b])-1
+                indexList[1]=len(CB.history[w][b])-1
                 try:
                     # find index of the start of the run
                     lastIndex = None

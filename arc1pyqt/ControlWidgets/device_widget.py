@@ -13,8 +13,11 @@ from PyQt5 import QtGui, QtWidgets
 
 from .. import Globals
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from .common import resistanceColorGradient
+
+from .. import state
+CB = state.crossbar
+from .. import constants
 
 
 class DeviceWidget(QtWidgets.QWidget):
@@ -69,7 +72,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.pen.setWidth(1)
         self.pen.setColor(QtGui.QColor(200,200,200))
         try:
-            self.recolor(g.Mhistory[w][b][-1][0])
+            self.recolor(CB.history[w][b][-1][0])
         except IndexError:
             self.colorWhite()
         self.update()
@@ -81,8 +84,8 @@ class DeviceWidget(QtWidgets.QWidget):
 
     def recolor(self,M):
 
-        minMlog=np.log10(g.minM)
-        normMlog=np.log10(g.maxM) - minMlog
+        minMlog=np.log10(constants.MIN_RES)
+        normMlog=np.log10(constants.MAX_RES) - minMlog
 
         if M>0:
             try:

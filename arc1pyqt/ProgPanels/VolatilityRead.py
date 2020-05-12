@@ -5,9 +5,12 @@ import time
 import scipy.stats as stat
 import numpy as np
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -38,17 +41,17 @@ class ThreadWrapper(BaseThreadWrapper):
         self.disableInterface.emit(True)
         global tag
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
+        HW.ArC.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
-            Mnow = f.getFloats(1)
+            Mnow = HW.ArC.read_floats(1)
             self.sendData.emit(w,b,Mnow,self.A,self.pw,tag+'_s')
 
             start=time.time()
@@ -62,9 +65,10 @@ class ThreadWrapper(BaseThreadWrapper):
                 # Obtain data for entire batch.
                 for i in np.arange(self.B):
                     # Send data to log-file.
-                    dataTime=int(g.ser.readline().rstrip())
-                    Mnow=f.getFloats(1)
-                    self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_i_ '+ str(dataTime))
+                    dataTime=int(HW.ArC.readline().rstrip())
+                    Mnow=HW.ArC.read_floats(1)
+                    self.sendData.emit(w,b,Mnow,HW.conf.Vread,0,\
+                            tag+'_i_ '+ str(dataTime))
 
                     # Hold all or portion of incoming data in temporary array.
                     values[i] = Mnow
@@ -77,10 +81,10 @@ class ThreadWrapper(BaseThreadWrapper):
                     # batch
                     if (timeNow-start)>=self.stopTime:
                         stop=1
-                        g.ser.write_b(str(int(stop))+"\n")
+                        HW.ArC.write_b(str(int(stop))+"\n")
                     else:
                         stop=0
-                        g.ser.write_b(str(int(stop))+"\n")
+                        HW.ArC.write_b(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'LinearFit':
                     # Check that there are at least 2 points in batch, or no
@@ -102,15 +106,15 @@ class ThreadWrapper(BaseThreadWrapper):
                         # or time limit exceeded stop procedure.
                         if abs(relslope)<=self.stopTol or (timeNow-start)>=self.stopTime:
                             stop=1
-                            g.ser.write_b(str(int(stop))+"\n")
+                            HW.ArC.write_b(str(int(stop))+"\n")
                         else:
                             stop=0
-                            g.ser.write_b(str(int(stop))+"\n")
+                            HW.ArC.write_b(str(int(stop))+"\n")
 
                     # If the batch is not large enough just end it there.
                     else:
                         stop=1
-                        g.ser.write_b(str(int(stop))+"\n")
+                        HW.ArC.write_b(str(int(stop))+"\n")
 
                 elif self.stopOpt == 'T-Test':
                     # Check that the batch is actually large enough to carry
@@ -126,15 +130,15 @@ class ThreadWrapper(BaseThreadWrapper):
                         if tmet < self.stopConf or (timeNow-start)>=self.stopTime:
                             # ... stop requestiong batches. Also have a max time-check.
                             stop=1
-                            g.ser.write_b(str(int(stop))+"\n")
+                            HW.ArC.write_b(str(int(stop))+"\n")
                         else:
                             stop=0
-                            g.ser.write_b(str(int(stop))+"\n")
+                            HW.ArC.write_b(str(int(stop))+"\n")
 
                     # If the batch is not large enough just end it there.
                     else:
                         stop=1
-                        g.ser.write_b(str(int(stop))+"\n")
+                        HW.ArC.write_b(str(int(stop))+"\n")
                         print('WARNING: Batch not long enough to support this '+
                               'operation. Minimum batch length required is ' +
                               str(2*self.ttestsamp) + '.')
@@ -143,10 +147,10 @@ class ThreadWrapper(BaseThreadWrapper):
                 # after 1 batch.
                 else:
                     stop=1
-                    g.ser.write_b(str(int(stop))+"\n")
+                    HW.ArC.write_b(str(int(stop))+"\n")
 
-            Mnow = f.getFloats(1)
-            self.sendData.emit(w,b,Mnow,g.Vread,0,tag+'_e')
+            Mnow = HW.ArC.read_floats(1)
+            self.sendData.emit(w, b, Mnow, HW.conf.Vread, 0, tag+'_e')
 
             self.updateTree.emit(w,b)
 
@@ -344,13 +348,13 @@ class VolatilityRead(BaseProgPanel):
         pass
 
     def sendParams(self):
-        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
-        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[2].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[3].text()))+"\n")
 
     def programOne(self):
-        self.programDevs([[g.w, g.b]])
+        self.programDevs([[CB.word, CB.bit]])
 
     def programRange(self):
         devs = makeDeviceList(True)
@@ -371,7 +375,7 @@ class VolatilityRead(BaseProgPanel):
         pw = float(self.leftEdits[1].text())/1000000
 
         job="33"
-        g.ser.write_b(job+"\n")
+        HW.ArC.write_b(job+"\n")
 
         self.sendParams()
 

@@ -48,9 +48,12 @@ import time
 import numpy as np
 import pyqtgraph
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -98,25 +101,25 @@ class ThreadWrapper(BaseThreadWrapper):
         """ Transfer the parameters to ArC ONE """
 
         self.log("Initiating ConvergeToState (job 21)")
-        g.ser.write_b(str(21) + "\n") # job number, converge to state
+        HW.ArC.write_b(str(21) + "\n") # job number, converge to state
 
         p = self.params # shorthand; `self.params` is too long!
 
         self.log("Sending ConvergeToState params")
-        g.ser.write_b("%.3e\n" % p["vmin"])
-        g.ser.write_b("%.3e\n" % p["vstep"])
-        g.ser.write_b("%.3e\n" % p["vmax"])
-        g.ser.write_b("%.3e\n" % p["pwmin"])
-        g.ser.write_b("%.3e\n" % p["pwstep"])
-        g.ser.write_b("%.3e\n" % p["pwmax"])
-        g.ser.write_b("%.3e\n" % p["interpulse"])
-        g.ser.write_b("%.3e\n" % p["res_target"])
-        g.ser.write_b("%.3e\n" % p["res_target_tolerance"])
-        g.ser.write_b("%.3e\n" % p["res_initial_tolerance"])
+        HW.ArC.write_b("%.3e\n" % p["vmin"])
+        HW.ArC.write_b("%.3e\n" % p["vstep"])
+        HW.ArC.write_b("%.3e\n" % p["vmax"])
+        HW.ArC.write_b("%.3e\n" % p["pwmin"])
+        HW.ArC.write_b("%.3e\n" % p["pwstep"])
+        HW.ArC.write_b("%.3e\n" % p["pwmax"])
+        HW.ArC.write_b("%.3e\n" % p["interpulse"])
+        HW.ArC.write_b("%.3e\n" % p["res_target"])
+        HW.ArC.write_b("%.3e\n" % p["res_target_tolerance"])
+        HW.ArC.write_b("%.3e\n" % p["res_initial_tolerance"])
 
-        g.ser.write_b("%d\n" % p["pulses"])
-        g.ser.write_b("%d\n" % p["init_pol"])
-        g.ser.write_b(str(len(self.deviceList)) + "\n")
+        HW.ArC.write_b("%d\n" % p["pulses"])
+        HW.ArC.write_b("%d\n" % p["init_pol"])
+        HW.ArC.write_b(str(len(self.deviceList)) + "\n")
 
     @BaseThreadWrapper.runner
     def run(self):
@@ -137,14 +140,14 @@ class ThreadWrapper(BaseThreadWrapper):
     def convergeToState(self, w, b):
 
         self.log("Running ConvergeToState on (W=%d, B=%d)" % (w, b))
-        g.ser.write_b("%d\n" % int(w)) # word line
-        g.ser.write_b("%d\n" % int(b)) # bit line
+        HW.ArC.write_b("%d\n" % int(w)) # word line
+        HW.ArC.write_b("%d\n" % int(b)) # bit line
 
         # Read the first batch of values
         global tag
         end = False
         buf = np.zeros(3)
-        curValues = list(f.getFloats(3))
+        curValues = list(HW.ArC.read_floats(3))
         self.log(curValues)
         buf[0] = curValues[0]
         buf[1] = curValues[1]
@@ -153,7 +156,7 @@ class ThreadWrapper(BaseThreadWrapper):
 
         # Repeat while an end tag is not encountered
         while(not end):
-            curValues = list(f.getFloats(3))
+            curValues = list(HW.ArC.read_floats(3))
             self.log(curValues)
 
             if (self.isEndTag(curValues)):
@@ -263,7 +266,7 @@ class ConvergeToState(Ui_CTSParent, BaseProgPanel):
     def programDevs(self, programType):
 
         if programType == self.PROGRAM_ONE:
-            devs = [[g.w, g.b]]
+            devs = [[CB.word, CB.bit]]
         else:
             if programType == self.PROGRAM_RANGE:
                 devs = makeDeviceList(True)

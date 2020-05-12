@@ -16,9 +16,12 @@ import pyqtgraph as pg
 import numpy as np
 
 from arc1pyqt import Graphics
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -38,20 +41,20 @@ class ThreadWrapper(BaseThreadWrapper):
 
         global tag
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
+        HW.ArC.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
             firstPoint=1
             endCommand=0
 
-            valuesNew=f.getFloats(3)
+            valuesNew=HW.ArC.read_floats(3)
 
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
@@ -61,7 +64,7 @@ class ThreadWrapper(BaseThreadWrapper):
             while(endCommand==0):
                 valuesOld=valuesNew
 
-                valuesNew=f.getFloats(3)
+                valuesNew=HW.ArC.read_floats(3)
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -269,18 +272,18 @@ class SwitchSeeker(BaseProgPanel):
         return False
 
     def sendParams(self):
-        g.ser.write_b(str(float(self.leftEdits[2].text())/1000)+"\n")
-        g.ser.write_b(str(float(self.leftEdits[3].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[4].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[5].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[8].text())/1000)+"\n")
-        g.ser.write_b(str(float(self.leftEdits[9].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[2].text())/1000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[3].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[4].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[5].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[8].text())/1000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[9].text()))+"\n")
         time.sleep(0.01)
-        g.ser.write_b(str(int(self.leftEdits[0].text()))+"\n")
-        g.ser.write_b(str(int(self.leftEdits[1].text()))+"\n")
-        g.ser.write_b(str(int(self.leftEdits[6].text()))+"\n")
-        g.ser.write_b(str(int(self.leftEdits[7].text()))+"\n")
-        g.ser.write_b(str(int(self.checkRead.isChecked()))+"\n")
+        HW.ArC.write_b(str(int(self.leftEdits[0].text()))+"\n")
+        HW.ArC.write_b(str(int(self.leftEdits[1].text()))+"\n")
+        HW.ArC.write_b(str(int(self.leftEdits[6].text()))+"\n")
+        HW.ArC.write_b(str(int(self.leftEdits[7].text()))+"\n")
+        HW.ArC.write_b(str(int(self.checkRead.isChecked()))+"\n")
 
         # Check if Stage I should be skipped
         if self.skipICheckBox.isChecked():
@@ -293,10 +296,10 @@ class SwitchSeeker(BaseProgPanel):
             # if 0 then Stage I will not be skipped
             skipStageI = str(0)
 
-        g.ser.write_b(skipStageI+"\n")
+        HW.ArC.write_b(skipStageI+"\n")
 
     def programOne(self):
-        self.programDevs([[g.w, g.b]])
+        self.programDevs([[CB.word, CB.bit]])
 
     def programRange(self):
         devs = makeDeviceList(True)
@@ -308,7 +311,7 @@ class SwitchSeeker(BaseProgPanel):
 
     def programDevs(self, devs):
         job="%d"%self.getJobCode()
-        g.ser.write_b(job+"\n")   # sends the job
+        HW.ArC.write_b(job+"\n")   # sends the job
 
         self.sendParams()
         wrapper = ThreadWrapper(devs)
@@ -413,7 +416,7 @@ class SwitchSeeker(BaseProgPanel):
 
         # setup display
         resultWindow = QtWidgets.QWidget()
-        resultWindow.setGeometry(100, 100, 1000*g.scaling_factor, 500)
+        resultWindow.setGeometry(100, 100, 1000*APP.scalingFactor, 500)
         resultWindow.setWindowTitle("SwitchSeeker: W="+ str(w) + " | B=" + str(b))
         resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
         resultWindow.show()

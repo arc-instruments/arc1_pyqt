@@ -9,12 +9,15 @@
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
-
+from copy import copy
 import time
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper
 
@@ -31,47 +34,48 @@ class ThreadWrapper(BaseThreadWrapper):
 
         global tag
 
-        needsUpdate=False
-        if self.Vread!=g.Vread or self.readType!=g.readOption:
-            needsUpdate=True
+        needsUpdate = False
+
+        if self.Vread != HW.conf.Vread or self.readType != HW.conf.readmode:
+            # if current read configuration is different than the global one
+            # make sure you set it back once we're done so set `needsUpdate` to
+            # True.
+            needsUpdate = True
             # Update Read
-            job='01'
-            g.ser.write_b(job+"\n")
-            g.ser.write_b(str(float(self.readType))+"\n")
-            g.ser.write_b(str(float(self.Vread))+"\n")
+            conf = copy(HW.conf)
+            conf.readmode = self.readType
+            conf.Vread = self.Vread
+            HW.ArC.update_read(conf)
 
         job="1"
-        g.ser.write_b(job+"\n")
-        g.ser.write_b(str(g.w)+"\n")
-        g.ser.write_b(str(g.b)+"\n")
+        HW.ArC.write_b(job+"\n")
+        HW.ArC.write_b(str(CB.word)+"\n")
+        HW.ArC.write_b(str(CB.bit)+"\n")
 
-        Mnow=f.getFloats(1)
+        Mnow=HW.ArC.read_floats(1)
 
         tag='S R'+str(self.readType)+' V='+str(self.Vread)
-        self.sendData.emit(g.w,g.b,Mnow,float(self.Vread),0,tag)
+        self.sendData.emit(CB.word, CB.bit, Mnow, float(self.Vread), 0, tag)
 
         self.displayData.emit()
-        self.updateTree.emit(g.w,g.b)
+        self.updateTree.emit(CB.word, CB.bit)
 
 
-        if needsUpdate==True:
-            # Update Read
-            job='01'
-            g.ser.write_b(job+"\n")
-            g.ser.write_b(str(float(g.readOption))+"\n")
-            g.ser.write_b(str(float(g.Vread))+"\n") 
+        # set read configuration back to its original state
+        if needsUpdate == True:
+            HW.ArC.update_read(HW.conf)
 
 
 class READ(QtWidgets.QWidget):
-    
+
     def __init__(self, short=False):
         super().__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
-        self.Vread=g.Vread
-        self.readOption=g.readOption
+
+    def initUI(self):
+        self.Vread = HW.conf.Vread
+        self.readOption = HW.conf.readmode
 
         vbox1=QtWidgets.QVBoxLayout()
         hbox1=QtWidgets.QHBoxLayout()
@@ -84,7 +88,6 @@ class READ(QtWidgets.QWidget):
 
         isInt=QtGui.QIntValidator()
         isFloat=QtGui.QDoubleValidator()
-
 
         gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
@@ -112,7 +115,6 @@ class READ(QtWidgets.QWidget):
         self.combo_readType.insertItems(1, ['Classic', 'TIA', 'TIA4P'])
         self.combo_readType.currentIndexChanged.connect(self.updateReadType)
         self.combo_readType.setCurrentIndex(2)
-        #g.readOption=combo_readType.currentIndex()
 
         self.read_voltage=QtWidgets.QDoubleSpinBox()
         #read_voltage.setHeight(25)
@@ -231,11 +233,4 @@ class READ(QtWidgets.QWidget):
 
 
         self.thread.start()
-
-    def updateRead(self):
-        job='01'
-        g.ser.write_b(job+"\n")
-        g.ser.write_b(str(g.readOption)+"\n")
-        
-        g.ser.write_b(str(g.Vread)+"\n")
 

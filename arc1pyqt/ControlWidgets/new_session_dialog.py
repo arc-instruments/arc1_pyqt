@@ -12,8 +12,12 @@ import os
 from PyQt5 import QtGui, QtCore, QtWidgets
 from . import MatrixWidget
 
+from .. import state
+HW = state.hardware
+CB = state.crossbar
+APP = state.app
+
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 from .. import Graphics
@@ -121,7 +125,7 @@ class NewSessionDialog(QtWidgets.QDialog):
         self.sneakCombo.addItem("Write: V/3")
         self.sneakCombo.addItem("Write: V/2")
         self.sneakCombo.setFont(fonts.font3)
-        self.sneakCombo.setCurrentIndex(g.sneakPathOption)
+        self.sneakCombo.setCurrentIndex(HW.conf.sneakpath)
 
         cbHBox=QtWidgets.QHBoxLayout(self)
         self.cb_w=QtWidgets.QSpinBox(self)
@@ -235,7 +239,7 @@ class NewSessionDialog(QtWidgets.QDialog):
         #self.cbWindow.redrawArray(w, b)
         self.updateCB(w, b)
 
-    def updateCB(self, w=g.wline_nr, b=g.bline_nr):
+    def updateCB(self, w=HW.conf.words, b=HW.conf.bits):
 
         wdg = QtWidgets.QWidget()
         mainLayout = QtWidgets.QHBoxLayout(wdg)
@@ -254,7 +258,7 @@ class NewSessionDialog(QtWidgets.QDialog):
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(1)
         matrix = MatrixWidget(words=w, bits=b, passive=True, width=(15, 25), \
-                height=(10, 20*g.scaling_factor))
+                height=(10, 20*APP.scalingFactor))
         matrix.setSizePolicy(sizePolicy)
 
         gridLayout.addWidget(wordline, 0, 1, 1, 1)
@@ -267,16 +271,16 @@ class NewSessionDialog(QtWidgets.QDialog):
         self.cbWindow.setCurrentIndex(self.cbWindow.count()-1)
 
     def startSession(self):
-        g.wline_nr=self.cb_w.value()
-        g.bline_nr=self.cb_b.value()
+        HW.conf.words = self.cb_w.value()
+        HW.conf.bits = self.cb_b.value()
 
         if not len(self.dirName.text()) == 0:
-            g.workingDirectory=self.dirName.text()
+            APP.workingDirectory = self.dirName.text()
 
-        g.readCycles=int(self.readCyclesEntry.text())
-        g.sneakPathOption=self.sneakCombo.currentIndex()
-        g.sessionMode=self.wModeCombo.currentIndex()
-        g.sessionName=self.wNameEntry.text()
+        HW.conf.cycles = int(self.readCyclesEntry.text())
+        HW.conf.sneakpath = self.sneakCombo.currentIndex()
+        HW.conf.sessionmode=self.wModeCombo.currentIndex()
+        APP.sessionName=self.wNameEntry.text()
 
         f.interfaceAntenna.reformat.emit()
 

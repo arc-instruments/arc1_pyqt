@@ -9,9 +9,12 @@
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper
 
@@ -26,26 +29,21 @@ class ThreadWrapper(BaseThreadWrapper):
     @BaseThreadWrapper.runner
     def run(self):
 
-        global tag
-
-        ser=g.ser                   # simplify the namespace
         job="3"                     # define job
-        ser.write_b(job+"\n")            # Send job followed by cell position and pulsing parameters
-        ser.write_b(str(g.w)+"\n")
-        ser.write_b(str(g.b)+"\n")
+        HW.ArC.write_b(job+"\n")            # Send job followed by cell position and pulsing parameters
+        HW.ArC.write_b(str(CB.word)+"\n")
+        HW.ArC.write_b(str(CB.bit)+"\n")
 
-        ser.write_b(str(float(self.amplitude))+"\n")
-        ser.write_b(str(float(self.pw))+"\n")
+        HW.ArC.write_b(str(float(self.amplitude))+"\n")
+        HW.ArC.write_b(str(float(self.pw))+"\n")
 
         # Read the value of M after the pulse
-        Mnow=f.getFloats(1)
-        tag='P'
-        self.sendData.emit(g.w,g.b,Mnow,self.amplitude,self.pw,tag)
-
-        #self.setM(g.w,g.b)
+        Mnow = HW.ArC.read_floats(1)
+        tag = 'P'
+        self.sendData.emit(CB.word, CB.bit ,Mnow, self.amplitude, self.pw, tag)
 
         self.displayData.emit()
-        self.updateTree.emit(g.w,g.b)
+        self.updateTree.emit(CB.word, CB.bit)
 
 
 class Pulse(QtWidgets.QWidget):

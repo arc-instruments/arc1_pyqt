@@ -17,12 +17,15 @@ import scipy.stats as stat
 import pyqtgraph
 
 from arc1pyqt import Graphics
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from arc1pyqt.GeneratedUiElements.mss import Ui_MSSParent
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 
 
@@ -40,25 +43,25 @@ class ThreadWrapper(BaseThreadWrapper):
 
         numDevices = int(len(self.deviceList))
 
-        g.ser.write_b(str(161) + "\n")
+        HW.ArC.write_b(str(161) + "\n")
 
         data = self.params
 
-        g.ser.write_b(str(data["pulse_duration"])+"\n")
-        g.ser.write_b(str(data["vmin"])+"\n")
-        g.ser.write_b(str(data["vstep"])+"\n")
-        g.ser.write_b(str(data["vmax"])+"\n")
-        g.ser.write_b(str(data["interpulse"])+"\n")
+        HW.ArC.write_b(str(data["pulse_duration"])+"\n")
+        HW.ArC.write_b(str(data["vmin"])+"\n")
+        HW.ArC.write_b(str(data["vstep"])+"\n")
+        HW.ArC.write_b(str(data["vmax"])+"\n")
+        HW.ArC.write_b(str(data["interpulse"])+"\n")
 
-        g.ser.write_b(str(data["trailer_reads"])+"\n")
-        g.ser.write_b(str(data["prog_pulses"])+"\n")
-        g.ser.write_b(str(data["tolerance_band"])+"\n")
-        g.ser.write_b(str(data["read_write"])+"\n")
+        HW.ArC.write_b(str(data["trailer_reads"])+"\n")
+        HW.ArC.write_b(str(data["prog_pulses"])+"\n")
+        HW.ArC.write_b(str(data["tolerance_band"])+"\n")
+        HW.ArC.write_b(str(data["read_write"])+"\n")
 
-        g.ser.write_b(str(numDevices)+"\n")
+        HW.ArC.write_b(str(numDevices)+"\n")
 
-        g.ser.write_b(str(w)+"\n")
-        g.ser.write_b(str(b)+"\n")
+        HW.ArC.write_b(str(w)+"\n")
+        HW.ArC.write_b(str(b)+"\n")
 
     def phase1(self, w, b):
 
@@ -71,7 +74,7 @@ class ThreadWrapper(BaseThreadWrapper):
         firstPoint = True
 
         while True:
-            newValues = list(f.getFloats(3))
+            newValues = list(HW.ArC.read_floats(3))
 
             if not values:
                 values = newValues
@@ -79,15 +82,15 @@ class ThreadWrapper(BaseThreadWrapper):
                     continue
 
             if(newValues[2] < 0):
-                status = int(g.ser.readline().rstrip())
+                status = int(HW.ArC.readline().rstrip())
                 self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_e")
                 self.displayData.emit()
 
                 # all OK, read the results, if any
                 if status == 0:
-                    ints = int(g.ser.readline().rstrip())   # expecting 1 int
-                    floats = int(g.ser.readline().rstrip()) # expecting 0 floats
-                    sign = int(g.ser.readline().rstrip())
+                    ints = int(HW.ArC.readline().rstrip())   # expecting 1 int
+                    floats = int(HW.ArC.readline().rstrip()) # expecting 0 floats
+                    sign = int(HW.ArC.readline().rstrip())
                     return sign
                 return None # failed!
             else:
@@ -105,7 +108,7 @@ class ThreadWrapper(BaseThreadWrapper):
     def initialisePhase2(self, w, b, sign = 1):
         numDevices = int(len(self.deviceList))
 
-        g.ser.write_b(str(162) + "\n")
+        HW.ArC.write_b(str(162) + "\n")
 
         data = self.params
         stateMode = data["state_mode"]
@@ -114,13 +117,13 @@ class ThreadWrapper(BaseThreadWrapper):
             stateMode = 1
         voltage = float(data["stability_voltage"] * sign * stateMode)
 
-        g.ser.write_b(str(voltage) + "\n")
-        g.ser.write_b(str(data["stability_pw"]) + "\n")
+        HW.ArC.write_b(str(voltage) + "\n")
+        HW.ArC.write_b(str(data["stability_pw"]) + "\n")
 
-        g.ser.write_b(str(numDevices)+"\n")
+        HW.ArC.write_b(str(numDevices)+"\n")
 
-        g.ser.write_b(str(w)+"\n")
-        g.ser.write_b(str(b)+"\n")
+        HW.ArC.write_b(str(w)+"\n")
+        HW.ArC.write_b(str(b)+"\n")
 
     def phase2(self, w, b, sign = 1):
 
@@ -133,6 +136,7 @@ class ThreadWrapper(BaseThreadWrapper):
         lastPoint = False
         t0 = time.time()
         pulsedVoltage = float(self.params["stability_voltage"] * sign * self.params["state_mode"])
+        pulsedPW = float(self.params["stability_pw"])
         test = self.params["stability_mode"]
         min_tan = numpy.tan((self.params["stability_slope"] / 100.0) * (numpy.pi/2.0))
         tmetric = self.params["stability_tmetric"]
@@ -142,8 +146,8 @@ class ThreadWrapper(BaseThreadWrapper):
         result = False
 
         while True:
-            #currentR = float(g.ser.readline().rstrip())
-            currentR = float(f.getFloats(1)[0])
+            #currentR = float(HW.ArC.readline().rstrip())
+            currentR = float(HW.ArC.read_floats(1)[0])
             numPoints = len(window)
 
             # accumulate at least 50 points before starting to count
@@ -181,14 +185,14 @@ class ThreadWrapper(BaseThreadWrapper):
             else:
                 suffix = "_i"
 
-            self.sendData.emit(w, b, currentR, pulsedVoltage, 0, tag_ + suffix)
+            self.sendData.emit(w, b, currentR, pulsedVoltage, pulsedPW, tag_ + suffix)
             self.displayData.emit()
 
             if lastPoint:
-                g.ser.write_b(str(1) + "\n")
+                HW.ArC.write_b(str(1) + "\n")
                 break
             else:
-                g.ser.write_b(str(0) + "\n")
+                HW.ArC.write_b(str(0) + "\n")
 
         return result
 
@@ -198,57 +202,57 @@ class ThreadWrapper(BaseThreadWrapper):
         data = self.params
 
         if str(data["assess_mode"]) == "voltage":
-            g.ser.write_b(str(163) + "\n")
+            HW.ArC.write_b(str(163) + "\n")
 
-            g.ser.write_b(str(data["state_reads"]) + "\n")
-            g.ser.write_b(str(data["state_prog_pulses"]) + "\n")
-            g.ser.write_b(str(data["state_stdev"]) + "\n")
-            g.ser.write_b(str(data["state_monotonic"]) + "\n")
-            g.ser.write_b(str(data["state_counter_reset"]) + "\n")
+            HW.ArC.write_b(str(data["state_reads"]) + "\n")
+            HW.ArC.write_b(str(data["state_prog_pulses"]) + "\n")
+            HW.ArC.write_b(str(data["state_stdev"]) + "\n")
+            HW.ArC.write_b(str(data["state_monotonic"]) + "\n")
+            HW.ArC.write_b(str(data["state_counter_reset"]) + "\n")
 
-            g.ser.write_b(str(data["state_pulse_duration"]) + "\n")
-            g.ser.write_b(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
-            g.ser.write_b(str(-sign * data["state_mode"] * data["state_vstep"]) + "\n")
-            g.ser.write_b(str(-sign * data["state_vmax"]) + "\n")
-            g.ser.write_b(str(data["state_interpulse"]) + "\n")
-            g.ser.write_b(str(data["state_retention"]) + "\n")
+            HW.ArC.write_b(str(data["state_pulse_duration"]) + "\n")
+            HW.ArC.write_b(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
+            HW.ArC.write_b(str(-sign * data["state_mode"] * data["state_vstep"]) + "\n")
+            HW.ArC.write_b(str(-sign * data["state_vmax"]) + "\n")
+            HW.ArC.write_b(str(data["state_interpulse"]) + "\n")
+            HW.ArC.write_b(str(data["state_retention"]) + "\n")
         elif str(data["assess_mode"]) == "pulse":
-            g.ser.write_b(str(164) + "\n")
+            HW.ArC.write_b(str(164) + "\n")
 
-            g.ser.write_b(str(data["state_reads"]) + "\n")
-            g.ser.write_b(str(data["state_prog_pulses"]) + "\n")
-            g.ser.write_b(str(data["state_stdev"]) + "\n")
-            g.ser.write_b(str(data["state_monotonic"]) + "\n")
-            g.ser.write_b(str(data["state_counter_reset"]) + "\n")
+            HW.ArC.write_b(str(data["state_reads"]) + "\n")
+            HW.ArC.write_b(str(data["state_prog_pulses"]) + "\n")
+            HW.ArC.write_b(str(data["state_stdev"]) + "\n")
+            HW.ArC.write_b(str(data["state_monotonic"]) + "\n")
+            HW.ArC.write_b(str(data["state_counter_reset"]) + "\n")
 
-            g.ser.write_b(str(data["state_pwmin"]) + "\n")
-            g.ser.write_b(str(-sign * data["state_mode"] * data["state_voltage"]) + "\n")
-            g.ser.write_b(str(data["state_pwstep"]) + "\n")
-            g.ser.write_b(str(data["state_pwmax"]) + "\n")
-            g.ser.write_b(str(data["state_interpulse"]) + "\n")
-            g.ser.write_b(str(data["state_retention"]) + "\n")
+            HW.ArC.write_b(str(data["state_pwmin"]) + "\n")
+            HW.ArC.write_b(str(-sign * data["state_mode"] * data["state_voltage"]) + "\n")
+            HW.ArC.write_b(str(data["state_pwstep"]) + "\n")
+            HW.ArC.write_b(str(data["state_pwmax"]) + "\n")
+            HW.ArC.write_b(str(data["state_interpulse"]) + "\n")
+            HW.ArC.write_b(str(data["state_retention"]) + "\n")
         elif str(data["assess_mode"]) == "program":
-            g.ser.write_b(str(165) + "\n")
+            HW.ArC.write_b(str(165) + "\n")
 
-            g.ser.write_b(str(data["state_reads"]) + "\n")
-            g.ser.write_b(str(data["state_prog_pulses_min"]) + "\n")
-            g.ser.write_b(str(data["state_prog_pulses_step"]) + "\n")
-            g.ser.write_b(str(data["state_prog_pulses_max"]) + "\n")
-            g.ser.write_b(str(data["state_stdev"]) + "\n")
-            g.ser.write_b(str(data["state_monotonic"]) + "\n")
-            g.ser.write_b(str(data["state_counter_reset"]) + "\n")
+            HW.ArC.write_b(str(data["state_reads"]) + "\n")
+            HW.ArC.write_b(str(data["state_prog_pulses_min"]) + "\n")
+            HW.ArC.write_b(str(data["state_prog_pulses_step"]) + "\n")
+            HW.ArC.write_b(str(data["state_prog_pulses_max"]) + "\n")
+            HW.ArC.write_b(str(data["state_stdev"]) + "\n")
+            HW.ArC.write_b(str(data["state_monotonic"]) + "\n")
+            HW.ArC.write_b(str(data["state_counter_reset"]) + "\n")
 
-            g.ser.write_b(str(data["state_pulse_duration"]) + "\n")
-            g.ser.write_b(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
-            g.ser.write_b(str(data["state_interpulse"]) + "\n")
-            g.ser.write_b(str(data["state_retention"]) + "\n")
+            HW.ArC.write_b(str(data["state_pulse_duration"]) + "\n")
+            HW.ArC.write_b(str(-sign * data["state_mode"] * data["state_vmin"]) + "\n")
+            HW.ArC.write_b(str(data["state_interpulse"]) + "\n")
+            HW.ArC.write_b(str(data["state_retention"]) + "\n")
         else:
             raise Exception("Unknown state assessment mode")
 
-        g.ser.write_b(str(numDevices)+"\n")
+        HW.ArC.write_b(str(numDevices)+"\n")
 
-        g.ser.write_b(str(w)+"\n")
-        g.ser.write_b(str(b)+"\n")
+        HW.ArC.write_b(str(w)+"\n")
+        HW.ArC.write_b(str(b)+"\n")
 
     def phase3(self, w, b, sign = 1):
         self.initialisePhase3(w, b, sign)
@@ -262,10 +266,10 @@ class ThreadWrapper(BaseThreadWrapper):
 
         while True:
             # newValues = []
-            # newValues.append(float(g.ser.readline().rstrip()))
-            # newValues.append(float(g.ser.readline().rstrip()))
-            # newValues.append(float(g.ser.readline().rstrip()))
-            newValues = list(f.getFloats(3))
+            # newValues.append(float(HW.ArC.readline().rstrip()))
+            # newValues.append(float(HW.ArC.readline().rstrip()))
+            # newValues.append(float(HW.ArC.readline().rstrip()))
+            newValues = list(HW.ArC.read_floats(3))
 
             if not values:
                 values = newValues
@@ -273,20 +277,20 @@ class ThreadWrapper(BaseThreadWrapper):
                     continue
 
             if(newValues[2] < 0):
-                status = int(g.ser.readline().rstrip())
+                status = int(HW.ArC.readline().rstrip())
                 self.sendData.emit(w, b, values[0], values[1], values[2], tag_+"_e")
                 self.displayData.emit()
 
                 # all OK, read the results, if any
                 if status == 0:
-                    g.ser.readline().rstrip() # expecting 0 int (discard them)
-                    g.ser.readline().rstrip() # expecting 0 floats (discard them)
+                    HW.ArC.readline().rstrip() # expecting 0 int (discard them)
+                    HW.ArC.readline().rstrip() # expecting 0 floats (discard them)
                     # nothing is returned
                 else:
                     print("Phase 3 failed with exit code: %d", status)
                 return states
             elif(newValues[0] < 0): # we have a state
-                [state, lbound, ubound] = list(f.getFloats(3))
+                [state, lbound, ubound] = list(HW.ArC.read_floats(3))
                 self.sendData.emit(w, b, values[0], values[1], 0, tag_ + "_STATE_%g_%g_%g"%(state, lbound, ubound))
                 self.displayData.emit()
                 states.append([state, lbound, ubound])
@@ -515,16 +519,16 @@ class MultiStateSeeker(Ui_MSSParent, BaseProgPanel):
     def sendParams(self):
         data = self.gatherData()
 
-        g.ser.write_b(str(data["pulse_duration"])+"\n")
-        g.ser.write_b(str(data["vmin"])+"\n")
-        g.ser.write_b(str(data["vstep"])+"\n")
-        g.ser.write_b(str(data["vmax"])+"\n")
-        g.ser.write_b(str(data["interpulse"])+"\n")
+        HW.ArC.write_b(str(data["pulse_duration"])+"\n")
+        HW.ArC.write_b(str(data["vmin"])+"\n")
+        HW.ArC.write_b(str(data["vstep"])+"\n")
+        HW.ArC.write_b(str(data["vmax"])+"\n")
+        HW.ArC.write_b(str(data["interpulse"])+"\n")
 
-        g.ser.write_b(str(data["trailer_reads"])+"\n")
-        g.ser.write_b(str(data["prog_pulses"])+"\n")
-        g.ser.write_b(str(data["tolerance_band"])+"\n")
-        g.ser.write_b(str(data["read_write"])+"\n")
+        HW.ArC.write_b(str(data["trailer_reads"])+"\n")
+        HW.ArC.write_b(str(data["prog_pulses"])+"\n")
+        HW.ArC.write_b(str(data["tolerance_band"])+"\n")
+        HW.ArC.write_b(str(data["read_write"])+"\n")
 
     def programOne(self):
         self.programDevs(self.PROGRAM_ONE)
@@ -538,7 +542,7 @@ class MultiStateSeeker(Ui_MSSParent, BaseProgPanel):
     def programDevs(self, programType):
 
         if programType == self.PROGRAM_ONE:
-            devs = [[g.w, g.b]]
+            devs = [[CB.word, CB.bit]]
         else:
             if programType == self.PROGRAM_RANGE:
                 devs = makeDeviceList(True)

@@ -7,7 +7,11 @@ from glob import glob
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from .Globals import GlobalVars as VARS
+from . import state
+APP = state.app
+HW = state.hardware
+CB = state.crossbar
+
 from .Globals import GlobalStyles as STYLE
 from .Globals import GlobalFunctions as FUNCS
 
@@ -67,7 +71,7 @@ def __registerTagsFromModule(module, kls=None):
         display = top.name
 
     descriptor = ModDescriptor(module, top.name, display, kls, top.callback)
-    VARS.modules[top.tag] = descriptor
+    APP.modules[top.tag] = descriptor
 
     if 'subtags' not in module.tags.keys():
         return
@@ -79,7 +83,7 @@ def __registerTagsFromModule(module, kls=None):
             display = tag.name
         descriptor = ModDescriptor(module, tag.name, display, None,\
                 tag.callback)
-        VARS.modules[tag.tag] = descriptor
+        APP.modules[tag.tag] = descriptor
 
 
 def discoverModules(paths, namespace=""):
@@ -151,24 +155,24 @@ def makeDeviceList(isRange):
 
     if isRange == False:
         minW = 1
-        maxW = VARS.wline_nr
+        maxW = HW.conf.words
         minB = 1
-        maxB = VARS.bline_nr
+        maxB = HW.conf.bits
     else:
-        minW = VARS.minW
-        maxW = VARS.maxW
-        minB = VARS.minB
-        maxB = VARS.maxB
+        minW = CB.limits['words'][0]
+        maxW = CB.limits['words'][1]
+        minB = CB.limits['bits'][0]
+        maxB = CB.limits['words'][1]
 
     # Find how many SA devices are contained in the range
-    if VARS.checkSA == False:
+    if CB.checkSA == False:
         for w in range(minW, maxW+1):
             for b in range(minB, maxB+1):
                 devices.append([w, b])
     else:
         for w in range(minW, maxW+1):
             for b in range(minB, maxB+1):
-                for device in VARS.customArray:
+                for device in CB.customArray:
                     if (device[0] == w and device[1] == b):
                         devices.append(device)
 
@@ -191,7 +195,7 @@ class BaseProgPanel(QtWidgets.QWidget):
         ``wrapper``. If ``entrypoint`` is None the default ``wrapper.run``
         entrypoint will be used.
         """
-        if VARS.ser.port is None:
+        if HW.ArC is None:
             return
 
         if entrypoint is None:

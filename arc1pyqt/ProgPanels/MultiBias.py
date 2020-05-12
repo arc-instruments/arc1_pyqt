@@ -12,9 +12,12 @@ import sys
 import os
 import time
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -41,17 +44,17 @@ class ThreadWrapper(BaseThreadWrapper):
         global tag
 
         if (self.RW==1): # READ operation
-            valuesNew=f.getFloats(3)
+            valuesNew=HW.ArC.read_floats(3)
             current=valuesNew[1]/valuesNew[0]
             self.updateCurrentRead.emit(current)
 
         if (self.RW==2):
-            for device in range(1,g.wline_nr+1):
-                valuesNew=f.getFloats(3)
+            for device in range(1,HW.conf.words+1):
+                valuesNew=HW.ArC.read_floats(3)
                 self.sendData.emit(device,self.bLine,valuesNew[0],valuesNew[1],valuesNew[2],"MB")
 
-            for device in range(1,g.wline_nr+1):
-                valuesNew=f.getFloats(3)
+            for device in range(1,HW.conf.words+1):
+                valuesNew=HW.ArC.read_floats(3)
                 if device in self.wLines:
                     self.sendData.emit(device,self.bLine,valuesNew[0],self.V,self.pw,"P")
                 else:
@@ -197,18 +200,18 @@ class MultiBias(BaseProgPanel):
         if wLines==False:
             self.throwError()
         else:
-            if g.ser.port != None:
+            if HW.ArC is not None:
                 job="50"
-                g.ser.write_b(job+"\n")
+                HW.ArC.write_b(job+"\n")
 
                 self.sendParams()
 
-                g.ser.write_b(str(len(wLines))+"\n")
-                g.ser.write_b(str(self.edit_blines.value())+"\n")
-                g.ser.write_b(str(RW)+"\n")
+                HW.ArC.write_b(str(len(wLines))+"\n")
+                HW.ArC.write_b(str(self.edit_blines.value())+"\n")
+                HW.ArC.write_b(str(RW)+"\n")
 
                 for nr in wLines:
-                    g.ser.write_b(str(nr)+"\n")
+                    HW.ArC.write_b(str(nr)+"\n")
 
                 wrapper = ThreadWrapper(wLines, \
                         int(self.edit_blines.value()), RW, \
@@ -224,9 +227,9 @@ class MultiBias(BaseProgPanel):
                 self.execute(wrapper, wrapper.run)
 
     def sendParams(self):
-        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
-        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
-        g.ser.write_b(str(float(self.leftEdits[2].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[2].text()))+"\n")
 
     def apply_write(self):
         self.apply_multiBias(2)

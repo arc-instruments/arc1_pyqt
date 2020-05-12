@@ -15,7 +15,11 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 from .. import ProgPanels
 from ..Globals import GlobalStyles as s
-from ..Globals import GlobalVars as g
+
+from .. import state
+HW = state.hardware
+CB = state.crossbar
+APP = state.app
 
 
 class ProgPanelWidget(QtWidgets.QWidget):
@@ -34,9 +38,9 @@ class ProgPanelWidget(QtWidgets.QWidget):
 
         self.prog_panelList = QtWidgets.QComboBox()
         self.prog_panelList.setStyleSheet(s.comboStyle)
-        self.prog_panelList.setMinimumWidth(150*g.scaling_factor)
+        self.prog_panelList.setMinimumWidth(150*APP.scalingFactor)
 
-        for (tag, mod) in g.modules.items():
+        for (tag, mod) in APP.modules.items():
             if mod.module is None or tag == "CTLive":
                 continue
 

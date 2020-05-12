@@ -29,9 +29,12 @@ import time
 import numpy as np
 import pyqtgraph
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -79,15 +82,15 @@ class ThreadWrapper(BaseThreadWrapper):
         """ Transfer the parameters to ArC ONE """
 
         self.log("Initiating ChronoAmperometry (job 220)")
-        g.ser.write_b(str(220) + "\n")
+        HW.ArC.write_b(str(220) + "\n")
 
         p = self.params # shorthand; `self.params` is too long!
 
         self.log("Sending ChronoAmperometry params:", p)
-        g.ser.write_b("%.3e\n" % p["bias"])
-        g.ser.write_b("%.3e\n" % p["pw"])
-        g.ser.write_b("%d\n" % p["num_reads"])
-        g.ser.write_b(str(len(self.deviceList)) + "\n")
+        HW.ArC.write_b("%.3e\n" % p["bias"])
+        HW.ArC.write_b("%.3e\n" % p["pw"])
+        HW.ArC.write_b("%d\n" % p["num_reads"])
+        HW.ArC.write_b(str(len(self.deviceList)) + "\n")
         self.log("Parameters written")
 
     @BaseThreadWrapper.runner
@@ -109,14 +112,14 @@ class ThreadWrapper(BaseThreadWrapper):
     def chronoamperometry(self, w, b):
 
         self.log("Running ChronoAmperometry on (W=%d, B=%d)" % (w, b))
-        g.ser.write_b("%d\n" % int(w)) # word line
-        g.ser.write_b("%d\n" % int(b)) # bit line
+        HW.ArC.write_b("%d\n" % int(w)) # word line
+        HW.ArC.write_b("%d\n" % int(b)) # bit line
 
         # Read the first batch of values
         global tag
         end = False
         buf = np.zeros(3)
-        curValues = list(f.getFloats(3))
+        curValues = list(HW.ArC.read_floats(3))
         self.log(curValues)
         buf[0] = curValues[0]
         buf[1] = curValues[1]
@@ -125,7 +128,7 @@ class ThreadWrapper(BaseThreadWrapper):
 
         # Repeat while an end tag is not encountered
         while(not end):
-            curValues = list(f.getFloats(3))
+            curValues = list(HW.ArC.read_floats(3))
             self.log(curValues)
 
             if (self.isEndTag(curValues)):
@@ -265,7 +268,7 @@ class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
     def programDevs(self, programType):
 
         if programType == self.PROGRAM_ONE:
-            devs = [[g.w, g.b]]
+            devs = [[CB.word, CB.bit]]
         else:
             if programType == self.PROGRAM_RANGE:
                 devs = makeDeviceList(True)

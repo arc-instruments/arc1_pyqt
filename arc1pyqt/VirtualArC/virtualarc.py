@@ -1,23 +1,21 @@
 import numpy as np
 #from biolek_device import BiolekDevice as memristor
+from ..instrument import Instrument
 from .parametric_device import ParametricDevice as memristor
 from functools import partial
 import time
 from threading import Thread
-
-#from PIL import Image
-#import PIL
-
 import queue
 
-readNoise=0.01
-write_scheme={'V/2':0.5}
-Vread=0.5
+
+readNoise = 0.01
+write_scheme = {'V/2':0.5}
+Vread = 0.5
 
 
-class VirtualArC:
+class VirtualArC(Instrument):
 
-    def __init__(self, option):
+    def __init__(self):
         self.port="not none"
         self.crossbar=[[] for x in range(33)]
         self.counter=0
@@ -27,6 +25,7 @@ class VirtualArC:
         self.q_out=queue.Queue()
         self.dt=1e-6
         self.Vread=0.5
+        self.option = None
         self.initialise()
 
     def initialise(self):
@@ -112,6 +111,9 @@ class VirtualArC:
 
     def write_b(self, value):
         self.write(value)
+
+    def read_floats(self, how_many):
+        return self.read(how_many)
 
     ################################################## CURVETRACER ####
     def get_formfinder(self, value):
@@ -716,7 +718,6 @@ class VirtualArC:
         self.q_out.put(str(read(self.crossbar,w,b))+"\n")
         self.write=self.base_write
 
-
     def close(self):
         pass
 
@@ -724,6 +725,7 @@ class VirtualArC:
         self.q_out.put(str(Mnow)+"\n", True)
         self.q_out.put(str(ampl)+"\n", True)
         self.q_out.put(str(pw)+"\n", True)
+
 
 def pulse(crossbar, w, b, ampl, pw, dt):
     global write_scheme
@@ -742,10 +744,9 @@ def pulse(crossbar, w, b, ampl, pw, dt):
             crossbar[i][b].step_dt(ampl/2, dt)
     return crossbar
 
+
 def read(crossbar, w, b):
     global readNoise
     Rmem=crossbar[w][b].Rmem
     return Rmem+readNoise*Rmem*(2*np.random.random()-1)
-
-
 

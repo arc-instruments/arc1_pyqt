@@ -15,9 +15,12 @@ import pyqtgraph as pg
 import numpy as np
 import queue
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt import Graphics
 from arc1pyqt.modutils import BaseThreadWrapper
@@ -44,7 +47,7 @@ class StartLiveThreadWrapper(QtCore.QObject):
         while not self.stop:
             mutex.lock()
             self.execute.emit(1)
-            g.waitCondition.wait(mutex)
+            APP.waitCondition.wait(mutex)
             mutex.unlock()
 
         self.disableInterface.emit(False)
@@ -71,9 +74,9 @@ class ThreadWrapper(BaseThreadWrapper):
 
         tag = 'CT'
 
-        readTag='R'+str(g.readOption)+' V='+str(g.Vread)
+        readTag='R'+str(HW.conf.readmode)+' V='+str(HW.conf.Vread)
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
+        HW.ArC.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
 
@@ -81,13 +84,13 @@ class ThreadWrapper(BaseThreadWrapper):
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
             firstPoint=1
             for cycle in range(1,self.totalCycles+1):
                 endCommand=0
-                valuesNew=f.getFloats(3)
+                valuesNew=HW.ArC.read_floats(3)
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     if (firstPoint==1):
@@ -101,7 +104,7 @@ class ThreadWrapper(BaseThreadWrapper):
 
                 while(endCommand==0):
                     valuesOld=valuesNew
-                    valuesNew=f.getFloats(3)
+                    valuesNew=HW.ArC.read_floats(3)
 
                     if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                         self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -478,32 +481,32 @@ class CT_LIVE(QtWidgets.QWidget):
         pass
 
     def sendParams(self, totalCycles):
-        g.ser.write_b(str(self.v_pmax)+"\n")
-        g.ser.write_b(str(self.v_nmax)+"\n")
-        g.ser.write_b(str(self.v_start)+"\n")
-        g.ser.write_b(str(self.v_step)+"\n")
-        g.ser.write_b(str((float(self.pw-2)/1000))+"\n")
-        g.ser.write_b(str(float(self.interpulse/1000))+"\n")
+        HW.ArC.write_b(str(self.v_pmax)+"\n")
+        HW.ArC.write_b(str(self.v_nmax)+"\n")
+        HW.ArC.write_b(str(self.v_start)+"\n")
+        HW.ArC.write_b(str(self.v_step)+"\n")
+        HW.ArC.write_b(str((float(self.pw-2)/1000))+"\n")
+        HW.ArC.write_b(str(float(self.interpulse/1000))+"\n")
         time.sleep(0.01)
-        g.ser.write_b(str((self.c_p)/1000000)+"\n")
-        g.ser.write_b(str((self.c_n)/-1000000)+"\n")
+        HW.ArC.write_b(str((self.c_p)/1000000)+"\n")
+        HW.ArC.write_b(str((self.c_n)/-1000000)+"\n")
 
-        g.ser.write_b(str(totalCycles)+"\n")
-        g.ser.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
-        g.ser.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
-        g.ser.write_b(str(int(self.returnCheck))+"\n")
+        HW.ArC.write_b(str(totalCycles)+"\n")
+        HW.ArC.write_b(str(int(self.combo_IVtype.currentIndex()))+"\n")
+        HW.ArC.write_b(str(int(self.combo_IVoption.currentIndex()))+"\n")
+        HW.ArC.write_b(str(int(self.returnCheck))+"\n")
 
     def programOne(self, totalCycles):
-        if g.ser.port != None:
-            self.wi=g.w
-            self.bi=g.b
+        if HW.ArC.port != None:
+            self.wi = CB.word
+            self.bi = CB.bit
             job="201"
-            g.ser.write_b(job+"\n")
+            HW.ArC.write_b(job+"\n")
 
             self.sendParams(totalCycles)
 
             self.thread=QtCore.QThread()
-            self.threadWrapper=ThreadWrapper([[g.w,g.b]],totalCycles)
+            self.threadWrapper=ThreadWrapper([[CB.word,CB.bit]],totalCycles)
             self.finalise_thread_initialisation()
 
             self.thread.start()
@@ -549,18 +552,18 @@ class CT_LIVE(QtWidgets.QWidget):
         readTag="R2"
         cycle=0
 
-        firstPoint=len(g.Mhistory[self.wi][self.bi])
+        firstPoint=len(CB.history[self.wi][self.bi])
 
         while not self.data_queue.empty():
             cycle=cycle+1
             V,C=self.data_queue.get()
             for i in range(len(V)):
                 M=V[i]/C[i]
-                g.Mhistory[self.wi][self.bi].append([abs(V[i]/C[i]),V[i],0,tag+"_"+str(cycle),readTag, V[i]])
+                CB.history[self.wi][self.bi].append([abs(V[i]/C[i]),V[i],0,tag+"_"+str(cycle),readTag, V[i]])
 
 
-        g.Mhistory[self.wi][self.bi][firstPoint-1][3]="CT_s"
-        g.Mhistory[self.wi][self.bi][-1][3]="CT_e"
+        CB.history[self.wi][self.bi][firstPoint-1][3]="CT_s"
+        CB.history[self.wi][self.bi][-1][3]="CT_e"
         f.historyTreeAntenna.updateTree.emit(self.wi, self.bi)
 
 

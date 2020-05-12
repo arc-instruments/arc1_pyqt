@@ -1,16 +1,20 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 from . import DeviceWidget
 
+from .. import state
+HW = state.hardware
+CB = state.crossbar
+APP = state.app
+
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 
 
 class MatrixWidget(QtWidgets.QWidget):
 
-    def __init__(self, words=g.wline_nr, bits=g.bline_nr, passive=False, width=(22,50), \
-            height=(14,50), parent=None):
+    def __init__(self, words=HW.conf.words, bits=HW.conf.bits, passive=False,\
+            width=(22,50), height=(14,50), parent=None):
         super().__init__(parent=parent)
         # if passive no events will be emitted
         self.passive = passive
@@ -30,7 +34,7 @@ class MatrixWidget(QtWidgets.QWidget):
         except:
             return None
 
-    def redrawArray(self, words=g.wline_nr, bits=g.bline_nr):
+    def redrawArray(self, words=HW.conf.words, bits=HW.conf.bits):
         QtWidgets.QWidget().setLayout(self.layout())
         self.setLayout(self._makeArray(words, bits))
 

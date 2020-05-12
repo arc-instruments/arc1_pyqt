@@ -12,8 +12,11 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from . import DeviceWidget
 from . import MatrixWidget
 
+from .. import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 
@@ -29,7 +32,7 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
         layout=QtWidgets.QGridLayout(self)
         self.setLayout(layout)
         layout.setSpacing(0)
-        self.matrix = MatrixWidget(words=g.wline_nr, bits=g.bline_nr)
+        self.matrix = MatrixWidget(words=HW.conf.words, bits=HW.conf.bits)
         layout.addWidget(self.matrix)
 
         f.cbAntenna.selectDeviceSignal.connect(self.changeDevice)
@@ -85,23 +88,23 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
                 # this is probably an invalid position
                 return
 
-            w,b=position
-            if g.checkSA==False:
+            w,b = position
+            if CB.checkSA==False:
                 self.changeDevice(int(w),int(b))
                 # signal the crossbar antenna that this device has been selected
                 f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
                 f.displayUpdate.updateSignal_short.emit()
             else:
-                if [int(w),int(b)] in g.customArray:
+                if [int(w),int(b)] in CB.customArray:
                     self.changeDevice(int(w),int(b))
                     # signal the crossbar antenna that this device has been selected
                     f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
                     f.displayUpdate.updateSignal_short.emit()
 
-            if g.sessionMode==2 and g.ser.port != None:
-                g.ser.write_b("02\n")
-                g.ser.write_b(str(int(w))+"\n")
-                g.ser.write_b(str(int(b))+"\n")
+            if  HW.ArC is not None and HW.conf.sessionmode == 2:
+                HW.ArC.write_b("02\n")
+                HW.ArC.write_b(str(int(w))+"\n")
+                HW.ArC.write_b(str(int(b))+"\n")
 
         else:
             if self.rectWidget.isVisible():
@@ -130,15 +133,13 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
             if len(wList) == 0 or len(bList) == 0:
                 return
 
-            minW=min(wList)
-            maxW=max(wList)
-            minB=min(bList)
-            maxB=max(bList)
+            minW = min(wList)
+            maxW = max(wList)
+            minB = min(bList)
+            maxB = max(bList)
 
-            g.minW=minW
-            g.minB=minB
-            g.maxW=maxW
-            g.maxB=maxB
+            CB.limits['words'] = (minW, maxW)
+            CB.limits['bits'] = (minB, maxB)
 
             self.devTopLeft=self.matrix.cells[minW][minB]
             self.devBotRight=self.matrix.cells[maxW][maxB]

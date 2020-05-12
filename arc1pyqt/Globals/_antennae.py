@@ -3,7 +3,11 @@ from PyQt5 import QtGui, QtWidgets
 import numpy as np
 import collections
 import struct
-from . import GlobalVars as g
+
+from .. import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from . import GlobalFunctions as f
 from ..VirtualArC import VirtualArC
 
@@ -67,15 +71,13 @@ class InterfaceAntenna(QObject):
         super().__init__()
 
     def wakeUp(self):
-        g.waitCondition.wakeAll()
+        APP.waitCondition.wakeAll()
+
     def cast(self, value):
-        # if value==False:
-        #   g.waitCondition.wakeAll()
         if self.globalDisable==False:
             self.disable.emit(value)
             #sleep(0.1)
             self.lastDisplaySignal.emit()
-
 
     def castArcStatus(self, value):
         if self.globalDisable==False:
@@ -107,6 +109,6 @@ class AddressAntenna(QObject):
         super().__init__()
 
     def update(self, w,b):
-        g.w,g.b=w,b
+        CB.word, CB.bit = w,b
         f.cbAntenna.selectDeviceSignal.emit(w, b)
 

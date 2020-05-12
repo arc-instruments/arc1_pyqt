@@ -9,11 +9,16 @@
 
 import sys
 import os
+from copy import copy
 import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
 
+from .. import state
+HW = state.hardware
+CB = state.crossbar
+APP = state.app
+
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 
@@ -24,50 +29,50 @@ class _ReadAllWorker(QtCore.QObject):
     sendPosition=QtCore.pyqtSignal(int, int)
     disableInterface=QtCore.pyqtSignal(bool)
 
-    Vread=g.Vread
-    tag='F R'+str(g.readOption)+' V='+str(Vread)
+    Vread = HW.conf.Vread
+    tag='F R'+str(HW.conf.readmode)+' V='+str(Vread)
 
     def __init__(self):
         super().__init__()
 
     def readAll(self):
-        self.w_old=g.w
-        self.b_old=g.b
+        self.w_old = CB.word
+        self.b_old = CB.bit
         self.disableInterface.emit(True)
         job="2"
-        g.ser.write_b(job+"\n")
+        HW.ArC.write_b(job+"\n")
 
         # Check for standalone/custom array
-        if g.checkSA==False:
+        if CB.checkSA == False:
             # send the type of read - currently read All devices
-            g.ser.write_b(str(1)+"\n")
-            g.ser.write_b(str(g.wline_nr)+"\n")
-            g.ser.write_b(str(g.bline_nr)+"\n")
+            HW.ArC.write_b(str(1)+"\n")
+            HW.ArC.write_b(str(HW.conf.words)+"\n")
+            HW.ArC.write_b(str(HW.conf.bits)+"\n")
 
             # perform standard read All
-            for word in range(1,g.wline_nr+1):
-                for bit in range(1,g.bline_nr+1):
-                    Mnow=float(f.getFloats(1))
+            for word in range(1, HW.conf.words+1):
+                for bit in range(1,HW.conf.bits+1):
+                    Mnow=float(HW.ArC.read_floats(1))
 
                     self.sendData.emit(word,bit,Mnow,self.Vread,0,self.tag)
                     self.sendPosition.emit(word,bit)
         else:
             # send the type of read - read stand alone custom array
-            g.ser.write_b(str(2)+"\n")
-            g.ser.write_b(str(g.wline_nr)+"\n")
-            g.ser.write_b(str(g.bline_nr)+"\n")
-            g.ser.write_b(str(len(g.customArray))+"\n")
-            for cell in g.customArray:
+            HW.ArC.write_b(str(2)+"\n")
+            HW.ArC.write_b(str(HW.conf.words)+"\n")
+            HW.ArC.write_b(str(HW.conf.bits)+"\n")
+            HW.ArC.write_b(str(len(CB.customArray))+"\n")
+            for cell in CB.customArray:
                 word,bit=cell
-                g.ser.write_b(str(word)+"\n")
-                g.ser.write_b(str(bit)+"\n")
+                HW.ArC.write_b(str(word)+"\n")
+                HW.ArC.write_b(str(bit)+"\n")
 
-                Mnow=float(f.getFloats(1))
+                Mnow = float(HW.ArC.read_floats(1))
 
                 self.sendData.emit(word,bit,Mnow,self.Vread,0,self.tag)
                 self.sendPosition.emit(word,bit)
 
-        self.sendPosition.emit(self.w_old,self.b_old)
+        self.sendPosition.emit(self.w_old, self.b_old)
         self.disableInterface.emit(False)
         self.finished.emit()
 
@@ -123,7 +128,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
         combo_readType.insertItems(1, ['Classic', 'TIA', 'TIA4P'])
         combo_readType.currentIndexChanged.connect(self.updateReadType)
         combo_readType.setCurrentIndex(2)
-        g.readOption=combo_readType.currentIndex()
+        HW.conf.readmode = combo_readType.currentIndex()
 
         # Numerical 'spin box' to set read-out voltage.
         read_voltage=QtWidgets.QDoubleSpinBox()
@@ -272,7 +277,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
         points_spinbox.setMinimum(10)
         points_spinbox.setMaximum(10000)
         points_spinbox.setSingleStep(100)
-        points_spinbox.setValue(g.dispPoints)
+        points_spinbox.setValue(APP.displayPoints)
         points_spinbox.setSuffix(' p')
         points_spinbox.valueChanged.connect(self.updatePoints)
 
@@ -320,39 +325,41 @@ class ManualOpsWidget(QtWidgets.QWidget):
         f.displayUpdate.updateLog.emit(event)
 
     def toggleSA(self, event):
-        if (event==0):
-            g.checkSA=False
+        if (event == 0):
+            CB.checkSA = False
             for w in range(1,33):
                 for b in range(1,33):
                     f.SAantenna.enable.emit(w,b)
         else:
-            if (g.customArray):
-                g.checkSA=True
+            if (CB.customArray):
+                CB.checkSA = True
                 # signal the crossbar antenna that this device has been selected
-                f.cbAntenna.selectDeviceSignal.emit(g.customArray[0][0], g.customArray[0][1])
+                f.cbAntenna.selectDeviceSignal.emit(CB.customArray[0][0], \
+                        CB.customArray[0][1])
                 f.displayUpdate.updateSignal_short.emit()
                 for w in range(1,33):
                     for b in range(1,33):
                         f.SAantenna.disable.emit(w,b)
 
-                for cell in g.customArray:
-                    w,b=cell
+                for cell in CB.customArray:
+                    w, b = cell
                     f.SAantenna.enable.emit(w,b)
             else:
-                if self.findSAfile()==True:
-                    g.checkSA=True
+                if self.findSAfile() == True:
+                    CB.checkSA = True
                     for w in range(1,33):
                         for b in range(1,33):
                             f.SAantenna.disable.emit(w,b)
 
-                    for cell in g.customArray:
-                        w,b=cell
+                    for cell in CB.customArray:
+                        w, b = cell
                         f.SAantenna.enable.emit(w,b)
-                    f.cbAntenna.selectDeviceSignal.emit(g.customArray[0][0], g.customArray[0][1])
+                    f.cbAntenna.selectDeviceSignal.emit(CB.customArray[0][0], \
+                            CB.customArray[0][1])
                     f.displayUpdate.updateSignal_short.emit()
 
                 else:
-                    g.checkSA=False
+                    CB.checkSA = False
                     self.customArrayCheckbox.setCheckState(QtCore.Qt.Unchecked)
 
     def findSAfile(self):
@@ -373,9 +380,9 @@ class ManualOpsWidget(QtWidgets.QWidget):
                 customArray.append([w, b])
 
                 # check if w and b are within bounds
-                if (int(w) < 1 or int(w) > g.wline_nr or
+                if (int(w) < 1 or int(w) > HW.conf.words or
                         int(b) < 1 or
-                        int(b) > g.bline_nr):
+                        int(b) > HW.conf.bits):
                     raise ValueError("Device coordinates out of bounds")
 
         except ValueError as exc:
@@ -388,41 +395,40 @@ class ManualOpsWidget(QtWidgets.QWidget):
             return False
 
         self.customArrayFileName.setText(path.baseName())
-        g.customArray=customArray
+        CB.customArray = customArray
         return True
 
-    def setM(self,w,b):
+    def setM(self, w, b):
         try:
-            res = g.Mhistory[w][b][-1][0]
+            res = CB.history[w][b][-1][0]
             self.resistance.setText(str('%.0f' % res)+' Ohms')
         except IndexError:
             self.resistance.setText('Not Read')
         self.position.setText('W='+str(w)+ ' | ' + 'B='+str(b))
 
-        g.w=w
-        g.b=b
+        CB.word = w
+        CB.bit = b
 
     def readSingle(self):
-        if g.ser.port != None:
+        if HW.ArC is not None:
             job="1"
-            g.ser.write_b(job+"\n")
-            g.ser.write_b(str(g.w)+"\n")
-            g.ser.write_b(str(g.b)+"\n")
+            HW.ArC.write_b(job+"\n")
+            HW.ArC.write_b(str(CB.word)+"\n")
+            HW.ArC.write_b(str(CB.bit)+"\n")
 
-            currentM=float(f.getFloats(1))
+            currentM = float(HW.ArC.read_floats(1))
 
-            g.Mnow=currentM
-            tag='S R'+str(g.readOption)+' V='+str(g.Vread)
-            f.updateHistory(g.w,g.b,currentM,float(g.Vread),0,tag)
-            f.updateHistory(g.w, g.b, currentM, float(g.Vread), 0, tag)
-            self.setM(g.w,g.b)
+            tag='S R'+str(HW.conf.readmode)+' V='+str(HW.conf.Vread)
+            f.updateHistory(CB.word, CB.bit, currentM, float(HW.conf.Vread), \
+                    0, tag)
+            self.setM(CB.word, CB.bit)
 
-            f.displayUpdate.updateSignal.emit(g.w,g.b,2,g.dispPoints,99)
-            f.historyTreeAntenna.updateTree.emit(g.w,g.b)
+            f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints,99)
+            f.historyTreeAntenna.updateTree.emit(CB.word, CB.bit)
 
 
     def readAll(self):
-        if g.ser.port != None:
+        if HW.ArC is not None:
             self.thread=QtCore.QThread()
             self.readAllWorker = _ReadAllWorker()
             self.readAllWorker.moveToThread(self.thread)
@@ -437,44 +443,45 @@ class ManualOpsWidget(QtWidgets.QWidget):
             self.thread.start()
 
     def updateRead(self):
-        if g.ser.port != None:
-            job='01'
-            g.ser.write_b(job+"\n")
-            if g.Vread < 0 and g.readOption == 2:
-                g.ser.write_b(str(3)+"\n") # use correct option for Vread < 0
-            else:
-                g.ser.write_b(str(g.readOption)+"\n")
+        if HW.ArC is not None:
+            HW.ArC.update_read(HW.conf)
 
-            g.ser.write_b(str(g.Vread)+"\n")
+    def setVread(self, event):
+        if HW.ArC is None:
+            return
+        config = copy(HW.conf)
+        config.Vread = float(event)
+        try:
+            HW.ArC.update_read(config)
+            HW.conf = config
+        except Exception as exc:
+            print("Could not update Vread:", exc)
 
-    def setVread(self,event):
-        g.Vread=float(event)
-        if g.ser.port != None:
-            job='01'
-            g.ser.write_b(job+"\n")
-            if g.Vread < 0 and g.readOption == 2:
-                # use correct option for Vread < 0
-                g.ser.write_b(str(3)+"\n")
-            else:
-                g.ser.write_b(str(g.readOption)+"\n")
-
-            g.ser.write_b(str(g.Vread)+"\n")
-
+    def updateReadType(self, event):
+        if HW.ArC is None:
+            return
+        config = copy(HW.conf)
+        config.readmode = float(event)
+        try:
+            HW.ArC.update_read(config)
+            HW.conf = config
+        except Exception as exc:
+            print("Could not update Vread:", exc)
 
     def extractParamsPlus(self):
-        self.amplitude=float(self.pulse_V_pos.text())
-        duration=float(self.pulse_pw_pos.text())
-        unit=float(self.multiply[self.pw_plusDropDown.currentIndex()])
-        self.pw=duration*unit
+        self.amplitude = float(self.pulse_V_pos.text())
+        duration = float(self.pulse_pw_pos.text())
+        unit = float(self.multiply[self.pw_plusDropDown.currentIndex()])
+        self.pw = duration*unit
 
-        if self.pw<0.00000009:
+        if self.pw < 0.00000009:
             self.pulse_pw_pos.setText(str(90))
             self.pw_plusDropDown.setCurrentIndex(3)
-            self.pw=0.00000009
-        if self.pw>10:
+            self.pw = 0.00000009
+        if self.pw > 10:
             self.pulse_pw_pos.setText(str(10))
             self.pw_plusDropDown.setCurrentIndex(0)
-            self.pw=10
+            self.pw = 10
 
         self.update()
         self.pulse()
@@ -514,39 +521,30 @@ class ManualOpsWidget(QtWidgets.QWidget):
         self.pulse()
 
     def pulse(self):
-        if g.ArC is not None:
-            ser = g.ArC
+        if HW.ArC is not None:
+            arc = HW.ArC
             job="3"
-            ser.write_b(job+"\n")
-            ser.write_b(str(g.w)+"\n")
-            ser.write_b(str(g.b)+"\n")
+            arc.write_b(job+"\n")
+            arc.write_b(str(CB.word)+"\n")
+            arc.write_b(str(CB.bit)+"\n")
 
-            ser.write_b(str(float(self.amplitude))+"\n")
-            ser.write_b(str(float(self.pw))+"\n")
+            arc.write_b(str(float(self.amplitude))+"\n")
+            arc.write_b(str(float(self.pw))+"\n")
 
-            res = float(f.getFloats(1))
+            res = float(arc.read_floats(1))
 
             tag='P'
-            f.updateHistory(g.w, g.b, res, self.amplitude, self.pw, tag)
-            self.setM(g.w,g.b)
-            f.displayUpdate.updateSignal.emit(g.w, g.b, 2, g.dispPoints, 99)
-            f.historyTreeAntenna.updateTree.emit(g.w,g.b)
+            f.updateHistory(CB.word, CB.bit, res, self.amplitude, self.pw, tag)
+            self.setM(CB.word, CB.bit)
+            f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints, 99)
+            f.historyTreeAntenna.updateTree.emit(CB.word, CB.bit)
 
     def displayAll(self):
-        f.displayUpdate.updateSignal.emit(g.w,g.b,1,g.dispPoints,0)
+        f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 1, APP.displayPoints, 0)
 
     def displayRange(self):
-        f.displayUpdate.updateSignal.emit(g.w,g.b,2,g.dispPoints,0)
+        f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints, 0)
 
-    def updatePoints(self,event):
-        g.dispPoints=event
-        #print event
-
-    def updateReadType(self,event):
-        g.readOption=event
-        if g.ser.port != None:
-            job='01'
-            g.ser.write_b(job+"\n")
-            g.ser.write_b(str(g.readOption)+"\n")
-            g.ser.write_b(str(g.Vread)+"\n")
+    def updatePoints(self, how_many):
+        APP.displayPoints = how_many
 

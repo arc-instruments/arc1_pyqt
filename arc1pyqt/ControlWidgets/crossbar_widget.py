@@ -11,8 +11,11 @@ import sys
 from PyQt5 import QtGui, QtCore, QtWidgets
 from . import DeviceWidget
 from . import ColorbarWidget
+from .. import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalVars as g
 from ..Globals import GlobalFonts as fonts
 from ..Globals import GlobalStyles as s
 from . import CrossbarContainerWidget
@@ -144,7 +147,7 @@ class CrossbarWidget(QtWidgets.QWidget):
         self.posLabel.setText("W="+str(r)+" | B="+str(c))
 
         try:
-            self.mLabel.setText(str(int(g.Mhistory[r][c][-1][0])))
+            self.mLabel.setText(str(int(CB.history[r][c][-1][0])))
         except IndexError:
             self.mLabel.setText("Not Read")
         except OverflowError:

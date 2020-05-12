@@ -8,7 +8,10 @@
 ####################################
 
 
-from . import GlobalVars as g
+from .. import state
+HW = state.hardware
+CB = state.crossbar
+
 from ._antennae import CBAntenna, DisplayUpdateAntenna, HistoryTreeAntenna
 from ._antennae import InterfaceAntenna, SAantenna, HoverAntenna, AddressAntenna
 from PyQt5 import QtGui, QtWidgets, QtCore
@@ -29,28 +32,18 @@ addressAntenna = AddressAntenna()
 
 
 # Update history function
-def updateHistory(w,b,m,a,pw,tag,Vread=g.Vread):
-    readTag='R'+str(g.readOption)
-    if g.sessionMode==1:
-        g.Mnow=m/2
+def updateHistory(w, b, m, a, pw, tag, Vread=HW.conf.Vread):
+    readTag = 'R'+str(HW.conf.readmode)
+    if HW.conf.sessionmode == 1:
+        res = m/2
     else:
         res = m
 
-    g.Mhistory[w][b].append([res, a, pw, tag, readTag, Vread])
+    CB.history[w][b].append([res, a, pw, tag, readTag, Vread])
 
-    g.w=w
-    g.b=b
+    CB.word = w
+    CB.bit = b
     cbAntenna.recolor.emit(m,w,b)
-
-
-def updateHistory_short(m,a,pw,tag):
-    readTag='R'+str(g.readOption)
-    if g.sessionMode==1:
-        g.Mnow=m/2
-    else:
-        g.Mnow=m
-    g.Mhistory[g.w][g.b].append([g.Mnow,a,pw,tag,readTag, g.Vread])
-    cbAntenna.recolor.emit(m,g.w,g.b)
 
 
 def writeDelimitedData(data, dest, delimiter="\t"):
@@ -81,16 +74,3 @@ def gzipFileSize(fname):
         f.seek(-4,2)
         return struct.unpack('I', f.read(4))[0]
 
-
-def getFloats(n):
-    if not isinstance(g.ser, VirtualArC):
-        while g.ser.inWaiting()<n*4:
-            pass
-        # read n * 4 bits of data (n floats) from the input serial
-        values=g.ser.read(size=n*4)
-        buf = memoryview(values)
-        extracted=np.frombuffer(buf, dtype=np.float32)
-    else:
-        extracted = g.ser.read(n)
-    # returns a list of these floats
-    return extracted

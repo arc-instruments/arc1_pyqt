@@ -12,9 +12,12 @@ import arc1pyqt.ProgPanels.Basic
 import arc1pyqt.ProgPanels.Basic.Loops
 from arc1pyqt.ProgPanels.Basic.Loops import Loop, End
 from arc1pyqt import Graphics
+from .. import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -110,7 +113,7 @@ class ThreadWrapper(BaseThreadWrapper):
             elif module!='End':
                 mutex.lock()
                 self.execute.emit(module)
-                g.waitCondition.wait(mutex)
+                APP.waitCondition.wait(mutex)
                 #time.sleep(0.01)
                 mutex.unlock()
 
@@ -618,8 +621,8 @@ class SuperMode(BaseProgPanel):
         items = [layoutItems.itemAt(i).widget().btn.module for i in range(layoutItems.count())]
         result = self.checkLoopOrder(items)
         if result:
-            if g.workingDirectory:
-                curDir = g.workingDirectory
+            if APP.workingDirectory:
+                curDir = APP.workingDirectory
             else:
                 curDir = ''
 
@@ -779,7 +782,7 @@ class SuperMode(BaseProgPanel):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
 
     def programOne(self):
-        devs = [[g.w, g.b]]
+        devs = [[CB.word, CB.bit]]
         self.programDevs(devs)
 
     def programRange(self):
@@ -791,7 +794,7 @@ class SuperMode(BaseProgPanel):
         self.programDevs(devs)
 
     def programDevs(self, devs):
-        if g.ser.port is None:
+        if HW.ArC is None:
             return
 
         mainChain_indexes = self.extractModuleChain()

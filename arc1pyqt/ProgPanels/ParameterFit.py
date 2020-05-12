@@ -20,11 +20,14 @@ import pyqtgraph
 import copy
 
 from arc1pyqt import Graphics
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from arc1pyqt.GeneratedUiElements.pf import Ui_PFParent
 from arc1pyqt.GeneratedUiElements.fitdialog import Ui_FitDialogParent
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -626,39 +629,39 @@ class ThreadWrapper(BaseThreadWrapper):
 
     def curveTracer(self, w, b, vPos, vNeg, vStart, vStep, interpulse, pwstep, ctType, startTag, midTag, endTag):
 
-        g.ser.write_b(str(201) + "\n")
+        HW.ArC.write_b(str(201) + "\n")
 
-        g.ser.write_b(str(vPos) + "\n")
-        g.ser.write_b(str(vNeg) + "\n")
-        g.ser.write_b(str(vStart) + "\n")
-        g.ser.write_b(str(vStep) + "\n")
-        g.ser.write_b(str(pwstep) + "\n")
-        g.ser.write_b(str(interpulse) + "\n")
+        HW.ArC.write_b(str(vPos) + "\n")
+        HW.ArC.write_b(str(vNeg) + "\n")
+        HW.ArC.write_b(str(vStart) + "\n")
+        HW.ArC.write_b(str(vStep) + "\n")
+        HW.ArC.write_b(str(pwstep) + "\n")
+        HW.ArC.write_b(str(interpulse) + "\n")
         time.sleep(0.01)
-        g.ser.write_b(str(0.0) + "\n") # CSp
-        g.ser.write_b(str(0.0) + "\n") # CSn
-        g.ser.write_b(str(1) + "\n") # single cycle
-        g.ser.write_b(str(ctType) + "\n") # staircase or pulsed
-        g.ser.write_b(str(0) + "\n") # towards V+ always
-        g.ser.write_b(str(0) + "\n") # do not halt+return
+        HW.ArC.write_b(str(0.0) + "\n") # CSp
+        HW.ArC.write_b(str(0.0) + "\n") # CSn
+        HW.ArC.write_b(str(1) + "\n") # single cycle
+        HW.ArC.write_b(str(ctType) + "\n") # staircase or pulsed
+        HW.ArC.write_b(str(0) + "\n") # towards V+ always
+        HW.ArC.write_b(str(0) + "\n") # do not halt+return
 
-        g.ser.write_b(str(1) + "\n") # single device always
-        g.ser.write_b(str(int(w)) + "\n") # word line
-        g.ser.write_b(str(int(b)) + "\n") # bit line
+        HW.ArC.write_b(str(1) + "\n") # single device always
+        HW.ArC.write_b(str(int(w)) + "\n") # word line
+        HW.ArC.write_b(str(int(b)) + "\n") # bit line
 
         end = False
 
         buffer = []
         aTag = ""
-        readTag='R'+str(g.readOption)+' V='+str(g.Vread)
+        readTag='R'+str(HW.conf.readmode)+' V='+str(HW.conf.Vread)
 
         while(not end):
             # curValues = []
 
-            # curValues.append(float(g.ser.readline().rstrip()))
-            # curValues.append(float(g.ser.readline().rstrip()))
-            # curValues.append(float(g.ser.readline().rstrip()))
-            curValues = list(f.getFloats(3))
+            # curValues.append(float(HW.ArC.readline().rstrip()))
+            # curValues.append(float(HW.ArC.readline().rstrip()))
+            # curValues.append(float(HW.ArC.readline().rstrip()))
+            curValues = list(HW.ArC.read_floats(3))
 
             if curValues[0] > 10e9:
                 continue
@@ -686,26 +689,26 @@ class ThreadWrapper(BaseThreadWrapper):
 
     def formFinder(self, w, b, V, pw, interpulse, nrPulses, startTag, midTag, endTag):
 
-        g.ser.write_b(str(14) + "\n") # job number, form finder
+        HW.ArC.write_b(str(14) + "\n") # job number, form finder
 
-        g.ser.write_b(str(V) + "\n") # Vmin == Vmax
+        HW.ArC.write_b(str(V) + "\n") # Vmin == Vmax
         if V > 0:
-            g.ser.write_b(str(0.1) + "\n") # no step, single voltage
+            HW.ArC.write_b(str(0.1) + "\n") # no step, single voltage
         else:
-            g.ser.write_b(str(-0.1) + "\n")
-        g.ser.write_b(str(V) + "\n") # Vmax == Vmin
-        g.ser.write_b(str(pw) + "\n") # pw_min == pw_max
-        g.ser.write_b(str(100.0) + "\n") # no pulse step
-        g.ser.write_b(str(pw) + "\n") # pw_max == pw_min
-        g.ser.write_b(str(interpulse) + "\n") # interpulse time
-        #g.ser.write_b(str(nrPulses) + "\n") # number of pulses
-        g.ser.write_b(str(10.0) + "\n") # 10 Ohms R threshold (ie no threshold)
-        g.ser.write_b(str(0.0) + "\n") # 0% R threshold (ie no threshold)
-        g.ser.write_b(str(7) + "\n") # 7 -> no series resistance
-        g.ser.write_b(str(nrPulses) + "\n") # number of pulses
-        g.ser.write_b(str(1) + "\n") # single device always
-        g.ser.write_b(str(int(w)) + "\n") # word line
-        g.ser.write_b(str(int(b)) + "\n") # bit line
+            HW.ArC.write_b(str(-0.1) + "\n")
+        HW.ArC.write_b(str(V) + "\n") # Vmax == Vmin
+        HW.ArC.write_b(str(pw) + "\n") # pw_min == pw_max
+        HW.ArC.write_b(str(100.0) + "\n") # no pulse step
+        HW.ArC.write_b(str(pw) + "\n") # pw_max == pw_min
+        HW.ArC.write_b(str(interpulse) + "\n") # interpulse time
+        #HW.ArC.write_b(str(nrPulses) + "\n") # number of pulses
+        HW.ArC.write_b(str(10.0) + "\n") # 10 Ohms R threshold (ie no threshold)
+        HW.ArC.write_b(str(0.0) + "\n") # 0% R threshold (ie no threshold)
+        HW.ArC.write_b(str(7) + "\n") # 7 -> no series resistance
+        HW.ArC.write_b(str(nrPulses) + "\n") # number of pulses
+        HW.ArC.write_b(str(1) + "\n") # single device always
+        HW.ArC.write_b(str(int(w)) + "\n") # word line
+        HW.ArC.write_b(str(int(b)) + "\n") # bit line
 
         end = False
 
@@ -715,7 +718,7 @@ class ThreadWrapper(BaseThreadWrapper):
 
         while(not end):
 
-            curValues = list(f.getFloats(3))
+            curValues = list(HW.ArC.read_floats(3))
 
             if (curValues[2] < 99e-9) and (curValues[0] > 0.0):
                 continue
@@ -853,7 +856,7 @@ class ParameterFit(Ui_PFParent, BaseProgPanel):
     def programDevs(self, programType):
 
         if programType == self.PROGRAM_ONE:
-            devs = [[g.w, g.b]]
+            devs = [[CB.word, CB.bit]]
         else:
             if programType == self.PROGRAM_RANGE:
                 devs = makeDeviceList(True)

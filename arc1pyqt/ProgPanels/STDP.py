@@ -16,9 +16,12 @@ import pyqtgraph as pg
 import time
 
 from arc1pyqt import Graphics
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -46,42 +49,42 @@ class ThreadWrapper(BaseThreadWrapper):
 
         global tag
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
+        HW.ArC.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
             # store a first read
-            valuesNew=f.getFloats(3)
+            valuesNew=HW.ArC.read_floats(3)
             tag_=tag+"_s"
             self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
             self.displayData.emit()
 
-            g.ser.write_b(str(int(len(self.timeSteps)))+"\n")
+            HW.ArC.write_b(str(int(len(self.timeSteps)))+"\n")
 
             for dt in self.timeSteps:
                 #dt/=self.warp # bug fix
                 total_time, total_voltage=self.make_time_series(dt/self.warp, self.gain, self.warp, self.max_spike_time, self.pre_time, \
                              self.pre_voltage, self.post_time, self.post_voltage)
 
-                g.ser.write_b(str(int(len(total_time)))+"\n")
+                HW.ArC.write_b(str(int(len(total_time)))+"\n")
 
                 for i in range(len(total_time)):
-                    g.ser.write_b(str(float(total_time[i]))+"\n")
-                    g.ser.write_b(str(float(total_voltage[i]))+"\n")
+                    HW.ArC.write_b(str(float(total_time[i]))+"\n")
+                    HW.ArC.write_b(str(float(total_voltage[i]))+"\n")
                     time.sleep(0.001)
 
-                valuesNew=f.getFloats(3)
+                valuesNew=HW.ArC.read_floats(3)
                 tag_=tag+" dt="+str("%.6f" % dt)+" before"
                 self.sendData.emit(w,b,valuesNew[0],valuesNew[1],valuesNew[2],tag_)
                 self.displayData.emit()
 
-                valuesNew=f.getFloats(3)
+                valuesNew=HW.ArC.read_floats(3)
 
                 tag_=tag+" dt="+str("%.6f" % dt)+" after"
 
@@ -94,7 +97,7 @@ class ThreadWrapper(BaseThreadWrapper):
                 self.sendData.emit(w,b,valuesNew[0],max_ampl,max(total_time),tag_)
                 self.displayData.emit()
 
-            valuesNew=f.getFloats(3)
+            valuesNew=HW.ArC.read_floats(3)
 
             tag_=tag+"_e"
 
@@ -291,8 +294,8 @@ class STDP(BaseProgPanel):
 
         labeltotal_style = {'color': '#000000', 'font-size': '10pt'}
 
-        plot_height=80*g.scaling_factor
-        plot_width=300*g.scaling_factor
+        plot_height=80*APP.scalingFactor
+        plot_width=300*APP.scalingFactor
 
         self.plot_total=view.addPlot()
         self.plot_total.setMouseEnabled(False,False)
@@ -639,7 +642,7 @@ class STDP(BaseProgPanel):
         return timeSteps
 
     def programOne(self):
-        self.programDevs([[g.w, g.b]])
+        self.programDevs([[CB.word, CB.bit]])
 
     def programRange(self):
         devs = makeDeviceList(True)
@@ -653,7 +656,7 @@ class STDP(BaseProgPanel):
         job = "40"
         timeSteps = self.prepare_time_steps()
 
-        g.ser.write_b(job+"\n")
+        HW.ArC.write_b(job+"\n")
         self.sendParams()
 
         wrapper = ThreadWrapper(devs, [self.gain, self.warp, self.max_spike_time, \

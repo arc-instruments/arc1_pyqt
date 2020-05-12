@@ -12,9 +12,12 @@ import sys
 import os
 import time
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 import arc1pyqt.Globals.GlobalFonts as fonts
 import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalVars as g
 import arc1pyqt.Globals.GlobalStyles as s
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
@@ -34,20 +37,20 @@ class ThreadWrapper(BaseThreadWrapper):
 
         global tag
 
-        g.ser.write_b(str(int(len(self.deviceList)))+"\n")
+        HW.ArC.write_b(str(int(len(self.deviceList)))+"\n")
 
         for device in self.deviceList:
             w=device[0]
             b=device[1]
             self.highlight.emit(w,b)
 
-            g.ser.write_b(str(int(w))+"\n")
-            g.ser.write_b(str(int(b))+"\n")
+            HW.ArC.write_b(str(int(w))+"\n")
+            HW.ArC.write_b(str(int(b))+"\n")
 
             firstPoint=1
             endCommand=0
 
-            valuesNew=f.getFloats(3)
+            valuesNew=HW.ArC.read_floats(3)
 
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
@@ -57,7 +60,7 @@ class ThreadWrapper(BaseThreadWrapper):
             while(endCommand==0):
                 valuesOld=valuesNew
 
-                valuesNew=f.getFloats(3)
+                valuesNew=HW.ArC.read_floats(3)
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -272,29 +275,29 @@ class Endurance(BaseProgPanel):
 
     def sendParams(self):
         # positive amplitude
-        g.ser.write_b(str(float(self.leftEdits[0].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[0].text()))+"\n")
         # positive pw
-        g.ser.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[1].text())/1000000)+"\n")
         # positive cut-off
-        g.ser.write_b(str(float(self.leftEdits[2].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[2].text())/1000000)+"\n")
         # negative amplitude
-        g.ser.write_b(str(float(self.rightEdits[0].text())*-1)+"\n")
+        HW.ArC.write_b(str(float(self.rightEdits[0].text())*-1)+"\n")
         # negative pw
-        g.ser.write_b(str(float(self.rightEdits[1].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.rightEdits[1].text())/1000000)+"\n")
         # negative cut-off
-        g.ser.write_b(str(float(self.rightEdits[2].text())/1000000)+"\n")
+        HW.ArC.write_b(str(float(self.rightEdits[2].text())/1000000)+"\n")
         # interpulse
-        g.ser.write_b(str(float(self.leftEdits[5].text()))+"\n")
+        HW.ArC.write_b(str(float(self.leftEdits[5].text()))+"\n")
 
         # positive number of pulses
-        g.ser.write_b(str(int(self.leftEdits[3].text()))+"\n")
+        HW.ArC.write_b(str(int(self.leftEdits[3].text()))+"\n")
         # negative number of pulses
-        g.ser.write_b(str(int(self.rightEdits[3].text()))+"\n")
+        HW.ArC.write_b(str(int(self.rightEdits[3].text()))+"\n")
         # cycles
-        g.ser.write_b(str(int(self.leftEdits[4].text()))+"\n")
+        HW.ArC.write_b(str(int(self.leftEdits[4].text()))+"\n")
 
     def programOne(self):
-        self.programDevs([[g.w, g.b]])
+        self.programDevs([[CB.word, CB.bit]])
 
     def programRange(self):
         devs = makeDeviceList(True)
@@ -307,7 +310,7 @@ class Endurance(BaseProgPanel):
     def programDevs(self, devs):
 
         job="191"
-        g.ser.write_b(job+"\n")
+        HW.ArC.write_b(job+"\n")
         self.sendParams()
 
         wrapper = ThreadWrapper(devs)
