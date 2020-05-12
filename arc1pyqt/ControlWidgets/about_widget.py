@@ -12,9 +12,6 @@ import sys
 import os
 import platform
 
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
-from ..Globals import GlobalFunctions as f
 from .. import Graphics
 from ..version import VersionInfo
 

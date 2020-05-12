@@ -15,9 +15,7 @@ from .. import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
+from ..Globals import functions, fonts, styles
 from . import CrossbarContainerWidget
 from .common import resistanceColorGradient
 
@@ -31,8 +29,8 @@ class CrossbarWidget(QtWidgets.QWidget):
 
     def initUI(self):
 
-        f.hoverAntenna.displayHoverPanel.connect(self.displayHover)
-        f.hoverAntenna.hideHoverPanel.connect(self.hideHover)
+        functions.hoverAntenna.displayHoverPanel.connect(self.displayHover)
+        functions.hoverAntenna.hideHoverPanel.connect(self.hideHover)
 
         mainLayout=QtWidgets.QHBoxLayout()
         mainLayout.setSpacing(0)
@@ -117,11 +115,11 @@ class CrossbarWidget(QtWidgets.QWidget):
         hoverLayout=QtWidgets.QVBoxLayout()
         self.posLabel=QtWidgets.QLabel()
         self.posLabel.setText("W=10 | B=9 \n Mnow" )
-        self.posLabel.setStyleSheet(s.labelStyle)
+        self.posLabel.setStyleSheet(styles.labelStyle)
         self.mLabel=QtWidgets.QLabel()
         self.mLabel.setText("10000")
         self.mLabel.setFont(fonts.font3)
-        self.mLabel.setStyleSheet(s.labelStyle)
+        self.mLabel.setStyleSheet(styles.labelStyle)
         hoverLayout.addWidget(self.posLabel)
         hoverLayout.addWidget(self.mLabel)
         hoverLayout.setContentsMargins(2,2,2,2)

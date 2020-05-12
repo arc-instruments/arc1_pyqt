@@ -19,9 +19,7 @@ from .. import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
+from ..Globals import functions, fonts
 from .. import Graphics
 
 
@@ -42,10 +40,10 @@ class HistoryWidget(QtWidgets.QWidget):
         self.historyTree.itemClicked.connect(self.changeDisplayToSelectedItem)
         self.historyTree.itemDoubleClicked.connect(self.displayResults)
 
-        f.historyTreeAntenna.updateTree.connect(self.updateTree)
-        f.historyTreeAntenna.updateTree_short.connect(self.updateTree_short)
-        f.historyTreeAntenna.clearTree.connect(self.clearTree)
-        f.historyTreeAntenna.changeSessionName.connect(self.changeSessionName)
+        functions.historyTreeAntenna.updateTree.connect(self.updateTree)
+        functions.historyTreeAntenna.updateTree_short.connect(self.updateTree_short)
+        functions.historyTreeAntenna.clearTree.connect(self.clearTree)
+        functions.historyTreeAntenna.changeSessionName.connect(self.changeSessionName)
 
         mainLayout=QtWidgets.QVBoxLayout()
         mainLayout.addWidget(self.dieName)
@@ -191,8 +189,8 @@ class HistoryWidget(QtWidgets.QWidget):
     def changeDisplayToSelectedItem(self,item):
         if item.whatsThis(1)=='-1':
             pos=item.whatsThis(0).split(',')
-            f.cbAntenna.selectDeviceSignal.emit(int(pos[0]),int(pos[1]))
-            f.displayUpdate.updateSignal_short.emit()
+            functions.cbAntenna.selectDeviceSignal.emit(int(pos[0]),int(pos[1]))
+            functions.displayUpdate.updateSignal_short.emit()
 
     def deunderline(self):
         if self.historyTree.topLevelItemCount()>0:

@@ -21,9 +21,7 @@ from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 from arc1pyqt import ProgPanels
@@ -64,7 +62,7 @@ def _min_without_inf(lst, exclude):
 class ThreadWrapper(BaseThreadWrapper):
 
     # As CurveTracer has a programmable Vread we need to override the
-    # sendData signal to use the full form of `GlobalFunctions.updateHistory`
+    # sendData signal to use the full form of `Globals.functions.updateHistory`
     # which also accepts an additional argument at the end for the current
     # Vread.
     sendData = QtCore.pyqtSignal(int, int, float, float, float, str, float)

@@ -16,9 +16,7 @@ from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, functions, styles
 from arc1pyqt.modutils import BaseThreadWrapper
 
 
@@ -111,14 +109,14 @@ class READ(QtWidgets.QWidget):
 
         # ========== ComboBox ===========
         self.combo_readType=QtWidgets.QComboBox()
-        self.combo_readType.setStyleSheet(s.comboStyle)
+        self.combo_readType.setStyleSheet(styles.comboStyle)
         self.combo_readType.insertItems(1, ['Classic', 'TIA', 'TIA4P'])
         self.combo_readType.currentIndexChanged.connect(self.updateReadType)
         self.combo_readType.setCurrentIndex(2)
 
         self.read_voltage=QtWidgets.QDoubleSpinBox()
         #read_voltage.setHeight(25)
-        self.read_voltage.setStyleSheet(s.spinStyle)
+        self.read_voltage.setStyleSheet(styles.spinStyle)
         self.read_voltage.setMinimum(-12)
         self.read_voltage.setMaximum(12)
         self.read_voltage.setSingleStep(0.05)
@@ -156,9 +154,9 @@ class READ(QtWidgets.QWidget):
             push_range=QtWidgets.QPushButton('Apply to Range')
             push_all=QtWidgets.QPushButton('Apply to All')
 
-            push_single.setStyleSheet(s.btnStyle)
-            push_range.setStyleSheet(s.btnStyle)
-            push_all.setStyleSheet(s.btnStyle)
+            push_single.setStyleSheet(styles.btnStyle)
+            push_range.setStyleSheet(styles.btnStyle)
+            push_all.setStyleSheet(styles.btnStyle)
 
             push_single.clicked.connect(self.programOne)
             push_range.clicked.connect(self.programRange)
@@ -224,12 +222,12 @@ class READ(QtWidgets.QWidget):
         self.threadWrapper.finished.connect(self.thread.quit)
         self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
         self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.sendData.connect(f.updateHistory)
-        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
+        self.threadWrapper.sendData.connect(functions.updateHistory)
+        self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(functions.displayUpdate.cast)
+        self.threadWrapper.updateTree.connect(functions.historyTreeAntenna.updateTree.emit)
+        self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
+        self.thread.finished.connect(functions.interfaceAntenna.wakeUp)
 
 
         self.thread.start()

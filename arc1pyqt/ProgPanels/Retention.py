@@ -19,9 +19,7 @@ from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import styles, fonts
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 
@@ -180,14 +178,14 @@ class Retention(BaseProgPanel):
         duration_lay=QtWidgets.QHBoxLayout()
 
         self.every_dropDown=QtWidgets.QComboBox()
-        self.every_dropDown.setStyleSheet(s.comboStylePulse)
+        self.every_dropDown.setStyleSheet(styles.comboStylePulse)
 
         self.unitsFull=[['s',1],['min',60],['hrs',3600]]
         self.units=[e[0] for e in self.unitsFull]
         self.multiply=[e[1] for e in self.unitsFull]
 
         self.duration_dropDown=QtWidgets.QComboBox()
-        self.duration_dropDown.setStyleSheet(s.comboStylePulse)
+        self.duration_dropDown.setStyleSheet(styles.comboStylePulse)
 
         self.every_dropDown.insertItems(1,self.units)
         self.every_dropDown.setCurrentIndex(0)

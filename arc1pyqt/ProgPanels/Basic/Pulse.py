@@ -13,9 +13,7 @@ from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, functions, styles
 from arc1pyqt.modutils import BaseThreadWrapper
 
 
@@ -90,8 +88,8 @@ class Pulse(QtWidgets.QWidget):
         self.pulse_V = QtWidgets.QLineEdit()
         self.pulse_pw = QtWidgets.QLineEdit()
 
-        self.pulse_V.setStyleSheet(s.entryStyle)
-        self.pulse_pw.setStyleSheet(s.entryStyle)
+        self.pulse_V.setStyleSheet(styles.entryStyle)
+        self.pulse_pw.setStyleSheet(styles.entryStyle)
 
         # Initialise fields
         self.pulse_V.setText('1')
@@ -102,7 +100,7 @@ class Pulse(QtWidgets.QWidget):
         self.pulse_pw.setValidator(isFloat)
 
         self.pw_DropDown=QtWidgets.QComboBox()
-        self.pw_DropDown.setStyleSheet(s.comboStylePulse)
+        self.pw_DropDown.setStyleSheet(styles.comboStylePulse)
 
         self.unitsFull=[['s',1],['ms',0.001],['us',0.000001],['ns',0.000000001]]
         self.units=[e[0] for e in self.unitsFull]
@@ -144,9 +142,9 @@ class Pulse(QtWidgets.QWidget):
             push_range=QtWidgets.QPushButton('Apply to Range')
             push_all=QtWidgets.QPushButton('Apply to All')
 
-            push_single.setStyleSheet(s.btnStyle)
-            push_range.setStyleSheet(s.btnStyle)
-            push_all.setStyleSheet(s.btnStyle)
+            push_single.setStyleSheet(styles.btnStyle)
+            push_range.setStyleSheet(styles.btnStyle)
+            push_all.setStyleSheet(styles.btnStyle)
 
             push_single.clicked.connect(self.programOne)
             push_range.clicked.connect(self.programRange)
@@ -207,12 +205,12 @@ class Pulse(QtWidgets.QWidget):
         self.threadWrapper.finished.connect(self.thread.quit)
         self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
         self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.sendData.connect(f.updateHistory)
-        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(f.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(f.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
+        self.threadWrapper.sendData.connect(functions.updateHistory)
+        self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(functions.displayUpdate.cast)
+        self.threadWrapper.updateTree.connect(functions.historyTreeAntenna.updateTree.emit)
+        self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
+        self.thread.finished.connect(functions.interfaceAntenna.wakeUp)
 
         self.thread.start()
 

@@ -14,7 +14,7 @@ import pkgutil
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from .. import ProgPanels
-from ..Globals import GlobalStyles as s
+from ..Globals import styles
 
 from .. import state
 HW = state.hardware
@@ -37,7 +37,7 @@ class ProgPanelWidget(QtWidgets.QWidget):
         label_panels.setMaximumWidth(40)
 
         self.prog_panelList = QtWidgets.QComboBox()
-        self.prog_panelList.setStyleSheet(s.comboStyle)
+        self.prog_panelList.setStyleSheet(styles.comboStyle)
         self.prog_panelList.setMinimumWidth(150*APP.scalingFactor)
 
         for (tag, mod) in APP.modules.items():
@@ -52,11 +52,11 @@ class ProgPanelWidget(QtWidgets.QWidget):
         self.prog_panelList.setItemData(self.prog_panelList.findText("SuperMode"), boldFont, QtCore.Qt.FontRole)
 
         self.push_add=QtWidgets.QPushButton('Add')
-        self.push_add.setStyleSheet(s.btnStyle2)
+        self.push_add.setStyleSheet(styles.btnStyle2)
         self.push_add.clicked.connect(self.addPanel)
 
         self.push_remove=QtWidgets.QPushButton('Remove')
-        self.push_remove.setStyleSheet(s.btnStyle2)
+        self.push_remove.setStyleSheet(styles.btnStyle2)
         self.push_remove.clicked.connect(self.removePanel)
 
         self.tabFrame=QtWidgets.QTabWidget()

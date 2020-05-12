@@ -8,7 +8,7 @@ from .. import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from . import GlobalFunctions as f
+from . import functions as f
 from ..VirtualArC import VirtualArC
 
 

@@ -44,9 +44,7 @@ from .ControlWidgets import ManualOpsWidget
 from .ControlWidgets import ProgPanelWidget
 from .ControlWidgets import NewSessionDialog
 from .ControlWidgets import AboutWidget
-from .Globals import GlobalFonts as fonts
-from .Globals import GlobalStyles as s
-from .Globals import GlobalFunctions as f
+from .Globals import fonts, styles, functions
 from . import modutils
 from .instrument import ArC1
 from .version import VersionInfo, vercmp
@@ -199,20 +197,20 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.connectBtn=QtWidgets.QPushButton('Connect')
         self.connectBtn.clicked.connect(self.connectArC)
         self.connectBtn.setStatusTip('Connect to ArC One')
-        self.connectBtn.setStyleSheet(s.toolBtn)
+        self.connectBtn.setStyleSheet(styles.toolBtn)
 
         self.discBtn=QtWidgets.QPushButton('Disconnect')
         self.discBtn.clicked.connect(self.discArC)
         self.discBtn.setStatusTip('Disconnect from ArC One')
-        self.discBtn.setStyleSheet(s.toolBtn)
+        self.discBtn.setStyleSheet(styles.toolBtn)
 
         self.comPorts = QtWidgets.QComboBox()
-        self.comPorts.setStyleSheet(s.toolCombo)
+        self.comPorts.setStyleSheet(styles.toolCombo)
         self.comPorts.insertItems(1,self.scanSerials())
 
         self.refresh=QtWidgets.QPushButton('Refresh')
         self.refresh.clicked.connect(self.updateCOMList)
-        self.refresh.setStyleSheet(s.toolBtn)
+        self.refresh.setStyleSheet(styles.toolBtn)
         self.refresh.setStatusTip('Refresh COM list')
 
         # Populate toolbar
@@ -234,7 +232,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         self.arcStatusLabel=QtWidgets.QLabel()
         self.arcStatusLabel.setMinimumWidth(int(200*APP.scalingFactor))
-        self.arcStatusLabel.setStyleSheet(s.arcStatus_disc)
+        self.arcStatusLabel.setStyleSheet(styles.arcStatus_disc)
         self.arcStatusLabel.setText('Disconnected')
         self.arcStatusLabel.setFont(fonts.font1)
         self.arcStatusLabel.setAlignment(QtCore.Qt.AlignCenter)
@@ -314,14 +312,13 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.setCentralWidget(splitter)
         self.saveAction.setEnabled(False)
         # connect disable signal
-        f.interfaceAntenna.disable.connect(self.toggleEnable)
-        f.interfaceAntenna.disable.connect(self.changeStatus)
-        f.interfaceAntenna.reformat.connect(self.reformatInterface)
-        f.interfaceAntenna.changeArcStatus.connect(self.changeStatus)
-        f.interfaceAntenna.changeSessionMode.connect(self.setSessionModeLabel)
-        f.interfaceAntenna.updateHW.connect(self.updateHW)
-
-        f.cbAntenna.recolor.connect(self.updateSaveButton)
+        functions.interfaceAntenna.disable.connect(self.toggleEnable)
+        functions.interfaceAntenna.disable.connect(self.changeStatus)
+        functions.interfaceAntenna.reformat.connect(self.reformatInterface)
+        functions.interfaceAntenna.changeArcStatus.connect(self.changeStatus)
+        functions.interfaceAntenna.changeSessionMode.connect(self.setSessionModeLabel)
+        functions.interfaceAntenna.updateHW.connect(self.updateHW)
+        functions.cbAntenna.recolor.connect(self.updateSaveButton)
 
         # Setup main window geometry
         self.setGeometry(100, 100, int(APP.scalingFactor*1500),
@@ -419,23 +416,23 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         if (status=='Disc'):
             self.arcStatusLabel.setText('Disconnected')
-            self.arcStatusLabel.setStyleSheet(s.arcStatus_disc)
+            self.arcStatusLabel.setStyleSheet(styles.arcStatus_disc)
 
         if (status=='Ready'):
             self.arcStatusLabel.setText('Ready')
-            self.arcStatusLabel.setStyleSheet(s.arcStatus_ready)
+            self.arcStatusLabel.setStyleSheet(styles.arcStatus_ready)
 
         if (status=='Busy'):
             self.arcStatusLabel.setText('Busy')
-            self.arcStatusLabel.setStyleSheet(s.arcStatus_busy)
+            self.arcStatusLabel.setStyleSheet(styles.arcStatus_busy)
 
         if (status==True):
             self.arcStatusLabel.setText('Busy')
-            self.arcStatusLabel.setStyleSheet(s.arcStatus_busy)
+            self.arcStatusLabel.setStyleSheet(styles.arcStatus_busy)
 
         if (status==False):
             self.arcStatusLabel.setText('Ready')
-            self.arcStatusLabel.setStyleSheet(s.arcStatus_ready)
+            self.arcStatusLabel.setStyleSheet(styles.arcStatus_ready)
 
         self.arcStatusLabel.update()
 
@@ -525,20 +522,20 @@ class Arcontrol(QtWidgets.QMainWindow):
         newSession.exec_()
 
     def reformatInterface(self):
-        f.interfaceAntenna.disable.emit(False)
+        functions.interfaceAntenna.disable.emit(False)
 
         session = HW.conf.sessionmode
 
         if session == 0:  # mode is Live: Local (Normal operation)
             self.redrawCrossbar()
-            f.historyTreeAntenna.changeSessionName.emit()
-            f.interfaceAntenna.changeArcStatus.emit('Disc')
-            f.interfaceAntenna.changeSessionMode.emit('Live: Local')
+            functions.historyTreeAntenna.changeSessionName.emit()
+            functions.interfaceAntenna.changeArcStatus.emit('Disc')
+            functions.interfaceAntenna.changeSessionMode.emit('Live: Local')
 
         elif session == 1:  # mode is Live: External BNC
-            f.historyTreeAntenna.changeSessionName.emit()
-            f.interfaceAntenna.changeArcStatus.emit('Disc')
-            f.interfaceAntenna.changeSessionMode.emit('Live: External BNC')
+            functions.historyTreeAntenna.changeSessionName.emit()
+            functions.interfaceAntenna.changeArcStatus.emit('Disc')
+            functions.interfaceAntenna.changeSessionMode.emit('Live: External BNC')
             # restrict to 1,1
             HW.conf.words = 1
             HW.conf.bits = 1
@@ -547,9 +544,9 @@ class Arcontrol(QtWidgets.QMainWindow):
             self.redrawCrossbar()
 
         elif session == 2:  # mode is Live: BNC to local
-            f.historyTreeAntenna.changeSessionName.emit()
-            f.interfaceAntenna.changeArcStatus.emit('Disc')
-            f.interfaceAntenna.changeSessionMode.emit('Live: BNC to Local')
+            functions.historyTreeAntenna.changeSessionName.emit()
+            functions.interfaceAntenna.changeArcStatus.emit('Disc')
+            functions.interfaceAntenna.changeSessionMode.emit('Live: BNC to Local')
 
             self.setModeBNCtoLocal()
             self.redrawCrossbar()
@@ -560,8 +557,8 @@ class Arcontrol(QtWidgets.QMainWindow):
             self.setModeOffline()
             self.findAndLoadFile()
             self.redrawCrossbar()
-            f.interfaceAntenna.changeArcStatus.emit('Disc')
-            f.interfaceAntenna.changeSessionMode.emit('Offline')
+            functions.interfaceAntenna.changeArcStatus.emit('Disc')
+            functions.interfaceAntenna.changeSessionMode.emit('Offline')
 
     def openSession(self):
 
@@ -571,7 +568,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         if reply == QtWidgets.QMessageBox.Yes:
             self.deleteAllData()
             self.findAndLoadFile()
-            f.interfaceAntenna.changeSessionMode.emit('Offline')
+            functions.interfaceAntenna.changeSessionMode.emit('Offline')
         else:
             pass
 
@@ -589,7 +586,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         dialog = QtWidgets.QProgressDialog("Loading file <b>%s</b>…" % filename,
                 "Cancel", 0, 100, parent=self)
         bar = QtWidgets.QProgressBar()
-        bar.setStyleSheet(s.progressBarStyle)
+        bar.setStyleSheet(styles.progressBarStyle)
         dialog.setWindowModality(QtCore.Qt.WindowModal)
         dialog.setWindowTitle("Loading file")
         dialog.setWindowIcon(Graphics.getIcon('appicon'))
@@ -599,7 +596,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         for (counter, values) in enumerate(rdr):
             if (counter == 0):
                 APP.sessionName=str(values[0])
-                f.historyTreeAntenna.changeSessionName.emit()
+                functions.historyTreeAntenna.changeSessionName.emit()
             else:
                 if counter > 2:
                     try:
@@ -615,7 +612,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
                         # ignore Read All points
                         if 'S R' in tag or tag[-1]=='e' or tag[0]=='P':
-                            f.historyTreeAntenna.updateTree.emit(w, b)
+                            functions.historyTreeAntenna.updateTree.emit(w, b)
                     except ValueError:
                         error = 1
 
@@ -637,7 +634,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         if str(path.filePath()).endswith('.csv.gz'):
             opener = gzip.open
-            filesize = f.gzipFileSize(path.filePath())
+            filesize = functions.gzipFileSize(path.filePath())
         else:
             opener = open
             filesize = os.stat(path.filePath()).st_size
@@ -658,9 +655,9 @@ class Arcontrol(QtWidgets.QMainWindow):
             for w in range(1,33):
                 for b in range(1,33):
                     if CB.history[w][b]:
-                        f.cbAntenna.recolor.emit(CB.history[w][b][-1][0],w,b)
+                        functions.cbAntenna.recolor.emit(CB.history[w][b][-1][0],w,b)
 
-            f.interfaceAntenna.changeArcStatus.emit('Disc')
+            functions.interfaceAntenna.changeArcStatus.emit('Disc')
 
             return True
 
@@ -670,16 +667,16 @@ class Arcontrol(QtWidgets.QMainWindow):
         if CB.customArray:
             for w in range(1,HW.conf.words+1):
                 for b in range(1,HW.conf.bits+1):
-                    f.SAantenna.disable.emit(w,b)
+                    functions.SAantenna.disable.emit(w,b)
             for device in CB.customArray:
-                f.SAantenna.enable.emit(device[0],device[1])
+                functions.SAantenna.enable.emit(device[0],device[1])
         else:
             for w in range(1,HW.conf.words+1):
                 for b in range(1,HW.conf.bits+1):
-                    f.SAantenna.enable.emit(w,b)
+                    functions.SAantenna.enable.emit(w,b)
 
-        f.historyTreeAntenna.clearTree.emit()
-        f.displayUpdate.updateSignal_short.emit()
+        functions.historyTreeAntenna.clearTree.emit()
+        functions.displayUpdate.updateSignal_short.emit()
         self.saveAction.setEnabled(False)
 
     def clearSession(self):
@@ -786,7 +783,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
         HW.ArC.close()
         #ArC.port=None
-        f.interfaceAntenna.changeArcStatus.emit('Disc')
+        functions.interfaceAntenna.changeArcStatus.emit('Disc')
 
     def resetArC(self):
         HW.ArC.reset()

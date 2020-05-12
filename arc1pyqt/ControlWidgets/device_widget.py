@@ -12,7 +12,7 @@ import numpy as np
 from PyQt5 import QtGui, QtWidgets
 
 from .. import Globals
-from ..Globals import GlobalFunctions as f
+from ..Globals import functions
 from .common import resistanceColorGradient
 
 from .. import state
@@ -107,6 +107,7 @@ class DeviceWidget(QtWidgets.QWidget):
 
     def enterEvent(self, event):
         if not self.passive:
-            f.hoverAntenna.displayHoverPanel.emit(self.r, self.c, self.geometry().x(),
-                    self.geometry().y(),self.geometry().width(),self.geometry().height())
+            functions.hoverAntenna.displayHoverPanel.emit(self.r, self.c,
+                    self.geometry().x(), self.geometry().y(),
+                    self.geometry().width(), self.geometry().height())
 

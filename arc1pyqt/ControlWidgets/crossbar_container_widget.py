@@ -16,9 +16,7 @@ from .. import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
+from ..Globals import functions
 
 
 class CrossbarContainerWidget(QtWidgets.QWidget):
@@ -35,11 +33,11 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
         self.matrix = MatrixWidget(words=HW.conf.words, bits=HW.conf.bits)
         layout.addWidget(self.matrix)
 
-        f.cbAntenna.selectDeviceSignal.connect(self.changeDevice)
-        f.cbAntenna.deselectOld.connect(self.dummySlot)
-        f.cbAntenna.recolor.connect(self.recolor)
-        f.SAantenna.disable.connect(self.disableCell)
-        f.SAantenna.enable.connect(self.enableCell)
+        functions.cbAntenna.selectDeviceSignal.connect(self.changeDevice)
+        functions.cbAntenna.deselectOld.connect(self.dummySlot)
+        functions.cbAntenna.recolor.connect(self.recolor)
+        functions.SAantenna.disable.connect(self.disableCell)
+        functions.SAantenna.enable.connect(self.enableCell)
 
         self.rubberband = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
         self.setMouseTracking(True)
@@ -60,11 +58,11 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
 
     def changeDevice(self, w, b):
 
-        f.cbAntenna.deselectOld.emit()
+        functions.cbAntenna.deselectOld.emit()
         self.matrix.cells[w][b].highlight()
 
-        f.cbAntenna.deselectOld.disconnect()
-        f.cbAntenna.deselectOld.connect(self.matrix.cells[w][b].dehighlight)
+        functions.cbAntenna.deselectOld.disconnect()
+        functions.cbAntenna.deselectOld.connect(self.matrix.cells[w][b].dehighlight)
 
     def recolor(self, M, w, b):
         self.matrix.cells[w][b].recolor(M)
@@ -92,14 +90,14 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
             if CB.checkSA==False:
                 self.changeDevice(int(w),int(b))
                 # signal the crossbar antenna that this device has been selected
-                f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
-                f.displayUpdate.updateSignal_short.emit()
+                functions.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
+                functions.displayUpdate.updateSignal_short.emit()
             else:
                 if [int(w),int(b)] in CB.customArray:
                     self.changeDevice(int(w),int(b))
                     # signal the crossbar antenna that this device has been selected
-                    f.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
-                    f.displayUpdate.updateSignal_short.emit()
+                    functions.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
+                    functions.displayUpdate.updateSignal_short.emit()
 
             if  HW.ArC is not None and HW.conf.sessionmode == 2:
                 HW.ArC.write_b("02\n")
@@ -176,5 +174,5 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
         self.dragging=False
 
     def leaveEvent(self, event):
-        f.hoverAntenna.hideHoverPanel.emit()
+        functions.hoverAntenna.hideHoverPanel.emit()
 

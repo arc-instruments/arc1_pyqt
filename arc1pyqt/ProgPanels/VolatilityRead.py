@@ -9,9 +9,7 @@ from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 

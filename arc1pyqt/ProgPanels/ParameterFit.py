@@ -26,9 +26,7 @@ APP = state.app
 CB = state.crossbar
 from arc1pyqt.GeneratedUiElements.pf import Ui_PFParent
 from arc1pyqt.GeneratedUiElements.fitdialog import Ui_FitDialogParent
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, styles, functions
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 
@@ -301,8 +299,8 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
                 self.tabWidget.setTabEnabled(idx, False)
 
     def exportClicked(self):
-        saveCb = partial(f.writeDelimitedData, self.modelData)
-        f.saveFuncToFilename(saveCb, title="Save data to...", parent=self)
+        saveCb = partial(functions.writeDelimitedData, self.modelData)
+        functions.saveFuncToFilename(saveCb, title="Save data to...", parent=self)
 
     def IVSpinBoxValueChanged(self, value):
 
@@ -343,7 +341,8 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
         def saveModel(fname):
             with open(fname, 'w') as f:
                 f.write(model)
-        f.saveFuncToFilename(saveModel, title="Save Verilog-A model to...", parent=self)
+        functions.saveFuncToFilename(saveModel, title="Save Verilog-A model to...",
+                parent=self)
 
     def mechanismModelComboIndexChanged(self, index):
         self.modelStackedWidget.setCurrentIndex(index)
@@ -759,9 +758,9 @@ class ParameterFit(Ui_PFParent, BaseProgPanel):
 
         self.setupUi(self)
 
-        self.applyAllButton.setStyleSheet(s.btnStyle)
-        self.applyOneButton.setStyleSheet(s.btnStyle)
-        self.applyRangeButton.setStyleSheet(s.btnStyle)
+        self.applyAllButton.setStyleSheet(styles.btnStyle)
+        self.applyOneButton.setStyleSheet(styles.btnStyle)
+        self.applyRangeButton.setStyleSheet(styles.btnStyle)
         self.titleLabel.setFont(fonts.font1)
         self.descriptionLabel.setFont(fonts.font3)
 

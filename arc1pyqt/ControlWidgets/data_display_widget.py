@@ -20,8 +20,7 @@ from .. import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalStyles as s
+from ..Globals import functions
 
 
 class DataDisplayWidget(QtWidgets.QWidget):
@@ -118,10 +117,10 @@ class DataDisplayWidget(QtWidgets.QWidget):
 
         self.setLayout(mainLayout)
 
-        f.displayUpdate.updateSignal.connect(self.updateDisplay)
-        f.displayUpdate.updateSignal_short.connect(self.updateDisplay_short)
-        f.displayUpdate.updateLog.connect(self.updateLogScale)
-        f.interfaceAntenna.lastDisplaySignal.connect(self.last_updateDisplay_short)
+        functions.displayUpdate.updateSignal.connect(self.updateDisplay)
+        functions.displayUpdate.updateSignal_short.connect(self.updateDisplay_short)
+        functions.displayUpdate.updateLog.connect(self.updateLogScale)
+        functions.interfaceAntenna.lastDisplaySignal.connect(self.last_updateDisplay_short)
 
         self.plot_pls.getViewBox().sigResized.connect(self.updateViews)
         self.plot_width.enableAutoRange(self.plot_width.YAxis,True)

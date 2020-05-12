@@ -19,9 +19,7 @@ from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, functions, styles
 from arc1pyqt import Graphics
 from arc1pyqt.modutils import BaseThreadWrapper
 
@@ -327,9 +325,9 @@ class CT_LIVE(QtWidgets.QWidget):
             push_range=QtWidgets.QPushButton('Apply to Range')
             push_all=QtWidgets.QPushButton('Apply to All')
 
-            push_single.setStyleSheet(s.btnStyle)
-            push_range.setStyleSheet(s.btnStyle)
-            push_all.setStyleSheet(s.btnStyle)
+            push_single.setStyleSheet(styles.btnStyle)
+            push_range.setStyleSheet(styles.btnStyle)
+            push_all.setStyleSheet(styles.btnStyle)
 
             push_single.clicked.connect(self.programOne)
             push_range.clicked.connect(self.programRange)
@@ -357,14 +355,14 @@ class CT_LIVE(QtWidgets.QWidget):
         hbox=QtWidgets.QHBoxLayout(self)
         self.push_live=QtWidgets.QPushButton("GO LIVE!")
         self.push_live.clicked.connect(self.live)
-        self.push_live.setStyleSheet(s.btnStyle)
+        self.push_live.setStyleSheet(styles.btnStyle)
         self.push_one=QtWidgets.QPushButton("Apply to One")
         self.push_one.clicked.connect(self.start_programOne)
-        self.push_one.setStyleSheet(s.btnStyle)
+        self.push_one.setStyleSheet(styles.btnStyle)
 
         self.push_save=QtWidgets.QPushButton("Save Data")
         self.push_save.clicked.connect(self.saveQueue)
-        self.push_save.setStyleSheet(s.btnStyle2)
+        self.push_save.setStyleSheet(styles.btnStyle2)
 
         hbox.addWidget(self.push_save)
         hbox.addWidget(self.push_live)
@@ -433,7 +431,7 @@ class CT_LIVE(QtWidgets.QWidget):
     def live(self):
         if self.is_live==False:
             self.is_live=True
-            self.push_live.setStyleSheet(s.btnLive)
+            self.push_live.setStyleSheet(styles.btnLive)
             self.push_live.setText("STOP!")
             self.push_one.setEnabled(False)
             self.push_save.setEnabled(False)
@@ -444,7 +442,7 @@ class CT_LIVE(QtWidgets.QWidget):
             self.startLiveWrapper.finished.connect(self.live_thread.quit)
             self.startLiveWrapper.finished.connect(self.startLiveWrapper.deleteLater)
             self.live_thread.finished.connect(self.startLiveWrapper.deleteLater)
-            self.startLiveWrapper.disableInterface.connect(f.interfaceAntenna.cast)
+            self.startLiveWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
             self.startLiveWrapper.execute.connect(self.programOne)
 
             self.stop_signal.connect(self.startLiveWrapper.stop_live)
@@ -455,7 +453,7 @@ class CT_LIVE(QtWidgets.QWidget):
             self.is_live=False
             global_stop=True
             self.startLiveWrapper.stop=True
-            self.push_live.setStyleSheet(s.btnStyle)
+            self.push_live.setStyleSheet(styles.btnStyle)
             self.push_live.setText("GO LIVE!")
             self.push_one.setEnabled(True)
             self.push_save.setEnabled(True)
@@ -519,10 +517,10 @@ class CT_LIVE(QtWidgets.QWidget):
         self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
         self.thread.finished.connect(self.threadWrapper.deleteLater)
         self.threadWrapper.sendData.connect(self.record_data)
-        self.threadWrapper.highlight.connect(f.cbAntenna.cast)
+        self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
         self.threadWrapper.displayData.connect(self.display_data)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
+        self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
+        self.thread.finished.connect(functions.interfaceAntenna.wakeUp)
 
     def display_data(self):
         IV_curve=self.plot_IV.plot(pxMode=True)
@@ -564,8 +562,7 @@ class CT_LIVE(QtWidgets.QWidget):
 
         CB.history[self.wi][self.bi][firstPoint-1][3]="CT_s"
         CB.history[self.wi][self.bi][-1][3]="CT_e"
-        f.historyTreeAntenna.updateTree.emit(self.wi, self.bi)
-
+        functions.historyTreeAntenna.updateTree.emit(self.wi, self.bi)
 
     def record_data(self, w,b, M, A, pw, tag):
         self.voltage.append(A)

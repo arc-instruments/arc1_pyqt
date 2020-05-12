@@ -6,9 +6,7 @@ HW = state.hardware
 CB = state.crossbar
 APP = state.app
 
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
+from ..Globals import fonts
 
 
 class MatrixWidget(QtWidgets.QWidget):

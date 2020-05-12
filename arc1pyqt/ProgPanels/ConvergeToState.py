@@ -52,9 +52,7 @@ from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, styles
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 
@@ -190,9 +188,9 @@ class ConvergeToState(Ui_CTSParent, BaseProgPanel):
 
         self.setupUi(self)
 
-        self.applyAllButton.setStyleSheet(s.btnStyle)
-        self.applyOneButton.setStyleSheet(s.btnStyle)
-        self.applyRangeButton.setStyleSheet(s.btnStyle)
+        self.applyAllButton.setStyleSheet(styles.btnStyle)
+        self.applyOneButton.setStyleSheet(styles.btnStyle)
+        self.applyRangeButton.setStyleSheet(styles.btnStyle)
         self.titleLabel.setFont(fonts.font1)
         self.descriptionLabel.setFont(fonts.font3)
 

@@ -12,8 +12,7 @@ APP = state.app
 HW = state.hardware
 CB = state.crossbar
 
-from .Globals import GlobalStyles as STYLE
-from .Globals import GlobalFunctions as FUNCS
+from .Globals import styles, functions
 
 
 ModDescriptor = collections.namedtuple('ModDescriptor', \
@@ -207,11 +206,11 @@ class BaseProgPanel(QtWidgets.QWidget):
         self.threadWrapper.moveToThread(self.thread)
         self.thread.started.connect(entrypoint)
         self.threadWrapper.finished.connect(self.thread.quit)
-        self.threadWrapper.sendData.connect(FUNCS.updateHistory)
-        self.threadWrapper.highlight.connect(FUNCS.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(FUNCS.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(FUNCS.historyTreeAntenna.updateTree.emit)
-        self.threadWrapper.disableInterface.connect(FUNCS.interfaceAntenna.cast)
+        self.threadWrapper.sendData.connect(functions.updateHistory)
+        self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(functions.displayUpdate.cast)
+        self.threadWrapper.updateTree.connect(functions.historyTreeAntenna.updateTree.emit)
+        self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
         self.thread.finished.connect(self._onThreadFinished)
         self.thread.start()
 
@@ -220,7 +219,7 @@ class BaseProgPanel(QtWidgets.QWidget):
         if self.thread is None:
             return
 
-        FUNCS.interfaceAntenna.wakeUp()
+        functions.interfaceAntenna.wakeUp()
         self.thread.wait()
         self.threadWrapper.deleteLater()
         self.threadWrapper = None
@@ -228,7 +227,7 @@ class BaseProgPanel(QtWidgets.QWidget):
 
     def makeControlButton(self, text, slot=None):
         btn = QtWidgets.QPushButton(text)
-        btn.setStyleSheet(STYLE.btnStyle)
+        btn.setStyleSheet(styles.btnStyle)
         if slot is not None:
             btn.clicked.connect(slot)
         return btn

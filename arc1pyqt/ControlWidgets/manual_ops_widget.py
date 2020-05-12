@@ -18,9 +18,7 @@ HW = state.hardware
 CB = state.crossbar
 APP = state.app
 
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
+from ..Globals import functions, fonts, styles
 
 
 class _ReadAllWorker(QtCore.QObject):
@@ -88,28 +86,28 @@ class ManualOpsWidget(QtWidgets.QWidget):
         self.position = QtWidgets.QLabel(self)
         self.position.setText('')
         self.position.setFont(fonts.font2)
-        self.position.setStyleSheet(s.style1)
+        self.position.setStyleSheet(styles.style1)
 
         self.resistance = QtWidgets.QLabel(self)
         self.resistance.setText("---")
         self.resistance.setFont(fonts.font1)
-        self.resistance.setStyleSheet(s.style1)
+        self.resistance.setStyleSheet(styles.style1)
 
         # Setup slots for automatic Label updating
-        f.cbAntenna.selectDeviceSignal.connect(self.setM)
+        functions.cbAntenna.selectDeviceSignal.connect(self.setM)
 
         # Setup manual reading panel
         self.readPanel = QtWidgets.QGroupBox('Read Operations')
-        self.readPanel.setStyleSheet(s.groupStyle)
+        self.readPanel.setStyleSheet(styles.groupStyle)
         readPanelLayout = QtWidgets.QVBoxLayout()
         readPanelLayout.setContentsMargins(10,25,10,10)
 
         push_read=QtWidgets.QPushButton('Read Single')
-        push_read.setStyleSheet(s.btnStyle)
+        push_read.setStyleSheet(styles.btnStyle)
         push_read.clicked.connect(self.readSingle)
 
         push_readAll=QtWidgets.QPushButton('Read All')
-        push_readAll.setStyleSheet(s.btnStyle)
+        push_readAll.setStyleSheet(styles.btnStyle)
         push_readAll.clicked.connect(self.readAll)
 
         hbox_1=QtWidgets.QHBoxLayout()
@@ -118,13 +116,13 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
         #'Update read' button.
         push_updateRead=QtWidgets.QPushButton('Update Read')
-        push_updateRead.setStyleSheet(s.btnStyle2)
+        push_updateRead.setStyleSheet(styles.btnStyle2)
         push_updateRead.clicked.connect(self.updateRead)
         push_updateRead.setMinimumWidth(100)
 
         # Read-out type options drop-down.
         combo_readType=QtWidgets.QComboBox()
-        combo_readType.setStyleSheet(s.comboStyle)
+        combo_readType.setStyleSheet(styles.comboStyle)
         combo_readType.insertItems(1, ['Classic', 'TIA', 'TIA4P'])
         combo_readType.currentIndexChanged.connect(self.updateReadType)
         combo_readType.setCurrentIndex(2)
@@ -133,7 +131,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
         # Numerical 'spin box' to set read-out voltage.
         read_voltage=QtWidgets.QDoubleSpinBox()
         #read_voltage.setHeight(25)
-        read_voltage.setStyleSheet(s.spinStyle)
+        read_voltage.setStyleSheet(styles.spinStyle)
         read_voltage.setMinimum(-12)
         read_voltage.setMaximum(12)
         read_voltage.setSingleStep(0.05)
@@ -155,7 +153,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
         # Text field to show selected file containing SA locations for
         # particular application.
         self.customArrayFileName=QtWidgets.QLabel()
-        self.customArrayFileName.setStyleSheet(s.style1)
+        self.customArrayFileName.setStyleSheet(styles.style1)
 
         # File browser. Push-button connecting to function opening file browser.
         push_browse = QtWidgets.QPushButton('...')
@@ -176,7 +174,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
         # Manual Pulse panel
         self.pulsePanel = QtWidgets.QGroupBox('Manual Pulsing')
-        self.pulsePanel.setStyleSheet(s.groupStyle)
+        self.pulsePanel.setStyleSheet(styles.groupStyle)
 
         pulsePanelLayout= QtWidgets.QGridLayout()
         pulsePanelLayout.setContentsMargins(10,25,10,10)
@@ -186,10 +184,10 @@ class ManualOpsWidget(QtWidgets.QWidget):
         self.pulse_pw_pos = QtWidgets.QLineEdit()
         self.pulse_pw_neg = QtWidgets.QLineEdit()
 
-        self.pulse_V_pos.setStyleSheet(s.entryStyle)
-        self.pulse_pw_pos.setStyleSheet(s.entryStyle)
-        self.pulse_V_neg.setStyleSheet(s.entryStyle)
-        self.pulse_pw_neg.setStyleSheet(s.entryStyle)
+        self.pulse_V_pos.setStyleSheet(styles.entryStyle)
+        self.pulse_pw_pos.setStyleSheet(styles.entryStyle)
+        self.pulse_V_neg.setStyleSheet(styles.entryStyle)
+        self.pulse_pw_neg.setStyleSheet(styles.entryStyle)
 
         # Initialise fields
         self.pulse_V_pos.setText('1')
@@ -210,10 +208,10 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
         push_pulsePos = QtWidgets.QPushButton('+Pulse')
         push_pulsePos.clicked.connect(self.extractParamsPlus)
-        push_pulsePos.setStyleSheet(s.btnStyle)
+        push_pulsePos.setStyleSheet(styles.btnStyle)
         push_pulseNeg = QtWidgets.QPushButton('-Pulse')
         push_pulseNeg.clicked.connect(self.extractParamsNeg)
-        push_pulseNeg.setStyleSheet(s.btnStyle)
+        push_pulseNeg.setStyleSheet(styles.btnStyle)
 
         self.check_lock = QtWidgets.QCheckBox('Lock')
         self.check_lock.stateChanged.connect(self.lockPulses)
@@ -225,14 +223,14 @@ class ManualOpsWidget(QtWidgets.QWidget):
         pw_neg_lay=QtWidgets.QHBoxLayout()
 
         self.pw_plusDropDown=QtWidgets.QComboBox()
-        self.pw_plusDropDown.setStyleSheet(s.comboStylePulse)
+        self.pw_plusDropDown.setStyleSheet(styles.comboStylePulse)
 
         self.unitsFull=[['s',1],['ms',0.001],['us',0.000001],['ns',0.000000001]]
         self.units=[e[0] for e in self.unitsFull]
         self.multiply=[e[1] for e in self.unitsFull]
 
         self.pw_negDropDown=QtWidgets.QComboBox()
-        self.pw_negDropDown.setStyleSheet(s.comboStylePulse)
+        self.pw_negDropDown.setStyleSheet(styles.comboStylePulse)
 
         self.pw_plusDropDown.insertItems(1,self.units)
         self.pw_plusDropDown.setCurrentIndex(2)
@@ -261,19 +259,19 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
         # Display Options Panel
         displayPanel = QtWidgets.QGroupBox('Display Options')
-        displayPanel.setStyleSheet(s.groupStyle)
+        displayPanel.setStyleSheet(styles.groupStyle)
         displayPanelLayout = QtWidgets.QHBoxLayout()
         displayPanelLayout.setContentsMargins(10,25,10,10)
 
         push_displayAll = QtWidgets.QPushButton('Full')
-        push_displayAll.setStyleSheet(s.btnStyle2)
+        push_displayAll.setStyleSheet(styles.btnStyle2)
         push_displayAll.clicked.connect(self.displayAll)
         push_displayRange = QtWidgets.QPushButton('Range')
-        push_displayRange.setStyleSheet(s.btnStyle2)
+        push_displayRange.setStyleSheet(styles.btnStyle2)
         push_displayRange.clicked.connect(self.displayRange)
 
         points_spinbox = QtWidgets.QSpinBox()
-        points_spinbox.setStyleSheet(s.spinStyle)
+        points_spinbox.setStyleSheet(styles.spinStyle)
         points_spinbox.setMinimum(10)
         points_spinbox.setMaximum(10000)
         points_spinbox.setSingleStep(100)
@@ -322,41 +320,41 @@ class ManualOpsWidget(QtWidgets.QWidget):
             self.update()
 
     def updateLogScale(self,event):
-        f.displayUpdate.updateLog.emit(event)
+        functions.displayUpdate.updateLog.emit(event)
 
     def toggleSA(self, event):
         if (event == 0):
             CB.checkSA = False
             for w in range(1,33):
                 for b in range(1,33):
-                    f.SAantenna.enable.emit(w,b)
+                    functions.SAantenna.enable.emit(w,b)
         else:
             if (CB.customArray):
                 CB.checkSA = True
                 # signal the crossbar antenna that this device has been selected
-                f.cbAntenna.selectDeviceSignal.emit(CB.customArray[0][0], \
+                functions.cbAntenna.selectDeviceSignal.emit(CB.customArray[0][0], \
                         CB.customArray[0][1])
-                f.displayUpdate.updateSignal_short.emit()
+                functions.displayUpdate.updateSignal_short.emit()
                 for w in range(1,33):
                     for b in range(1,33):
-                        f.SAantenna.disable.emit(w,b)
+                        functions.SAantenna.disable.emit(w,b)
 
                 for cell in CB.customArray:
                     w, b = cell
-                    f.SAantenna.enable.emit(w,b)
+                    functions.SAantenna.enable.emit(w,b)
             else:
                 if self.findSAfile() == True:
                     CB.checkSA = True
                     for w in range(1,33):
                         for b in range(1,33):
-                            f.SAantenna.disable.emit(w,b)
+                            functions.SAantenna.disable.emit(w,b)
 
                     for cell in CB.customArray:
                         w, b = cell
-                        f.SAantenna.enable.emit(w,b)
-                    f.cbAntenna.selectDeviceSignal.emit(CB.customArray[0][0], \
+                        functions.SAantenna.enable.emit(w,b)
+                    functions.cbAntenna.selectDeviceSignal.emit(CB.customArray[0][0], \
                             CB.customArray[0][1])
-                    f.displayUpdate.updateSignal_short.emit()
+                    functions.displayUpdate.updateSignal_short.emit()
 
                 else:
                     CB.checkSA = False
@@ -419,12 +417,12 @@ class ManualOpsWidget(QtWidgets.QWidget):
             currentM = float(HW.ArC.read_floats(1))
 
             tag='S R'+str(HW.conf.readmode)+' V='+str(HW.conf.Vread)
-            f.updateHistory(CB.word, CB.bit, currentM, float(HW.conf.Vread), \
+            functions.updateHistory(CB.word, CB.bit, currentM, float(HW.conf.Vread), \
                     0, tag)
             self.setM(CB.word, CB.bit)
 
-            f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints,99)
-            f.historyTreeAntenna.updateTree.emit(CB.word, CB.bit)
+            functions.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints,99)
+            functions.historyTreeAntenna.updateTree.emit(CB.word, CB.bit)
 
 
     def readAll(self):
@@ -433,13 +431,13 @@ class ManualOpsWidget(QtWidgets.QWidget):
             self.readAllWorker = _ReadAllWorker()
             self.readAllWorker.moveToThread(self.thread)
             self.thread.started.connect(self.readAllWorker.readAll)
-            self.readAllWorker.sendData.connect(f.updateHistory)
-            self.readAllWorker.sendPosition.connect(f.cbAntenna.cast)
+            self.readAllWorker.sendData.connect(functions.updateHistory)
+            self.readAllWorker.sendPosition.connect(functions.cbAntenna.cast)
             #self.readAllWorker.updateHistoryTree.connect(f.deviceHistoryAntenna.cast)
             self.readAllWorker.finished.connect(self.thread.quit)
             self.readAllWorker.finished.connect(self.readAllWorker.deleteLater)
             self.thread.finished.connect(self.readAllWorker.deleteLater)
-            self.readAllWorker.disableInterface.connect(f.interfaceAntenna.disable.emit)
+            self.readAllWorker.disableInterface.connect(functions.interfaceAntenna.disable.emit)
             self.thread.start()
 
     def updateRead(self):
@@ -534,16 +532,19 @@ class ManualOpsWidget(QtWidgets.QWidget):
             res = float(arc.read_floats(1))
 
             tag='P'
-            f.updateHistory(CB.word, CB.bit, res, self.amplitude, self.pw, tag)
+            functions.updateHistory(CB.word, CB.bit, res, self.amplitude, self.pw, tag)
             self.setM(CB.word, CB.bit)
-            f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints, 99)
-            f.historyTreeAntenna.updateTree.emit(CB.word, CB.bit)
+            functions.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2,
+                    APP.displayPoints, 99)
+            functions.historyTreeAntenna.updateTree.emit(CB.word, CB.bit)
 
     def displayAll(self):
-        f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 1, APP.displayPoints, 0)
+        functions.displayUpdate.updateSignal.emit(CB.word, CB.bit, 1,
+                APP.displayPoints, 0)
 
     def displayRange(self):
-        f.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints, 0)
+        functions.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2,
+                APP.displayPoints, 0)
 
     def updatePoints(self, how_many):
         APP.displayPoints = how_many

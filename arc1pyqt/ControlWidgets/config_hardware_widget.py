@@ -13,9 +13,7 @@ from .. import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
+from ..Globals import fonts, functions, styles
 
 
 class ConfigHardwareWidget(QtWidgets.QWidget):
@@ -31,7 +29,7 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
 
         # Setup mCAT settings
         self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
-        self.hwSettings.setStyleSheet(s.groupStyleNewSesh)
+        self.hwSettings.setStyleSheet(styles.groupStyleNewSesh)
         self.hwSettings.setFont(fonts.font2)
 
         hwSetLayout=QtWidgets.QGridLayout()
@@ -67,16 +65,16 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
 
         # Apply/Cancel buttons Layout
         startLay_group=QtWidgets.QGroupBox()
-        startLay_group.setStyleSheet(s.groupStyle)
+        startLay_group.setStyleSheet(styles.groupStyle)
         startLay=QtWidgets.QHBoxLayout()
 
         start_btn=QtWidgets.QPushButton('Apply')
-        start_btn.setStyleSheet(s.btnStyle2)
+        start_btn.setStyleSheet(styles.btnStyle2)
         start_btn.setMinimumWidth(100)
         start_btn.clicked.connect(self.updateHW)
 
         cancel_btn=QtWidgets.QPushButton('Cancel')
-        cancel_btn.setStyleSheet(s.btnStyle2)
+        cancel_btn.setStyleSheet(styles.btnStyle2)
         cancel_btn.setMinimumWidth(100)
         cancel_btn.clicked.connect(self.cancelUpdateHW)
 
@@ -89,7 +87,7 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
         line=QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
         line.setFrameShadow(QtWidgets.QFrame.Plain)
-        line.setStyleSheet(s.lineStyle)
+        line.setStyleSheet(styles.lineStyle)
         line.setLineWidth(1)
 
         mainLayout.addWidget(line)
@@ -104,7 +102,7 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
         HW.conf.cycles = int(self.readCyclesEntry.text())
         HW.conf.sneakpath = self.sneakCombo.currentIndex()
 
-        f.interfaceAntenna.updateHW.emit()
+        functions.interfaceAntenna.updateHW.emit()
 
         self.close()
 

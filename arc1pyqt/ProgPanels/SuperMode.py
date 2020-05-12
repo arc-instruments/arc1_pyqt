@@ -12,13 +12,11 @@ import arc1pyqt.ProgPanels.Basic
 import arc1pyqt.ProgPanels.Basic.Loops
 from arc1pyqt.ProgPanels.Basic.Loops import Loop, End
 from arc1pyqt import Graphics
-from .. import state
+from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import functions, styles, fonts
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 
@@ -251,18 +249,18 @@ class DraggableButtonPlaced(QtWidgets.QPushButton):
     def mouseDoubleClickEvent(self, event):
         self.displayModule.emit(self.module)
         if self.what=="Loop":
-            self.setStyleSheet(s.loop_style_top_selected)
+            self.setStyleSheet(styles.loop_style_top_selected)
         elif self.what=="End":
-            self.setStyleSheet(s.loop_style_bot_selected)
+            self.setStyleSheet(styles.loop_style_bot_selected)
         else:
-            self.setStyleSheet(s.selectedStyle)
+            self.setStyleSheet(styles.selectedStyle)
 
 
 class DraggableLoopPlaced(DraggableButtonPlaced):
     def __init__(self, *args):
         global loop_style_top
         super().__init__(*args)
-        self.setStyleSheet(s.loop_style_top)
+        self.setStyleSheet(styles.loop_style_top)
         self.setFixedHeight(16)
         self.setFixedWidth(120)
         self.setContentsMargins(0,14,0,0)
@@ -272,7 +270,7 @@ class DraggableLoopPlacedEnd(DraggableButtonPlaced):
     def __init__(self, *args):
         global loop_style_top
         super().__init__(*args)
-        self.setStyleSheet(s.loop_style_bot)
+        self.setStyleSheet(styles.loop_style_bot)
         self.setFixedHeight(16)
         self.setFixedWidth(120)
         self.setContentsMargins(0,0,0,14)
@@ -281,7 +279,7 @@ class DraggableLoopPlacedEnd(DraggableButtonPlaced):
 class DraggableButtonPlacedDummy(DraggableButtonPlaced):
     def __init__(self, *args):
         super().__init__("")
-        self.setStyleSheet(s.dummy_style)
+        self.setStyleSheet(styles.dummy_style)
         self.setFixedWidth(100)
 
 
@@ -433,11 +431,11 @@ class DropZone(QtWidgets.QWidget):
         layoutItems=self.vbox
         for btn in [layoutItems.itemAt(i).widget().btn for i in range(layoutItems.count())]:
             if btn.what=='Loop':
-                btn.setStyleSheet(s.loop_style_top)
+                btn.setStyleSheet(styles.loop_style_top)
             elif btn.what=='End':
-                btn.setStyleSheet(s.loop_style_bot)
+                btn.setStyleSheet(styles.loop_style_bot)
             else:
-                btn.setStyleSheet(s.unselectedStyle)
+                btn.setStyleSheet(styles.unselectedStyle)
 
 
 class CenterWidget(QtWidgets.QWidget):
@@ -537,24 +535,24 @@ class SuperMode(BaseProgPanel):
 
         push_save = QtWidgets.QPushButton("Save")
         push_save.clicked.connect(self.savePickle)
-        push_save.setStyleSheet(s.btnStyle2)
+        push_save.setStyleSheet(styles.btnStyle2)
         push_load = QtWidgets.QPushButton("Load")
         push_load.clicked.connect(self.loadPickle)
-        push_load.setStyleSheet(s.btnStyle2)
+        push_load.setStyleSheet(styles.btnStyle2)
 
         self.loaded_label = QtWidgets.QLabel()
-        self.loaded_label.setStyleSheet(s.style1)
+        self.loaded_label.setStyleSheet(styles.style1)
 
         vboxLeft.addWidget(self.loaded_label)
         vboxLeft.addWidget(push_load)
         vboxLeft.addWidget(push_save)
 
         startBtn=QtWidgets.QPushButton("Start")
-        startBtn.setStyleSheet(s.EdgeBtn_style)
+        startBtn.setStyleSheet(styles.EdgeBtn_style)
         startWidg=CenterWidget(startBtn)
 
         stopBtn=QtWidgets.QPushButton("End")
-        stopBtn.setStyleSheet(s.EdgeBtn_style)
+        stopBtn.setStyleSheet(styles.EdgeBtn_style)
         stopWidg=CenterWidget(stopBtn)
 
         self.vboxMid.addWidget(startWidg)
@@ -584,7 +582,7 @@ class SuperMode(BaseProgPanel):
         vboxLeft.addStretch()
 
         clearBtn=QtWidgets.QPushButton("Clear")
-        clearBtn.setStyleSheet(s.btnStyle_clearChain)
+        clearBtn.setStyleSheet(styles.btnStyle_clearChain)
         clearBtn.clicked.connect(self.clearChain)
 
         vboxLeft.addWidget(clearBtn)
@@ -597,9 +595,9 @@ class SuperMode(BaseProgPanel):
         push_range=QtWidgets.QPushButton('Apply to Range')
         push_all=QtWidgets.QPushButton('Apply to All')
 
-        push_single.setStyleSheet(s.btnStyle)
-        push_range.setStyleSheet(s.btnStyle)
-        push_all.setStyleSheet(s.btnStyle)
+        push_single.setStyleSheet(styles.btnStyle)
+        push_range.setStyleSheet(styles.btnStyle)
+        push_all.setStyleSheet(styles.btnStyle)
 
         push_single.clicked.connect(self.programOne)
         push_range.clicked.connect(self.programRange)
@@ -813,9 +811,9 @@ class SuperMode(BaseProgPanel):
         self.threadWrapper.finished.connect(self.thread.quit)
         self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
         self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.updateAddress.connect(f.addressAntenna.update)
-        self.threadWrapper.globalDisableInterface.connect(f.interfaceAntenna.toggleGlobalDisable)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
+        self.threadWrapper.updateAddress.connect(functions.addressAntenna.update)
+        self.threadWrapper.globalDisableInterface.connect(functions.interfaceAntenna.toggleGlobalDisable)
+        self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
         self.threadWrapper.execute.connect(self.singleExecute)
 
     def singleExecute(self, index):

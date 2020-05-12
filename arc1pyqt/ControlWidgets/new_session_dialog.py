@@ -17,9 +17,7 @@ HW = state.hardware
 CB = state.crossbar
 APP = state.app
 
-from ..Globals import GlobalFunctions as f
-from ..Globals import GlobalFonts as fonts
-from ..Globals import GlobalStyles as s
+from ..Globals import functions, styles, fonts
 from .. import Graphics
 
 
@@ -42,7 +40,7 @@ class NewSessionDialog(QtWidgets.QDialog):
 
         # Setup general settings
         self.generalSettings = QtWidgets.QGroupBox('General Settings')
-        self.generalSettings.setStyleSheet(s.groupStyleNewSesh)
+        self.generalSettings.setStyleSheet(styles.groupStyleNewSesh)
         self.generalSettings.setFont(fonts.font2)
         genSetLayout=QtWidgets.QGridLayout()
         genSetLayout.setContentsMargins(10,20,10,20)
@@ -62,7 +60,7 @@ class NewSessionDialog(QtWidgets.QDialog):
         self.dirName=QtWidgets.QLineEdit()
         self.dirName.setReadOnly(True)
         self.dirName.setMaximumWidth(294)
-        self.dirName.setStyleSheet(s.entryStyle2)
+        self.dirName.setStyleSheet(styles.entryStyle2)
 
         dirLayout=QtWidgets.QHBoxLayout()
         dirLayout.addWidget(self.dirName)
@@ -97,7 +95,7 @@ class NewSessionDialog(QtWidgets.QDialog):
 
         # Setup mCAT settings
         self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
-        self.hwSettings.setStyleSheet(s.groupStyleNewSesh)
+        self.hwSettings.setStyleSheet(styles.groupStyleNewSesh)
         self.hwSettings.setFont(fonts.font2)
 
         hwSetLayout=QtWidgets.QGridLayout()
@@ -178,7 +176,7 @@ class NewSessionDialog(QtWidgets.QDialog):
         line2=QtWidgets.QFrame()
         line2.setFrameShape(QtWidgets.QFrame.HLine)
         line2.setFrameShadow(QtWidgets.QFrame.Plain)
-        line2.setStyleSheet(s.lineStyle)
+        line2.setStyleSheet(styles.lineStyle)
         line2.setLineWidth(1)
 
         mainLayout.addWidget(line2)
@@ -191,16 +189,16 @@ class NewSessionDialog(QtWidgets.QDialog):
 
         # Apply/Cancel buttons Layout
         startLay_group=QtWidgets.QGroupBox()
-        startLay_group.setStyleSheet(s.groupStyle)
+        startLay_group.setStyleSheet(styles.groupStyle)
         startLay=QtWidgets.QHBoxLayout()
 
         start_btn=QtWidgets.QPushButton('Start')
-        start_btn.setStyleSheet(s.btnStyle2)
+        start_btn.setStyleSheet(styles.btnStyle2)
         start_btn.setMinimumWidth(100)
         start_btn.clicked.connect(self.startSession)
 
         cancel_btn=QtWidgets.QPushButton('Cancel')
-        cancel_btn.setStyleSheet(s.btnStyle2)
+        cancel_btn.setStyleSheet(styles.btnStyle2)
         cancel_btn.setMinimumWidth(100)
         cancel_btn.clicked.connect(self.cancelNewSession)
 
@@ -215,7 +213,7 @@ class NewSessionDialog(QtWidgets.QDialog):
         line=QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
         line.setFrameShadow(QtWidgets.QFrame.Plain)
-        line.setStyleSheet(s.lineStyle)
+        line.setStyleSheet(styles.lineStyle)
         line.setLineWidth(1)
 
         mainLayout.addWidget(line)
@@ -282,7 +280,7 @@ class NewSessionDialog(QtWidgets.QDialog):
         HW.conf.sessionmode=self.wModeCombo.currentIndex()
         APP.sessionName=self.wNameEntry.text()
 
-        f.interfaceAntenna.reformat.emit()
+        functions.interfaceAntenna.reformat.emit()
 
         self.close()
 

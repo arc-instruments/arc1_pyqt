@@ -24,9 +24,7 @@ CB = state.crossbar
 from arc1pyqt.GeneratedUiElements.mss import Ui_MSSParent
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, styles, functions
 
 
 tag="MSS"
@@ -370,9 +368,9 @@ class MultiStateSeeker(Ui_MSSParent, BaseProgPanel):
 
         self.setupUi(self)
 
-        self.applyAllButton.setStyleSheet(s.btnStyle)
-        self.applyOneButton.setStyleSheet(s.btnStyle)
-        self.applyRangeButton.setStyleSheet(s.btnStyle)
+        self.applyAllButton.setStyleSheet(styles.btnStyle)
+        self.applyOneButton.setStyleSheet(styles.btnStyle)
+        self.applyRangeButton.setStyleSheet(styles.btnStyle)
         self.titleLabel.setFont(fonts.font1)
         self.descriptionLabel.setFont(fonts.font3)
 
@@ -674,8 +672,9 @@ class MultiStateSeeker(Ui_MSSParent, BaseProgPanel):
         resultTable.resizeColumnsToContents()
         resultTable.resizeRowsToContents()
 
-        saveCb = partial(f.writeDelimitedData, resStates)
-        saveButton.clicked.connect(partial(f.saveFuncToFilename, saveCb, "Save data to...", parent))
+        saveCb = partial(functions.writeDelimitedData, resStates)
+        saveButton.clicked.connect(partial(functions.saveFuncToFilename, saveCb,
+            "Save data to...", parent))
 
         plot = pyqtgraph.PlotWidget()
         plot.getAxis('bottom').setLabel("State #")

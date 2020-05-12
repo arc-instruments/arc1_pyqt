@@ -8,10 +8,7 @@
 ####################################
 
 from PyQt5 import QtGui, QtCore, QtWidgets
-
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, styles
 
 
 class Loop(QtWidgets.QWidget):
@@ -131,9 +128,9 @@ class Loop(QtWidgets.QWidget):
             push_range=QtWidgets.QPushButton('Apply to Range')
             push_all=QtWidgets.QPushButton('Apply to All')
 
-            push_single.setStyleSheet(s.btnStyle)
-            push_range.setStyleSheet(s.btnStyle)
-            push_all.setStyleSheet(s.btnStyle)
+            push_single.setStyleSheet(styles.btnStyle)
+            push_range.setStyleSheet(styles.btnStyle)
+            push_all.setStyleSheet(styles.btnStyle)
 
             push_single.clicked.connect(self.programOne)
             push_range.clicked.connect(self.programRange)

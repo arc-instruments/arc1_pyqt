@@ -10,9 +10,7 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import time
 
-import arc1pyqt.Globals.GlobalFonts as fonts
-import arc1pyqt.Globals.GlobalFunctions as f
-import arc1pyqt.Globals.GlobalStyles as s
+from arc1pyqt.Globals import fonts, functions, styles
 
 
 class ThreadWrapper(QtCore.QObject):
@@ -82,7 +80,7 @@ class Delay(QtWidgets.QWidget):
         self.delay_mag.setValidator(isFloat)
         self.delay_mag.setText("1")
         self.delay_DropDown=QtWidgets.QComboBox()
-        self.delay_DropDown.setStyleSheet(s.comboStylePulse)
+        self.delay_DropDown.setStyleSheet(styles.comboStylePulse)
 
         self.unitsFull=[['s',1],['ms',0.001]]
         self.units=[e[0] for e in self.unitsFull]
@@ -120,9 +118,9 @@ class Delay(QtWidgets.QWidget):
             push_range=QtWidgets.QPushButton('Apply to Range')
             push_all=QtWidgets.QPushButton('Apply to All')
 
-            push_single.setStyleSheet(s.btnStyle)
-            push_range.setStyleSheet(s.btnStyle)
-            push_all.setStyleSheet(s.btnStyle)
+            push_single.setStyleSheet(styles.btnStyle)
+            push_range.setStyleSheet(styles.btnStyle)
+            push_all.setStyleSheet(styles.btnStyle)
 
             push_single.clicked.connect(self.programOne)
             push_range.clicked.connect(self.programRange)
@@ -180,8 +178,8 @@ class Delay(QtWidgets.QWidget):
         self.threadWrapper.finished.connect(self.thread.quit)
         self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
         self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.disableInterface.connect(f.interfaceAntenna.cast)
-        self.thread.finished.connect(f.interfaceAntenna.wakeUp)
+        self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
+        self.thread.finished.connect(functions.interfaceAntenna.wakeUp)
 
         self.thread.start()
 
