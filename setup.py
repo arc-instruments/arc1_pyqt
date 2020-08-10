@@ -120,7 +120,8 @@ cmdclass['build_uis'] = BuildUIs
 cmdclass['build'] = Build
 
 # make sure we are not bundling local dev versions of pyqtgraph
-packages = find_packages(exclude=['pyqtgraph', 'pyqtgraph.*'])
+packages = find_packages(exclude=['pyqtgraph', 'pyqtgraph.*'],
+    include=['arc1pyqt', 'arc1pyqt.*'])
 
 setup(
     name = __NAME__,
