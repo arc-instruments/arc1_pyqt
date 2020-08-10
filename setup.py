@@ -31,7 +31,7 @@ requirements = [
     'scipy>=1.3.0',
     'semver>=2.7.0',
     'matplotlib>=3.0.0',
-    'recordtype>=1.10.0',
+    'recordtype>=1.3.0',
     "importlib-resources>=1.1.0; python_version < '3.7'",
     "dataclasses>=0.7; python_version < '3.7'",
     "pywin32>=222; sys_platform == 'win32'"
