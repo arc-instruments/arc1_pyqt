@@ -21,10 +21,10 @@ added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
         ('arc1pyqt/ProgPanels/Basic/*.py','arc1pyqt/ProgPanels/Basic'),
         ('arc1pyqt/ProgPanels/Basic/Loops/*.py','arc1pyqt/ProgPanels/Basic/Loops'),
         ('arc1pyqt/Helper/*.txt','arc1pyqt/Helper'),
-        ('arc1pyqt/source.txt','arc1pyqt')]
+        ('arc1pyqt/version.txt','arc1pyqt')]
 
 
-a = Analysis(['main.py'],
+a = Analysis(['run.py'],
         pathex=[PATHEX],
         binaries=None,
         datas=added_files,
@@ -46,7 +46,7 @@ exe = EXE(pyz,
         debug=False,
         strip=False,
         upx=True,
-        icon=os.path.join('Graphics', 'applogo.ico'),
+        icon=os.path.join('arc1pyqt', 'Graphics', 'applogo.ico'),
         console=CONSOLE)
 
 coll = COLLECT(exe,
