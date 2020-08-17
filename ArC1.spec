@@ -6,6 +6,7 @@
 
 import os
 import os.path
+import semver
 
 try:
     PATHEX = os.environ['ARC_PYI_PATHEX']
@@ -14,6 +15,21 @@ except KeyError:
             "full path of your arc1_pyqt source")
 
 CONSOLE = bool(int(os.environ.get('ARC_PYI_CONSOLE', 1)))
+
+__HERE__ = "."
+__VERSION_FILE__ = os.path.join(__HERE__, 'arc1pyqt', 'version.txt')
+__VERSION_RAW__ = open(__VERSION_FILE__).read().splitlines()[1].strip()
+__VERSION_SEMVER__ = semver.VersionInfo.parse(__VERSION_RAW__)
+
+tmpl = open("win32_version_info.tmpl").read()
+version_keys = {'major': __VERSION_SEMVER__.major,
+    'minor': __VERSION_SEMVER__.minor,
+    'patch': __VERSION_SEMVER__.patch,
+    'version_text': __VERSION_RAW__}
+print(version_keys)
+with open(os.path.join("build", "ArC1", "version_info.txt"), 'w') as version_file:
+    version_file.write(tmpl.format(**version_keys))
+
 
 added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
         ('arc1pyqt/ProgPanels/*.py','arc1pyqt/ProgPanels'),
@@ -47,7 +63,8 @@ exe = EXE(pyz,
         strip=False,
         upx=True,
         icon=os.path.join('arc1pyqt', 'Graphics', 'applogo.ico'),
-        console=CONSOLE)
+        console=CONSOLE,
+        version=os.path.join("build", "ArC1", "version_info.txt"))
 
 coll = COLLECT(exe,
         a.binaries,
