@@ -5,6 +5,7 @@
 # ARC_PYI_CONSOLE (optional): Set to 0 to disable the console window
 
 import os
+import sys
 import os.path
 import semver
 
@@ -39,13 +40,23 @@ added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
         ('arc1pyqt/Helper/*.txt','arc1pyqt/Helper'),
         ('arc1pyqt/version.txt','arc1pyqt')]
 
+modimports=['arc1pyqt', 'scipy', 'scipy.optimize',
+    'scipy.linalg', 'scipy.stats']
+
+try:
+    import arc1docs
+    manual = os.path.join(arc1docs.__path__[0], arc1docs._fname)
+    if os.path.exists(manual):
+        modimports.append('arc1docs')
+        added_files.append((manual, arc1docs.__name__))
+except Exception as exc:
+    print("Could not find arc1docs, skipping...", exc, file=sys.stderr)
 
 a = Analysis(['run.py'],
         pathex=[PATHEX],
         binaries=None,
         datas=added_files,
-        hiddenimports=['arc1pyqt', 'scipy', 'scipy.optimize',
-            'scipy.linalg', 'scipy.stats'],
+        hiddenimports=modimports,
         hookspath=[],
         runtime_hooks=[],
         excludes=[],
