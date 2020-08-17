@@ -12,8 +12,10 @@ __VERSION_SEMVER__ = open(__VERSION_FILE__).read().splitlines()[1].strip()
 
 __NAME__ = "arc1_pyqt"
 __DESC__ = "ArC1 Control Interface",
+__MAINTAINER__ = "Spyros Stathopoulos"
+__EMAIL__ = "devel@arc-instruments.co.uk"
 __VERSION__ = __VERSION_SEMVER__.replace('-','')
-__URL__ = "https://github.com/arc-instruments/arc1_pyqt"
+__URL__ = "http://www.arc-instruments.co.uk/products/arc-one/"
 
 if os.path.exists(os.path.join(__HERE__, "README.md")):
     with open(os.path.join(__HERE__, "README.md"), encoding='utf-8') as readme:
@@ -130,8 +132,29 @@ setup(
     description = __DESC__,
     long_description = __LONG_DESC__,
     long_description_content_type='text/markdown',
+    author = __MAINTAINER__,
+    author_email = __EMAIL__,
     url = __URL__,
+    project_urls={
+        "Bug Tracker": "https://github.com/arc-instruments/arc1_pyqt/issues",
+        "Source Code": "https://github.com/arc-instruments/arc1_pyqt"
+    },
     license = 'GPL3',
+    platforms = ['any'],
+    classifiers = [
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: POSIX",
+        "Operating System :: MacOS :: MacOS X",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8"
+
+    ],
     packages = packages,
     python_requires = '>=3.6',
     install_requires = requirements,
