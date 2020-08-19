@@ -32,7 +32,9 @@ addressAntenna = AddressAntenna()
 
 
 # Update history function
-def updateHistory(w, b, m, a, pw, tag, Vread=HW.conf.Vread):
+def updateHistory(w, b, m, a, pw, tag, Vread=None):
+    if Vread is None:
+        Vread = HW.conf.Vread
     readTag = 'R'+str(HW.conf.readmode)
     if HW.conf.sessionmode == 1:
         res = m/2
