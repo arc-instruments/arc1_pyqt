@@ -29,6 +29,14 @@ class Instrument:
         pass
 
     @abstractmethod
+    def queue_select(self, w, b):
+        pass
+
+    @abstractmethod
+    def select(self, w, b):
+        pass
+
+    @abstractmethod
     def close(self):
         pass
 
@@ -60,6 +68,22 @@ class ArC1(Instrument):
         """
         if self._port is not None:
             self._port.write(what.encode())
+
+    def queue_select(self, word, bit):
+        """
+        Send a word-/bitline pair to the uC. Note that this does not actively
+        select a device, as this is expected to be done separately from the
+        module loaded just before.
+        """
+        self.write_b("%d\n" % int(word))
+        self.write_b("%d\n" % int(bit))
+
+    def select(self, word, bit):
+        """
+        Actively select a device. This will close the specified crosspoint
+        """
+        self.write_b("02\n")
+        self.queue_select(word, bit)
 
     def reset(self):
         """

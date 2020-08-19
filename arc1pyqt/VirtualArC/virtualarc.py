@@ -109,6 +109,19 @@ class VirtualArC(Instrument):
         if job=="33":
             pass
 
+    def queue_select(self, word, bit):
+        """
+        Write a word-/bitline pair
+        """
+        self.write_b("%d\n" % int(word))
+        self.write_b("%d\n" % int(bit))
+
+    def select(self, word, bit):
+        """
+        For VirtualArC that's exactly the same as `VirtualArC.queue_select`.
+        """
+        self.queue_select(word, bit)
+
     def write_b(self, value):
         self.write(value)
 

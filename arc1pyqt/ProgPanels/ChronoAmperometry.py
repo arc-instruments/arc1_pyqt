@@ -110,8 +110,7 @@ class ThreadWrapper(BaseThreadWrapper):
     def chronoamperometry(self, w, b):
 
         self.log("Running ChronoAmperometry on (W=%d, B=%d)" % (w, b))
-        HW.ArC.write_b("%d\n" % int(w)) # word line
-        HW.ArC.write_b("%d\n" % int(b)) # bit line
+        HW.ArC.queue_select(w, b)
 
         # Read the first batch of values
         global tag

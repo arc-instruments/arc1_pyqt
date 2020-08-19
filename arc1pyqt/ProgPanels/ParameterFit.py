@@ -645,8 +645,7 @@ class ThreadWrapper(BaseThreadWrapper):
         HW.ArC.write_b(str(0) + "\n") # do not halt+return
 
         HW.ArC.write_b(str(1) + "\n") # single device always
-        HW.ArC.write_b(str(int(w)) + "\n") # word line
-        HW.ArC.write_b(str(int(b)) + "\n") # bit line
+        HW.ArC.queue_select(w, b)
 
         end = False
 
@@ -706,8 +705,7 @@ class ThreadWrapper(BaseThreadWrapper):
         HW.ArC.write_b(str(7) + "\n") # 7 -> no series resistance
         HW.ArC.write_b(str(nrPulses) + "\n") # number of pulses
         HW.ArC.write_b(str(1) + "\n") # single device always
-        HW.ArC.write_b(str(int(w)) + "\n") # word line
-        HW.ArC.write_b(str(int(b)) + "\n") # bit line
+        HW.ArC.queue_select(w, b)
 
         end = False
 

@@ -51,8 +51,7 @@ class ThreadWrapper(BaseThreadWrapper):
             self.highlight.emit(w,b)
 
             HW.ArC.write_b("1\n")
-            HW.ArC.write_b(str(int(w))+"\n")
-            HW.ArC.write_b(str(int(b))+"\n")
+            HW.ArC.queue_select(w, b)
 
             Mnow = HW.ArC.read_floats(1)
             tag_ = tag+"_s"
@@ -68,8 +67,7 @@ class ThreadWrapper(BaseThreadWrapper):
                 self.highlight.emit(w,b)
 
                 HW.ArC.write_b("1\n")
-                HW.ArC.write_b(str(int(w))+"\n")
-                HW.ArC.write_b(str(int(b))+"\n")
+                HW.ArC.queue_select(w, b)
 
                 Mnow=HW.ArC.read_floats(1)
                 tag_=tag+"_"+ str(time.time())
@@ -90,8 +88,7 @@ class ThreadWrapper(BaseThreadWrapper):
             self.highlight.emit(w,b)
 
             HW.ArC.write_b("1\n")
-            HW.ArC.write_b(str(int(w))+"\n")
-            HW.ArC.write_b(str(int(b))+"\n")
+            HW.ArC.queue_select(w, b)
 
             Mnow=HW.ArC.read_floats(1)
             tag_=tag+"_e"

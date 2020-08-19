@@ -58,8 +58,7 @@ class ThreadWrapper(BaseThreadWrapper):
 
         HW.ArC.write_b(str(numDevices)+"\n")
 
-        HW.ArC.write_b(str(w)+"\n")
-        HW.ArC.write_b(str(b)+"\n")
+        HW.ArC.queue_select(w, b)
 
     def phase1(self, w, b):
 

@@ -101,8 +101,7 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
 
             if  HW.ArC is not None and HW.conf.sessionmode == 2:
                 HW.ArC.write_b("02\n")
-                HW.ArC.write_b(str(int(w))+"\n")
-                HW.ArC.write_b(str(int(b))+"\n")
+                HW.ArC.queue_select(w, b)
 
         else:
             if self.rectWidget.isVisible():

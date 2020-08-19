@@ -46,8 +46,7 @@ class ThreadWrapper(BaseThreadWrapper):
             b=device[1]
             self.highlight.emit(w,b)
 
-            HW.ArC.write_b(str(int(w))+"\n")
-            HW.ArC.write_b(str(int(b))+"\n")
+            HW.ArC.queue_select(w, b)
 
             firstPoint=1
             endCommand=0
