@@ -762,6 +762,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         try:
             HW.ArC = ArC1(port)
             HW.ArC.initialise(HW.conf)
+            functions.interfaceAntenna.changeArcStatus.emit('Ready')
 
             # if mode is bnc-to-local update interface accordingly
             if HW.conf.sessionmode == 2:
