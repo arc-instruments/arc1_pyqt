@@ -340,19 +340,20 @@ class Arcontrol(QtWidgets.QMainWindow):
         vinfo = VersionInfo()
 
         try:
-            local = vinfo.local
-            remote = vinfo.remote
+            if vinfo.update_available():
+                self.updateAction.setEnabled(True)
         except Exception as exc:
-            print("Could not load versions")
+            # versions could not be retrieved
             return
 
-        if vercmp(local, remote) > 0:
-            self.updateAction.setEnabled(True)
-
-        return (local, remote)
-
     def launch_manager(self):
-        (local, remote) = self.check_for_updates()
+
+        vinfo = VersionInfo()
+        try:
+            (local, remote) = (vinfo.local, vinfo.remote)
+        except Exception:
+            # versions could not be retrieved
+            return
 
         if vercmp(local, remote) > 0:
             msg = QtGui.QMessageBox()

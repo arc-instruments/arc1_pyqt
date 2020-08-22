@@ -25,3 +25,5 @@ class VersionInfo:
 
         return str(response.text.split("\n")[1])
 
+    def update_available(self):
+        return vercmp(self.local, self.remote) > 0

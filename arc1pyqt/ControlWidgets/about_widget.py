@@ -13,7 +13,7 @@ import os
 import platform
 
 from .. import Graphics
-from ..version import VersionInfo
+from ..version import VersionInfo, vercmp
 
 
 class AboutWidget(QtWidgets.QWidget):
@@ -66,11 +66,26 @@ class AboutWidget(QtWidgets.QWidget):
 
         system = "%s %s" % (platform.system(), platform.architecture()[0])
         pyver = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
-        version = VersionInfo().local
+        vinfo = VersionInfo()
+        version = vinfo.local
+        try:
+            remote = vinfo.remote
+            if vercmp(version, remote) <= 0:
+                # no update available
+                remote = None
+        except:
+            # remote version could not be retrieved
+            remote = None
 
-        line0.setText("ArC ONE: <b>%s</b> System: <b>%s</b> "
-                "Python: <b>%s</b> Qt: <b>%s</b>  " %
-                (version, system, pyver, QtCore.QT_VERSION_STR))
+        if remote is None:
+            line0.setText("ArC ONE: <b>%s</b> System: <b>%s</b> "
+                    "Python: <b>%s</b> Qt: <b>%s</b>  " %
+                    (version, system, pyver, QtCore.QT_VERSION_STR))
+        else:
+            line0.setText("ArC ONE: <b>%s</b> "
+                    "(<span style=\"color:red;\">%s available</span>) "
+                    "System: <b>%s</b> Python: <b>%s</b> Qt: <b>%s</b>  " %
+                    (version, remote, system, pyver, QtCore.QT_VERSION_STR))
         line1.setText('75 Sirocco, 33 Channel Way')
         line2.setText('Ocean Village')
         line3.setText('Southampton, UK')
