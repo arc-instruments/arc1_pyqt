@@ -1,12 +1,19 @@
-from recordtype import recordtype
+from dataclasses import dataclass
 from abc import abstractmethod
 from serial import Serial, PARITY_EVEN, STOPBITS_ONE, serialutil
 import numpy as np
 import time
 
 
-HWConfig = recordtype('HWConfig', ['words', 'bits', 'cycles', 'readmode', \
-        'sessionmode', 'sneakpath', 'Vread'])
+@dataclass
+class HWConfig:
+    words: int = 32
+    bits: int = 32
+    cycles: int = 50
+    readmode: int = 2
+    sessionmode: int = 0
+    sneakpath: int = 1
+    Vread: float = 0.5
 
 
 class Instrument:
