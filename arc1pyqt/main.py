@@ -386,9 +386,9 @@ class Arcontrol(QtWidgets.QMainWindow):
         if HW.ArC is not None:
             job="011"
             # Initial parameters job
-            ArC.write_b(job+"\n")
-            ArC.write_b(str(int(HW.conf.cycles))+"\n")
-            ArC.write_b(str(int(HW.conf.sneakpath))+"\n")
+            HW.ArC.write_b(job+"\n")
+            HW.ArC.write_b(str(int(HW.conf.cycles))+"\n")
+            HW.ArC.write_b(str(int(HW.conf.sneakpath))+"\n")
 
     def showAbout(self):
         self.aboutSesh = AboutWidget()
