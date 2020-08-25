@@ -3,6 +3,7 @@ from abc import abstractmethod
 from serial import Serial, PARITY_EVEN, STOPBITS_ONE, serialutil
 import numpy as np
 import time
+import struct
 
 
 @dataclass
@@ -145,6 +146,23 @@ class ArC1(Instrument):
         else:
             self.write_b("%d\n" % config.readmode)
         self.write_b("%f\n" % config.Vread)
+
+    @property
+    def firmware_version(self):
+        timeout = self._port.timeout
+        try:
+            self._port.timeout = 2
+            time.sleep(0.2)
+            self._port.write(b"999\n")
+            data = self._port.read(size=4)
+            (major, minor) = struct.unpack("2H", data)
+            ret = (major, minor)
+        except Exception as exc:
+            ret = None
+
+        # restore timeout
+        self._port.timeout = timeout
+        return ret
 
     @property
     def port(self):
