@@ -13,3 +13,4 @@ from .history_widget import HistoryWidget
 from .manual_ops_widget import ManualOpsWidget
 from .new_session_dialog import NewSessionDialog
 from .prog_panel_widget import ProgPanelWidget
+from .logo_label_widget import LogoLabelWidget
