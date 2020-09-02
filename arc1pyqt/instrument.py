@@ -175,6 +175,8 @@ class ArC1(Instrument):
         """
         Disconnect from the tool closing the serial port.
         """
+        if self._port is None:
+            return
         self._port.close()
         self._port = None
 
