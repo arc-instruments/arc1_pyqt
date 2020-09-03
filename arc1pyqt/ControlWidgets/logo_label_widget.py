@@ -81,7 +81,7 @@ class LogoLabelWidget(QtWidgets.QLabel):
         elif valign == QtCore.Qt.AlignBottom:
             logo_y = self.height() - logo_h
         elif valign == QtCore.Qt.AlignVCenter:
-            logo_y = (self.height() - logo_w)/2.0
+            logo_y = (self.height() - logo_h)/2.0
         else:
             raise ValueError("Unknown V-alignment", valign)
 
