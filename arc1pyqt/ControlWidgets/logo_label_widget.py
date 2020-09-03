@@ -87,6 +87,13 @@ class LogoLabelWidget(QtWidgets.QLabel):
 
         return (logo_x, logo_y)
 
+    def minimumSizeHint(self):
+        if self.img is not None:
+            w = self.img.width()*self.logoScale
+            h = self.img.height()*self.logoScale
+            return QtCore.QSize(w, h)
+        return QtCore.QSize(0, 0)
+
     def draw(self):
         if self.img is not None:
             logo_w = self.img.width()*self.logoScale
