@@ -38,9 +38,9 @@ class LogoLabelWidget(QtWidgets.QLabel):
     A simple logo label widget. Displays a logo on top of a coloured label.
     """
 
-    def __init__(self, color=(0, 0, 0), parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.color = color
+        self.color = (0, 0, 0)
         self.img = None
         self.logoAlignment = (QtCore.Qt.AlignHCenter, QtCore.Qt.AlignVCenter)
         self.logoScale = 1.0
