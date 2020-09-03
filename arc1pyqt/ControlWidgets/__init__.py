@@ -1,6 +1,5 @@
 # Entry point for control widget classes
 
-from .about_widget import AboutWidget
 from .cell_widget import CellWidget
 from .device_widget import DeviceWidget
 from .colorbar_widget import ColorbarWidget
@@ -11,6 +10,7 @@ from .config_hardware_widget import ConfigHardwareWidget
 from .data_display_widget import DataDisplayWidget
 from .history_widget import HistoryWidget
 from .manual_ops_widget import ManualOpsWidget
+from .logo_label_widget import LogoLabelWidget
 from .new_session_dialog import NewSessionDialog
 from .prog_panel_widget import ProgPanelWidget
-from .logo_label_widget import LogoLabelWidget
+from .about_widget import AboutWidget

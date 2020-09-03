@@ -14,6 +14,7 @@ import platform
 
 from .. import Graphics
 from ..version import VersionInfo, vercmp
+from . import LogoLabelWidget
 
 
 class AboutWidget(QtWidgets.QWidget):
@@ -33,8 +34,9 @@ class AboutWidget(QtWidgets.QWidget):
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
 
-        logoTop=QtWidgets.QLabel()
-        logoTop.setPixmap(Graphics.getPixmap('about-banner'))
+        logoTop = LogoLabelWidget()
+        logoTop.setColor(255, 255, 255)
+        logoTop.setPixmapResource('about-banner')
         mainLayout.addWidget(logoTop)
 
         botHLay=QtWidgets.QHBoxLayout()

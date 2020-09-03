@@ -11,6 +11,7 @@ import sys
 import os
 from PyQt5 import QtGui, QtCore, QtWidgets
 from . import MatrixWidget
+from . import LogoLabelWidget
 
 from .. import state
 HW = state.hardware
@@ -34,8 +35,9 @@ class NewSessionDialog(QtWidgets.QDialog):
         mainLayout.setContentsMargins(0,0,0,0)
 
         # Setup top logo
-        logoTop=QtWidgets.QLabel()
-        logoTop.setPixmap(Graphics.getPixmap('new-session-banner'))
+        logoTop = LogoLabelWidget()
+        logoTop.setColor(255, 255, 255)
+        logoTop.setPixmapResource('new-session-banner')
         mainLayout.addWidget(logoTop)
 
         # Setup general settings
