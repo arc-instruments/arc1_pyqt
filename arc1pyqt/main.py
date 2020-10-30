@@ -356,7 +356,7 @@ class Arcontrol(QtWidgets.QMainWindow):
             return
 
         if vercmp(local, remote) > 0:
-            msg = QtGui.QMessageBox()
+            msg = QtWidgets.QMessageBox()
             msg.setWindowTitle("ArC ONE Upgrade")
             msg.setText(("""Your version is <b>%s</b>. There is a new """ +
                         """version available: <b>%s</b>. Please visit """ +
@@ -364,6 +364,11 @@ class Arcontrol(QtWidgets.QMainWindow):
                         """https://github.com/arc-instruments/arc1_pyqt/releases</a> """ +
                         """to download a new version.""")
                         % (local, remote))
+            msg.exec_()
+        else:
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("ArC ONE Upgrade")
+            msg.setText("Your ArC ONE installation is up to date!")
             msg.exec_()
 
     def showConfig(self):
