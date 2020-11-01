@@ -14,3 +14,4 @@ from .logo_label_widget import LogoLabelWidget
 from .new_session_dialog import NewSessionDialog
 from .prog_panel_widget import ProgPanelWidget
 from .about_widget import AboutWidget
+from .module_path_widget import ModulePathWidget

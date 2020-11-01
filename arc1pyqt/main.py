@@ -44,6 +44,7 @@ from .ControlWidgets import ManualOpsWidget
 from .ControlWidgets import ProgPanelWidget
 from .ControlWidgets import NewSessionDialog
 from .ControlWidgets import AboutWidget
+from .ControlWidgets import ModulePathWidget
 from .Globals import fonts, styles, functions
 from . import modutils
 from .instrument import ArC1
@@ -162,9 +163,14 @@ class Arcontrol(QtWidgets.QMainWindow):
         configAction.setStatusTip('Modify hardware settings')
         configAction.triggered.connect(self.showConfig)
 
+        openModuleDirAction = QtWidgets.QAction('Module Directories', self)
+        openModuleDirAction.triggered.connect(self.showModuleDir)
+
         # Populate settings menu
         settingsMenu.addAction(configAction)
         settingsMenu.addAction(setCWDAction)
+        settingsMenu.addSeparator()
+        settingsMenu.addAction(openModuleDirAction)
         settingsMenu.addSeparator()
         settingsMenu.addAction(self.updateAction_menu)
 
@@ -334,6 +340,10 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.check_for_updates()
 
         self.newSessionStart()
+
+    def showModuleDir(self):
+        dlg = ModulePathWidget.modulePathDialog()
+        dlg.exec_()
 
     def check_for_updates(self):
 
