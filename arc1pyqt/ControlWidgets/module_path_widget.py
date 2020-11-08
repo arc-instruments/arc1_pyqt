@@ -5,6 +5,8 @@ import subprocess
 from functools import partial
 from PyQt5 import QtCore, QtWidgets
 
+from ..Globals import styles
+
 
 class ModulePathWidget(QtWidgets.QWidget):
 
@@ -40,6 +42,8 @@ class ModulePathWidget(QtWidgets.QWidget):
             container.addWidget(label)
 
             button = QtWidgets.QPushButton("Open")
+            button.setMinimumWidth(50)
+            button.setStyleSheet(styles.btnStyle2)
             button.clicked.connect(partial(self.onButtonClicked, path))
             container.addWidget(button)
             layout.addItem(container)
