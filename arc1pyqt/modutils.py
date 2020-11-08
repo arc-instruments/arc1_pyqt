@@ -1,3 +1,4 @@
+import sys
 import os.path
 import collections
 import inspect
@@ -85,7 +86,7 @@ def __registerTagsFromModule(module, kls=None):
         APP.modules[tag.tag] = descriptor
 
 
-def discoverModules(paths, namespace=""):
+def discoverModules(paths, namespace="", force_register=False):
     """
     Discover modules under ``paths`` and load them into the global
     module list if possible. Argument ``namespace`` provides the
@@ -106,8 +107,6 @@ def discoverModules(paths, namespace=""):
 
     for p in paths:
         for (finder, name, ispkg) in iter_modules([p]):
-            if ispkg:
-                continue
             loader = finder.find_module(name)
             try:
                 if namespace != "":
@@ -119,9 +118,9 @@ def discoverModules(paths, namespace=""):
                 mod = imputil.module_from_spec(spec)
                 spec.loader.exec_module(mod)
 
-                # we need a tag defined
-                if not hasattr(mod, 'tags'):
-                    continue
+                if ispkg and force_register:
+                    if mod_full not in sys.modules.keys():
+                        sys.modules[mod_full] = mod
 
                 # now check containing classes
                 for _, kls in inspect.getmembers(mod, inspect.isclass):
@@ -135,10 +134,21 @@ def discoverModules(paths, namespace=""):
                         continue
 
                     # if we made it here, add the module to the modlist
-                    __registerTagsFromModule(mod, kls)
+                    # if it has the correct tag
+                    if hasattr(mod, 'tags'):
+                        __registerTagsFromModule(mod, kls)
+
+                # if this is a package; descend into it to discover further modules
+                if ispkg:
+                    if namespace != "":
+                        discoverModules([os.path.join(p, name)],
+                            '%s.%s' % (namespace, name))
+                    else:
+                        discoverModules([os.path.join(p, name)], namespace)
+
 
             except Exception as exc:
-                print("Exception encountered while importing module")
+                print("Exception encountered while importing module", exc)
                 continue
 
 

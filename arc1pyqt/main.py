@@ -16,7 +16,6 @@ import sys
 import os
 import serial
 import pkgutil
-import importlib
 import csv
 import time
 import subprocess
@@ -850,7 +849,9 @@ def main():
     # built-in modules first (under `ProgPanels`)
     modutils.discoverModules(ProgPanels.__path__, 'arc1pyqt.ProgPanels')
     # and all user-supplied modules (under a non-physical module `ExtPanels`)
-    modutils.discoverModules(paths, 'arc1pyqt.ExtPanels')
+    # external packages MUST be forced into `sys.modules` otherwise internal
+    # package resolution will fail
+    modutils.discoverModules(paths, 'arc1pyqt.ExtPanels', True)
 
     # Determine the scaling factor
     if sys.platform == "win32":
