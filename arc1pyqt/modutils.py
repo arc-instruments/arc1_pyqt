@@ -152,6 +152,100 @@ def discoverModules(paths, namespace="", force_register=False):
                 continue
 
 
+def compile_ui(src, dst, force=False, from_imports=True, rc_suffix='_rc'):
+    """
+    Compile a Qt Designer UI file (`src`) into a loadable python file (`dst`).
+    This function will only generate the file if `src` is newer than `dst`
+    unless `force` is set to `True`. This is a convenient wrapper around
+    ``PyQt5.uic`` and can be quite convenient when an external module uses
+    a UI file. For instance the following snippet will ensure that UI file
+    `sample.ui` always generates `sample.py` before it is imported into
+    the main module.
+
+    >>> from os.path import join, dirname
+    >>> from arc1pyqt.modutils import compile_ui
+    >>> # get directory of present module
+    >>> THIS_DIR = dirname(__file__)
+    >>> # and compile it
+    >>> compile_ui(join(THIS_DIR, 'sample.ui'), join(THIS_DIR, 'sample.py'))
+    >>> # module sample now exists
+    >>> from .sample import *
+
+    There are two additional options that mirror ``PyQt5.uic`` behaviour.
+    The first is `from_imports` which is used to generate imports relative
+    to the package that hosts the UI file. By default this is true as most
+    resource will probably be package-local. The second is `rc_suffix` which
+    will be appended to any resource modules used by the (see also
+    ``compile_rc``) UI file. By default this again mirrors ``PyQt5.uic``
+    behaviour and it is `_rc`, but can be override if so required.
+    """
+
+    import PyQt5.uic as uic
+
+    if os.path.exists(dst) and not force:
+        src_mtime = os.path.getmtime(src)
+        dst_mtime = os.path.getmtime(dst)
+
+        if dst_mtime >= src_mtime:
+            return
+
+    with open(dst, 'w', encoding='utf-8') as out:
+        uic.compileUi(src, out, execute=False, indent=4,
+            from_imports=from_imports, rc_suffix=rc_suffix)
+
+
+def compile_rc(files, dst, force=False):
+    """
+    Compile a list of Qt Designer resource files (qrc) `files` to a python
+    module (`dst`). Similar to ``compile_ui`` this is a convenient wrapper
+    around ``PyQt5.pyrcc_main``. Target will not be overwritten if it's
+    newer than all of the input qrc files unless `force` is set to True.
+    Input argument (`files`) can either be a string (for a single qrc file)
+    or a list of strings (for many qrc files). Note that if you are using
+    qrc file with Qt Designer target module MUST end in `_rc` unless a
+    different suffix has been specified when invoking ``compile_ui``.
+
+    So if a UI file (`sample.ui`) is to be compiled into a python module
+    (`sample.py`) and makes use of a resources files (`sample.rc`) the
+    following snippet will ensure that these are in sync when the module
+    is loaded (using the default options).
+
+    >>> from os.path import join, dirname
+    >>> from arc1pyqt.modutils import compile_ui, compile_rc
+    >>> # get directory of present module
+    >>> THIS_DIR = dirname(__file__)
+    >>> # and compile it
+    >>> compile_ui(join(THIS_DIR, 'sample.ui'), join(THIS_DIR, 'sample.py'))
+    >>> compile_rc(join(THIS_DIR, 'sample.qrc'), join(THIS_DIR, 'sample_rc.py'))
+    >>> # module sample now exists and its resources are loaded properly
+    >>> from .sample import *
+    """
+
+    from collections.abc import Iterable
+    import PyQt5.pyrcc_main as rcc
+
+    # ensure `files` is a list
+    if not isinstance(files, Iterable) or isinstance(files, str):
+        files = [files]
+
+    overwrite = False
+
+    if os.path.exists(dst) and not force:
+        dst_mtime = os.path.getmtime(dst)
+        for f in files:
+            src_mtime = os.path.getmtime(f)
+            # check if rc file is newer than destination
+            if src_mtime > dst_mtime:
+                # if yes, destination must be recreated
+                overwrite = True
+                break
+    else:
+        overwrite = True
+
+    if overwrite:
+        rcc.processResourceFile(files, dst, False)
+
+
 def makeDeviceList(isRange):
     """
     Generate a list of crosspoints to apply a function. Setting ``isRange`` to
