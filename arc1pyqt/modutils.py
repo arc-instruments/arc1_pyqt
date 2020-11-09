@@ -289,6 +289,7 @@ class BaseProgPanel(QtWidgets.QWidget):
         self.title = title
         self.description = description
         self.short = short
+        self.thread = None
 
     def execute(self, wrapper, entrypoint=None):
         """
@@ -298,7 +299,7 @@ class BaseProgPanel(QtWidgets.QWidget):
         ``wrapper``. If ``entrypoint`` is None the default ``wrapper.run``
         entrypoint will be used.
         """
-        if HW.ArC is None:
+        if (HW.ArC is None) or (self.thread is not None):
             return
 
         if entrypoint is None:

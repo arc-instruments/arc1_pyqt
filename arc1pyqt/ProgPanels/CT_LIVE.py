@@ -25,12 +25,10 @@ from arc1pyqt.modutils import BaseThreadWrapper
 
 
 mutex = QtCore.QMutex()
-global_stop=False
 
 
 class StartLiveThreadWrapper(QtCore.QObject):
     global mutex
-    global global_stop
 
     finished = QtCore.pyqtSignal()
     disableInterface = QtCore.pyqtSignal(bool)
@@ -121,7 +119,6 @@ class ThreadWrapper(BaseThreadWrapper):
 
 class CT_LIVE(QtWidgets.QWidget):
 
-    global global_stop
     stop_signal=QtCore.pyqtSignal()
 
     def __init__(self, short=False, parent=None):
@@ -130,6 +127,7 @@ class CT_LIVE(QtWidgets.QWidget):
         self.short=short
 
         self.initUI()
+        self.initialise_variables()
 
     def initUI(self):
 
@@ -373,12 +371,10 @@ class CT_LIVE(QtWidgets.QWidget):
         self.setWindowTitle("CurveTracer: LIVE!")
         self.setWindowIcon(Graphics.getIcon('appicon'))
 
-        self.initialise_variables()
-
     def closeEvent(self, event):
         # What to do when the user closer the window and there's either
         # a live measurement run in progress or there is unsaved data
-        if self.live_thread.isRunning():
+        if self.live_thread is not None:
             reply = QtWidgets.QMessageBox.question(self, "Error",
                 "Live measurement in progress. Stop it and try again.",
                 QtWidgets.QMessageBox.Ok)
@@ -396,7 +392,6 @@ class CT_LIVE(QtWidgets.QWidget):
                     event.accept()
 
     def initialise_variables(self):
-        self.is_live=False
         self.voltage=[]
         self.current=[]
         self.data_queue=queue.Queue(maxsize=100)
@@ -422,25 +417,34 @@ class CT_LIVE(QtWidgets.QWidget):
         self.c_p=float(self.rightEdits[2].value())
         self.c_n=float(self.rightEdits[3].value())
 
-        self.live_thread=QtCore.QThread()
+        # wrapper for live thread
+        self.startLiveWrapper = None
+        # wrapper for regular measurement thread
+        self.threadWrapper = None
+        # live measurement thread
+        self.live_thread = None
+        # regular measurement
+        self.thread = None
 
     def start_programOne(self):
         self.programOne(int(self.rightEdits[0].text()))
 
     def live(self):
-        if self.is_live==False:
-            self.is_live=True
+
+        if self.live_thread is None:
             self.push_live.setStyleSheet(styles.btnLive)
             self.push_live.setText("STOP!")
             self.push_one.setEnabled(False)
             self.push_save.setEnabled(False)
+
+            self.live_thread = QtCore.QThread()
 
             self.startLiveWrapper=StartLiveThreadWrapper()
             self.startLiveWrapper.moveToThread(self.live_thread)
             self.live_thread.started.connect(self.startLiveWrapper.run)
             self.startLiveWrapper.finished.connect(self.live_thread.quit)
             self.startLiveWrapper.finished.connect(self.startLiveWrapper.deleteLater)
-            self.live_thread.finished.connect(self.startLiveWrapper.deleteLater)
+            self.live_thread.finished.connect(self.on_liveThread_finished)
             self.startLiveWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
             self.startLiveWrapper.execute.connect(self.programOne)
 
@@ -449,20 +453,23 @@ class CT_LIVE(QtWidgets.QWidget):
             self.live_thread.start()
 
         else:
-            self.is_live=False
-            global_stop=True
             self.startLiveWrapper.stop=True
             self.push_live.setStyleSheet(styles.btnStyle)
             self.push_live.setText("GO LIVE!")
             self.push_one.setEnabled(True)
             self.push_save.setEnabled(True)
 
+    def on_liveThread_finished(self):
+        self.live_thread.quit()
+        self.live_thread.wait()
+        self.live_thread.deleteLater()
+        self.live_thread = None
+
     def update_bufSize(self,value):
         try:
             self.bufferSize=int(value)
         except:
             pass
-
 
     def toggleReturn(self, state):
         if state == 0:
@@ -494,7 +501,7 @@ class CT_LIVE(QtWidgets.QWidget):
         HW.ArC.write_b(str(int(self.returnCheck))+"\n")
 
     def programOne(self, totalCycles):
-        if HW.ArC.port != None:
+        if (HW.ArC.port is not None) and (self.thread is None):
             self.wi = CB.word
             self.bi = CB.bit
             job="201"
@@ -502,24 +509,26 @@ class CT_LIVE(QtWidgets.QWidget):
 
             self.sendParams(totalCycles)
 
-            self.thread=QtCore.QThread()
-            self.threadWrapper=ThreadWrapper([[CB.word,CB.bit]],totalCycles)
-            self.finalise_thread_initialisation()
+            self.thread = QtCore.QThread()
+            self.threadWrapper = ThreadWrapper([[CB.word,CB.bit]], totalCycles)
+            self.threadWrapper.moveToThread(self.thread)
+            self.thread.started.connect(self.threadWrapper.run)
+            self.threadWrapper.finished.connect(self.thread.quit)
+            self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
+            self.thread.finished.connect(self.on_thread_finished)
+            self.threadWrapper.sendData.connect(self.record_data)
+            self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
+            self.threadWrapper.displayData.connect(self.display_data)
+            self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
+            self.thread.finished.connect(functions.interfaceAntenna.wakeUp)
 
             self.thread.start()
 
-
-    def finalise_thread_initialisation(self):
-        self.threadWrapper.moveToThread(self.thread)
-        self.thread.started.connect(self.threadWrapper.run)
-        self.threadWrapper.finished.connect(self.thread.quit)
-        self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
-        self.thread.finished.connect(self.threadWrapper.deleteLater)
-        self.threadWrapper.sendData.connect(self.record_data)
-        self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
-        self.threadWrapper.displayData.connect(self.display_data)
-        self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
-        self.thread.finished.connect(functions.interfaceAntenna.wakeUp)
+    def on_thread_finished(self):
+        self.thread.quit()
+        self.thread.wait()
+        self.thread.deleteLater()
+        self.thread = None
 
     def display_data(self):
         IV_curve=self.plot_IV.plot(pxMode=True)
