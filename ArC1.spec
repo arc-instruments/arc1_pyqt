@@ -34,6 +34,7 @@ with open(os.path.join("build", "ArC1", "version_info.txt"), 'w') as version_fil
 
 added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
         ('arc1pyqt/ProgPanels/*.py','arc1pyqt/ProgPanels'),
+        ('arc1pyqt/ExtPanels/*.py','arc1pyqt/ExtPanels'),
         ('arc1pyqt/GeneratedUiElements/*.py','arc1pyqt/GeneratedUiElements'),
         ('arc1pyqt/ProgPanels/Basic/*.py','arc1pyqt/ProgPanels/Basic'),
         ('arc1pyqt/ProgPanels/Basic/Loops/*.py','arc1pyqt/ProgPanels/Basic/Loops'),
