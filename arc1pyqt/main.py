@@ -74,10 +74,6 @@ if sys.platform == "win32":
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
-def write_b(ser, what):
-    ser.write(what.encode())
-
-
 class Arcontrol(QtWidgets.QMainWindow):
 
     def __init__(self):
