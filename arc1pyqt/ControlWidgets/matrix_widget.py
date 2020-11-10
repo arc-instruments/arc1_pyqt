@@ -62,12 +62,15 @@ class MatrixWidget(QtWidgets.QWidget):
             layout.addItem(QtWidgets.QSpacerItem(0, 5, QtWidgets.QSizePolicy.Expanding), \
                     r+1, bits+2)
 
+        lblFont = QtGui.QFont()
+        lblFont.setPointSize(7)
+
         for w in range(1,words+1):
             layout.addItem(QtWidgets.QSpacerItem(0, 5, QtWidgets.QSizePolicy.Expanding), \
                     w, 0)
             lbl = QtWidgets.QLabel()
             lbl.setText("%s " % w)
-            lbl.setFont(fonts.cbFont)
+            lbl.setFont(lblFont)
             lbl.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
             layout.addWidget(lbl, w+1, 1)
 
@@ -76,7 +79,7 @@ class MatrixWidget(QtWidgets.QWidget):
                     QtWidgets.QSizePolicy.Expanding), words+3, b+1)
             lbl = QtWidgets.QLabel()
             lbl.setText("%d" % b)
-            lbl.setFont(fonts.cbFont)
+            lbl.setFont(lblFont)
             lbl.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
             layout.addWidget(lbl, words+2, b+1)
 

@@ -21,10 +21,6 @@ font3 = QFont()
 font3.setPointSize(9)
 font3.setBold(False)
 
-font4 = QFont()
-font4.setPointSize(5)
-font4.setBold(False)
-
 history_child = QFont()
 history_child.setPointSize(8)
 history_child.setBold(False)
@@ -37,8 +33,3 @@ history_top_underline = QFont()
 history_top_underline.setPointSize(10)
 history_top_underline.setBold(True)
 history_top_underline.setUnderline(True)
-
-
-cbFont = QFont()
-cbFont.setPointSize(7)
-
