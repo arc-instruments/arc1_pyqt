@@ -198,7 +198,7 @@ class HistoryWidget(QtWidgets.QWidget):
         tagPartsUnder = str(tagString).split("_") # underscore delimited tags
         for tagKey in g.tagDict.keys():
             # check for standard read/pulse tags
-            if tagString.startswith(('P', 'S R', 'F R')):
+            if tagString.startswith(('P', 'S R', 'F R')) and tagString.startswith(tagKey):
                 tag.append(g.tagDict[tagKey])
                 currentTagKey=tagKey
                 break
