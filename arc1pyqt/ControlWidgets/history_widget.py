@@ -22,6 +22,8 @@ CB = state.crossbar
 from ..Globals import functions, fonts
 from .. import Graphics
 
+from .history_tree_model import HistoryTreeItem, HistoryTreeModel
+from .history_tree_model import HistoryTreeItemDelegate
 
 class HistoryWidget(QtWidgets.QWidget):
 
@@ -33,229 +35,236 @@ class HistoryWidget(QtWidgets.QWidget):
 
         self.dieName = QtWidgets.QLineEdit('Package1')
         self.dieName.setFont(fonts.font1)
-        self.dieName.textChanged.connect(self.changeSessionNameManualy)
+        self.dieName.textChanged.connect(self.changeSessionNameManually)
 
-        self.historyTree = QtWidgets.QTreeWidget()
-        self.historyTree.setHeaderLabel('Device History')
-        self.historyTree.itemClicked.connect(self.changeDisplayToSelectedItem)
-        self.historyTree.itemDoubleClicked.connect(self.displayResults)
+        self.historyView = QtWidgets.QTreeView()
+        self.historyView.setModel(HistoryTreeModel(title='Device History', parent=self))
+        self.historyView.setItemDelegate(HistoryTreeItemDelegate(self.historyView.model(), self))
+        self.historyView.clicked.connect(self._onClicked)
+        self.historyView.doubleClicked.connect(self._displayResults)
 
-        functions.historyTreeAntenna.updateTree.connect(self.updateTree)
-        functions.historyTreeAntenna.updateTree_short.connect(self.updateTree_short)
-        functions.historyTreeAntenna.clearTree.connect(self.clearTree)
+        functions.historyTreeAntenna.updateTree.connect(self._updateTree)
+        functions.historyTreeAntenna.updateTree_short.connect(self._updateTree)
+        functions.historyTreeAntenna.clearTree.connect(self._clearTree)
         functions.historyTreeAntenna.changeSessionName.connect(self.changeSessionName)
+        functions.cbAntenna.selectDeviceSignal.connect(self._switchTopLevel)
 
-        mainLayout=QtWidgets.QVBoxLayout()
+        mainLayout = QtWidgets.QVBoxLayout()
         mainLayout.addWidget(self.dieName)
-        mainLayout.addWidget(self.historyTree)
+
+        mainLayout.addWidget(self.historyView)
 
         mainLayout.setSpacing(0)
         mainLayout.setContentsMargins(0,0,0,0)
 
-        self.topLevelItems=[]
-        self.resultWindow=[]
-
+        self.resultWindow = []
         self.setLayout(mainLayout)
 
-    def changeSessionNameManualy(self, txt):
+    def changeSessionNameManually(self, txt):
         APP.sessionName = txt
 
     def changeSessionName(self):
         self.dieName.setText(APP.sessionName)
 
-    def clearTree(self):
-        self.historyTree.clear()
+    def _clearTree(self):
+        self.historyView.model().clear()
 
-    def updateTree_short(self):
-        self.updateTree(CB.word, CB.bit)
+    def _updateTree(self, w, b):
 
-    def updateTree(self,w,b):
-        existingItem=self.historyTree.findItems("W=" + str(w) + " | B=" + str(b), QtCore.Qt.MatchExactly,0)
+        existingItem = self.historyView.model().findTopLevel(w, b)
 
-        # if no entry for that adress exists, make a new one
-        if existingItem==[]:
-            # format the text of the new history entry item taken from the
-            # dictionary of the prog panels
-            newTag=self.formatItemText(w,b)
-            if newTag:
-                newTree=QtWidgets.QTreeWidgetItem(self.historyTree)
-                newTree.setText(0,"W=" + str(w) + " | B=" + str(b))
-                # deunderline every tree top level item
-                self.deunderline()
-                # underline the current one
-                newTree.setFont(0,fonts.history_top_underline)
-                # set a tag
-                newTree.setWhatsThis(0,str(w)+','+str(b))
-                newTree.setWhatsThis(1,str(-1))
-                newTree.setWhatsThis(2,str(0))
-                newTree.setWhatsThis(3,str(0))
-                newTree.setWhatsThis(4,str(0))
-                newItem=QtWidgets.QTreeWidgetItem(newTree)
-                newItem.setWhatsThis(0,str(w)+','+str(b))
-
-                newItem.setWhatsThis(1,newTag[0])
-                newItem.setWhatsThis(2,newTag[1])
-                newItem.setWhatsThis(3,newTag[2])
-                newItem.setWhatsThis(4,newTag[3])
-                newItem.setWhatsThis(5,newTag[4])
-
-                # Special cases of pulse and read are handled separately
-                if newTag[0]=='Read':
-                    newTag[0]='Read x 1'
-                if newTag[0]=='Pulse':
-                    newTag[0]='Pulse x 1'
-
-                newItem.setText(0,newTag[0])
-                newItem.setFont(0,fonts.history_child)
-        # if the CB crosspoint has been pulsed before, add in the reepctive
-        # tree stack
+        if existingItem is None:
+            # new (W|B) combination
+            # add it to the root of the tree
+            toplevel = HistoryTreeItem(w=w, b=b)
+            idx = self.historyView.model().appendTopLevel(toplevel)
         else:
-            self.deunderline()
-            existingItem[0].setFont(0,fonts.history_top_underline)
-            newTag=self.formatItemText(w,b)
-            if newTag:
+            # otherwise we will append stuff to the existing node
+            # returned from `findTopLevel`
+            toplevel = existingItem.internalPointer()
+            idx = existingItem
 
-                # if a child exists in the stack (which is always true, this
-                # function might be unecessary)
-                if existingItem[0].child(0):
-                    # if previously the same operation has been performed
-                    if newTag[0] in existingItem[0].child(0).text(0):
-                        # for Read and Pulse special cases, add the trailing
-                        # integer by +1
-                        if newTag[0]=='Read' or newTag[0]=='Pulse':
-                            string=str(existingItem[0].child(0).text(0))
-                            nr=[int(s) for s in string.split(' ') if s.isdigit()][-1]
-                            nr=nr+1
-                            newTag[0]=newTag[0]+' x '+str(nr)
-                            existingItem[0].child(0).setText(0,newTag[0])
-                        # if it's not pulse or read, add a new item
-                        else:
-                            newItem=QtWidgets.QTreeWidgetItem()
-                            newItem.setWhatsThis(0,str(w)+','+str(b))
-                            newItem.setWhatsThis(1,newTag[0])
-                            newItem.setWhatsThis(2,newTag[1])
-                            newItem.setWhatsThis(3,newTag[2])
-                            newItem.setWhatsThis(4,newTag[3])
-                            newItem.setWhatsThis(5,newTag[4])
+        self._deunderline()
+        toplevel.setActive(True)
 
-                            existingItem[0].insertChild(0,newItem)
-                            newItem.setText(0,newTag[0])
-                            newItem.setFont(0,fonts.history_child)
+        item = self.createItem(w, b)
 
-                    else:
-                        newItem=QtWidgets.QTreeWidgetItem()
-                        newItem.setWhatsThis(0,str(w)+','+str(b))
-                        newItem.setWhatsThis(1,newTag[0])
-                        newItem.setWhatsThis(2,newTag[1])
-                        newItem.setWhatsThis(3,newTag[2])
-                        newItem.setWhatsThis(4,newTag[3])
-                        newItem.setWhatsThis(5,newTag[4])
-                        existingItem[0].insertChild(0,newItem)
-                        if newTag[0]=='Read':
-                            newTag[0]='Read x 1'
-                        if newTag[0]=='Pulse':
-                            newTag[0]='Pulse x 1'
-                        newItem.setText(0,newTag[0])
-                        newItem.setFont(0,fonts.history_child)
+        if toplevel.childCount() > 0:
+            previousItem = toplevel.children[-1]
+        else:
+            previousItem = None
 
-        self.update()
+        # if the new item is read or pulse
+        if item.description in ['Read', 'Pulse']:
+            # and so is the previous item on the list
+            if previousItem and previousItem.description.startswith(item.description):
+                # just increase the counter of the previous one
+                # no need to add a new item
+                parts = previousItem.description.split(' × ')
+                num = int(parts[-1]) + 1
+                # change the description of the last child of toplevel
+                self.historyView.model().setItemDescription(len(toplevel.children)-1,
+                    '%s × %d' % (parts[0], num), idx)
 
-    def displayResults(self,item):
-
-        # Results to be displayed
-        if item.whatsThis(2)=='1':
-            pos=item.whatsThis(0).split(',')
-            w=int(pos[0])
-            b=int(pos[1])
-
-            tag=item.whatsThis(1)
-            startPoint=int(item.whatsThis(3))
-            endPoint=int(item.whatsThis(4))
-            tagKey=str(item.whatsThis(5))
-
-            raw=CB.history[w][b][startPoint:endPoint+1]
-
-            if str(tagKey) in APP.modules.keys():
-                cb = APP.modules[tagKey].callback
-
-                if cb is None:
-                    return
-
-                widget = cb(w, b, raw, self)
-                self.resultWindow.append(widget)
-                widget.show()
-                widget.update()
-
-    def changeDisplayToSelectedItem(self,item):
-        if item.whatsThis(1)=='-1':
-            pos=item.whatsThis(0).split(',')
-            functions.cbAntenna.selectDeviceSignal.emit(int(pos[0]),int(pos[1]))
-            functions.displayUpdate.updateSignal_short.emit()
-
-    def deunderline(self):
-        if self.historyTree.topLevelItemCount()>0:
-            for i in range(self.historyTree.topLevelItemCount()):
-                self.historyTree.topLevelItem(i).setFont(0,fonts.history_top)
-
-    def formatItemText(self,w,b):
-        tag=[]
-        tagString=CB.history[w][b][-1][3]
-        currentTagKey=[]
-        tagPartsUnder = str(tagString).split("_") # underscore delimited tags
-        for tagKey in APP.modules.keys():
-            # check for standard read/pulse tags
-            if tagString.startswith(('P', 'S R', 'F R')):
-                tag.append(APP.modules[tagKey].display)
-                currentTagKey=tagKey
-                break
-            # then any regular '_'-delimited tags
-            elif len(tagPartsUnder) > 1 and tagPartsUnder[0] == tagKey:
-                    tag.append(APP.modules[tagKey].display)
-                    currentTagKey=tagKey
-                    break
-            # ignore unknown or intermediate tags
+                # exit early
+                return
             else:
+                # add it as x 1
+                item.setDescription('%s × 1' % item.description)
+
+        insertedIdx = self.historyView.model().appendChild(item, idx)
+
+    def _displayResults(self, idx):
+        item = idx.internalPointer()
+        (w, b) = item.coords
+        descr = item.description
+        (start, end) = item.range
+        tag = item.tag
+
+        raw = CB.history[w][b][start:end+1]
+
+        if tag in APP.modules.keys():
+            cb = APP.modules[tag].callback
+
+            if cb is None:
+                return
+
+            widget = cb(w, b, raw, self)
+            self.resultWindow.append(widget)
+            widget.show()
+            widget.update()
+
+    def _changeDisplayToSelectedItem(self, idx):
+        model = self.historyView.model()
+
+        if model.isRoot(idx):
+            return
+
+        # get the item's coordinates
+        item = idx.internalPointer()
+        (w, b) = item.coords
+
+        # and check if there's a top level with those coords
+        toplevel = self.historyView.model().findTopLevel(w, b)
+
+        # something is wrong; there's nowhere to append
+        # this should only happen when a device with no
+        # active measurements has been selected in the crossbar
+        if toplevel is None:
+            return
+
+        # change the active entry to the one matching W, B
+        self._deunderline()
+        self.historyView.model().setActiveIdx(toplevel, True)
+
+    def _switchTopLevel(self, w, b):
+        model = self.historyView.model()
+        toplevel = self.historyView.model().findTopLevel(w, b)
+
+        if toplevel is None:
+            return
+
+        self._deunderline()
+        self.historyView.model().setActiveIdx(toplevel, True)
+
+    def _onClicked(self, idx):
+        self._changeDisplayToSelectedItem(idx)
+        (w, b) = idx.internalPointer().coords
+        functions.cbAntenna.selectDeviceSignal.emit(w, b)
+        functions.displayUpdate.updateSignal_short.emit()
+
+    def _deunderline(self):
+        # deactivate all top-level children
+        for (i, child) in enumerate(self.historyView.model().children()):
+            self.historyView.model().setActive(i, False)
+
+    def createItem(self, w, b):
+
+        item = HistoryTreeItem()
+        item.setCoords(w, b)
+
+        # get the (full) tag of the last item in history
+        # for instance RET_xxx_i
+        tag = CB.history[w][b][-1][3]
+        # and that's the module tag, for instance RET
+        modTag = None
+
+        # try to split the tag
+        # TAG_xxx_s -> ['TAG', 'xxx', 's']
+        tagParts = tag.split("_")
+
+        # so this is the actual tag to look for in APP.modules.
+        # if there are no "_" in the tag then this is probably
+        # a read or pulse tag ("P", "S R..." or "F R...")
+        if len(tagParts) == 1:
+            # pulse tags are always 'P' but read tags can be
+            # either of 'S R2 V=X.Y' or 'S R V=X.Y' so take
+            # AT MOST the first 3 characters of the tag
+            # P -> P
+            # S R2 V=X.Y -> S R
+            # etc.
+            # The read module is tagged with 'S R' so that way
+            # we always get the correct one.
+            # I know this is ugly but there is technical
+            # baggage that come with this behaviour so if we
+            # change that, people's log files will break
+            modTag = tag[:3]
+            standardTag = False
+        else:
+            # in this case the tag looks like TAG_xxxx_{s, i, e}
+            # so get the first part ('TAG'). This is the
+            # standard behaviour.
+            modTag = tagParts[0]
+            standardTag = True
+
+        # check out if there's a module registered with the
+        # tag. If not return None
+        mod = APP.modules.get(modTag, None)
+
+        # if there is a mod; great! put its name on the tree
+        # item's description
+        if mod:
+            item.setDescription(mod.display)
+        else:
+            # no such module, don't know what to do with it
+            # ignore
+            return
+
+        # get the start and end of the operation for non read/pulse actions
+        start = 0
+        end = 0
+
+        if standardTag:
+            # the end of the range is always the last entry (because, well...,
+            # it just ended!)
+            end = len(CB.history[w][b]) - 1
+
+            try:
+                lastIndex = None
+                # traverse the entries in reverse (-1) to find the ranges
+                for (i, row) in enumerate(CB.history[w][b][::-1]):
+                    # and extract the tag from the history entry
+                    # [Resistance, Voltage, PulseWidth, tag, read opt., Vread]
+                    #                                   ^^^
+                    #                                this one
+                    tag = row[3]
+                    # if this matches the current modTag and it's a start tag (_s)
+                    # we found the start! stop traversing.
+                    # we are using `startswith` rather than equality because
+                    # tags might have multiple parts, such as MSS1, MSS2, MSS3
+                    if tag.startswith(modTag) and tag.endswith('_s'):
+                        lastIndex = i
+                        break
+
+                if lastIndex is None:
+                    lastIndex = tagList.index(modTag + '_s')
+
+                start = end - lastIndex
+            except ValueError:
                 pass
 
+        # adjust tree item's ranges and tag
+        item.setRange(start, end)
+        item.setTag(modTag)
 
-        # if the operation is a custom pulsing script (such as SS or CT or FF
-        # or STDP or Endurance), return also the start and stop indexes for the
-        # raw data
-        indexList=[0,0]
-        results=0
-
-        #make a list of just the tags
-        auxArr=CB.history[w][b][::-1]
-        tagList=[]
-        for point in auxArr:
-            tagList.append(str(point[3]))
-
-        if tag:
-            if tag[0]!='Read' and tag[0]!='Pulse':
-                results=1
-                indexList[1]=len(CB.history[w][b])-1
-                try:
-                    # find index of the start of the run
-                    lastIndex = None
-                    for (i, text) in enumerate(tagList):
-                        if text.startswith(currentTagKey) and text.endswith('_s'):
-                            lastIndex = i
-                            break
-
-                    # This should not happen but in case it does drop back to the
-                    # legacy behaviour
-                    if lastIndex is None:
-                        lastIndex = tagList.index(currentTagKey+'_s')
-
-                    indexList[0] = indexList[1] - lastIndex
-                except ValueError:
-                    pass
-
-            # marks if results can be displayed or not
-            tag.append(str(results))
-            tag.append(str(indexList[0]))
-            tag.append(str(indexList[1]))
-            tag.append(str(currentTagKey))
-
-        return tag
-
+        return item
