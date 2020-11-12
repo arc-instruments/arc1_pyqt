@@ -16,12 +16,16 @@ from .. import Graphics
 from ..version import VersionInfo, vercmp
 from . import LogoLabelWidget
 
+from .. import state
+HW = state.hardware
+
 
 class AboutWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
+        self.firmwareRead = False
         self.initUI()
 
     def initUI(self):
@@ -44,7 +48,8 @@ class AboutWidget(QtWidgets.QWidget):
 
         spacerWidget=QtWidgets.QWidget()
         spacerWidget.setFixedWidth(172)
-        spacerWidget.setFixedHeight(120)
+        spacerWidget.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+            QtWidgets.QSizePolicy.Expanding)
 
         p = spacerWidget.palette()
         p.setColor(spacerWidget.backgroundRole(), QtCore.Qt.white)
@@ -91,27 +96,65 @@ class AboutWidget(QtWidgets.QWidget):
         line1.setText('75 Sirocco, 33 Channel Way')
         line2.setText('Ocean Village')
         line3.setText('Southampton, UK')
-        line4.setText('SO14 3JF\n')
+        line4.setText('SO14 3JF')
         line5.setText('www.arc-instruments.co.uk')
         line6.setText('office@arc-instruments.co.uk')
-        line7.setText('+44 777 235 0889\n')
+        line7.setText('+44 777 235 0889')
 
         infoLay.addWidget(line1)
         infoLay.addWidget(line2)
         infoLay.addWidget(line3)
         infoLay.addWidget(line4)
+        infoLay.addItem(QtWidgets.QSpacerItem(5, 10))
         infoLay.addStretch()
         infoLay.addWidget(line5)
         infoLay.addWidget(line6)
         infoLay.addWidget(line7)
+        infoLay.addItem(QtWidgets.QSpacerItem(5, 10))
         infoLay.addStretch()
         infoLay.addWidget(line0)
 
+        self.lineFW = QtWidgets.QLabel(" ")
+
+        self._updateFirmwareLabel()
+
+        infoLay.addWidget(self.lineFW)
         botHLay.addLayout(infoLay)
 
         mainLayout.addStretch()
         mainLayout.addLayout(botHLay)
-        mainLayout.addStretch()
 
         self.setLayout(mainLayout)
 
+    def _updateFirmwareLabel(self):
+        if (HW.ArC is not None) and (hasattr(HW.ArC, 'firmware_version')):
+            if self.firmwareRead:
+                version = HW.ArC.firmware_version()
+                self.lineFW.setText(self._formatFirmwareText(version))
+            else:
+                self.lineFW.setText(self._formatFirmwareText(None))
+            self.lineFW.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
+            self.lineFW.linkActivated.connect(self._onFirmwareLabelClicked)
+        else:
+            self.firmwareRead = False
+            self.lineFW.setText(" ")
+
+    def _onFirmwareLabelClicked(self, *args):
+        version = HW.ArC.firmware_version()
+        self.lineFW.setText(self._formatFirmwareText(version))
+        self.firmwareRead = True
+
+    def _formatFirmwareText(self, version):
+        if version is None:
+            versionText = "Unknown"
+        elif version == (-1, -1):
+            versionText = "< 9.3"
+        else:
+            versionText = "%d.%d" % (version[0], version[1])
+
+        return "Firmware: <b>%s</b> " \
+            "<a href=\"update\">Retrieve</a>" % versionText
+
+    def showEvent(self, evt):
+        super().showEvent(evt)
+        self._updateFirmwareLabel()

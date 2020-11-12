@@ -61,6 +61,13 @@ class ArC1(Instrument):
         self._port = Serial(port, baudrate=921600, timeout=7, \
                 parity=PARITY_EVEN, stopbits=STOPBITS_ONE)
 
+        # current firmware version. It's not available unless
+        # explicitly queried. When that's done the value is cached
+        # until force reloaded
+        # special value (-1, -1) means that version reporting is
+        # not supported by current firmware
+        self._firmware = None
+
     def write(self, *args):
         """
         Write arguments to the serial port. This essentially wraps
@@ -147,8 +154,11 @@ class ArC1(Instrument):
             self.write_b("%d\n" % config.readmode)
         self.write_b("%f\n" % config.Vread)
 
-    @property
-    def firmware_version(self):
+    def firmware_version(self, force=False):
+
+        if (not force) and (self._firmware is not None):
+            return self._firmware
+
         timeout = self._port.timeout
         try:
             self._port.timeout = 2
@@ -158,10 +168,12 @@ class ArC1(Instrument):
             (major, minor) = struct.unpack("2H", data)
             ret = (major, minor)
         except Exception as exc:
-            ret = None
+            ret = (-1, -1)
 
         # restore timeout
         self._port.timeout = timeout
+        self._firmware = ret
+
         return ret
 
     @property

@@ -401,10 +401,16 @@ class Arcontrol(QtWidgets.QMainWindow):
             HW.ArC.write_b(str(int(HW.conf.sneakpath))+"\n")
 
     def showAbout(self):
+
+        try:
+            self.aboutSesh.show()
+            return
+        except AttributeError:
+            pass
+
         self.aboutSesh = AboutWidget()
         self.aboutSesh.setFixedWidth(600)
-        self.aboutSesh.setFixedHeight(300)
-
+        self.aboutSesh.setFixedHeight(320)
 
         frameGm = self.aboutSesh.frameGeometry()
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
