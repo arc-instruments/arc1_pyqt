@@ -796,6 +796,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         HW.ArC.close()
         #ArC.port=None
         functions.interfaceAntenna.changeArcStatus.emit('Disc')
+        HW.ArC = None
 
     def resetArC(self):
         HW.ArC.reset()
