@@ -12,6 +12,9 @@ class Crossbar:
     checkSA = False
     customArray = []
 
+    def append(self, w, b, *args):
+        self.history[w][b].append(list(args))
+
 
 @dataclass
 class Application:

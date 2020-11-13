@@ -41,7 +41,7 @@ def updateHistory(w, b, m, a, pw, tag, Vread=None):
     else:
         res = m
 
-    CB.history[w][b].append([res, a, pw, tag, readTag, Vread])
+    CB.append(w, b, res, a, pw, tag, readTag, Vread)
 
     CB.word = w
     CB.bit = b

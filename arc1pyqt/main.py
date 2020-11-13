@@ -625,7 +625,7 @@ class Arcontrol(QtWidgets.QMainWindow):
                         tag = str(values[5])
                         readTag = str(values[6])
                         readVoltage = float(values[7])
-                        CB.history[w][b].append([m, a, pw, str(tag), readTag, readVoltage])
+                        CB.append(w, b, m, a, pw, str(tag), readTag, readVoltage)
 
                         # ignore Read All points
                         if 'S R' in tag or tag[-1]=='e' or tag[0]=='P':

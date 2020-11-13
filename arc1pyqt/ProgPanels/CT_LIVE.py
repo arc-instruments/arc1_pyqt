@@ -563,13 +563,13 @@ class CT_LIVE(QtWidgets.QWidget):
         while not self.data_queue.empty():
             cycle=cycle+1
             V,C=self.data_queue.get()
+            (w, b) = (self.wi, self.bi)
             for i in range(len(V)):
                 M=V[i]/C[i]
-                CB.history[self.wi][self.bi].append([abs(V[i]/C[i]),V[i],0,tag+"_"+str(cycle),readTag, V[i]])
+                CB.append(w, b, abs(V[i]/C[i]), V[i], 0, tag+"_"+str(cycle), readTag, V[i])
 
-
-        CB.history[self.wi][self.bi][firstPoint-1][3]="CT_s"
-        CB.history[self.wi][self.bi][-1][3]="CT_e"
+        CB.history[w][b][firstPoint-1][3]="CT_s"
+        CB.history[w][b][-1][3]="CT_e"
         functions.historyTreeAntenna.updateTree.emit(self.wi, self.bi)
 
     def record_data(self, w,b, M, A, pw, tag):
