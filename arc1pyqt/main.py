@@ -640,21 +640,21 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def findAndLoadFile(self):
 
-        path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
-                getOpenFileName(self, 'Open file','', constants.OPEN_FI_PATTERN)[0])
+        path = QtGui.QFileDialog.getOpenFileName(self, 'Open File',
+            filter=constants.OPEN_FI_PATTERN)[0]
 
-        if not os.path.isfile(path.filePath()):
+        if not os.path.isfile(path):
             return
 
-        if str(path.filePath()).endswith('.csv.gz'):
+        if path.endswith('.gz'):
             opener = gzip.open
-            filesize = functions.gzipFileSize(path.filePath())
+            filesize = functions.gzipFileSize(path)
         else:
             opener = open
-            filesize = os.stat(path.filePath()).st_size
+            filesize = os.stat(path).st_size
 
-        with opener(path.filePath(), 'rt') as csvfile:
-            error = self._loadCSV(csvfile, filesize, path.fileName())
+        with opener(path, 'rt') as csvfile:
+            error = self._loadCSV(csvfile, filesize, os.path.basename(path))
 
         # check if positions read are correct
         if (error):
