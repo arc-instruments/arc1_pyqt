@@ -10,13 +10,15 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
-import time
+from functools import partial
+import numpy as np
+import pyqtgraph
 
 from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from arc1pyqt.Globals import fonts
+from arc1pyqt.Globals import fonts, functions
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 
@@ -319,5 +321,59 @@ class Endurance(BaseProgPanel):
         else:
             self.hboxProg.setEnabled(True)
 
+    @staticmethod
+    def display(w, b, data, parent=None):
+        dialog = QtWidgets.QDialog(parent)
 
-tags = { 'top': ModTag(tag, "Endurance", None) }
+        containerLayout = QtWidgets.QVBoxLayout()
+        dialog.setWindowTitle("Endurance W=%d | B=%d" % (w, b))
+
+        R = np.empty(len(data))
+        V = np.empty(len(data))
+        Z = np.zeros(len(data)) # zeroaxis
+        for (i, line) in enumerate(data):
+            R[i] = line[0]
+            V[i] = line[1]
+
+        Vidx = np.repeat(np.arange(0, len(R)), 2)
+
+        gv = pyqtgraph.GraphicsLayoutWidget(show=False)
+        Rplot = gv.addPlot(name="resistance")
+        Rplot.plot(R, pen=pyqtgraph.mkPen('r', width=1), symbolPen=None,
+            symbolBrush=(255,0,0), symbolSize=5, symbol='s')
+        Rplot.getAxis('left').setLabel('Resistance', units='Ω')
+        Rplot.getAxis('bottom').setLabel('Pulse')
+
+        gv.nextRow()
+
+        Vplot = gv.addPlot(name="voltage")
+        Vplot.plot(V, pen=None, symbolPen=None, symbolBrush=(0,0,255),
+            symbolSize=5, symbol='s', connect='pairs')
+        Vplot.plot(Vidx, np.dstack((np.zeros(V.shape[0]), V)).flatten(),
+            pen='b', symbolPen=None, symbolBrush=None, connect='pairs')
+        Vplot.plot(Z, pen=pyqtgraph.mkPen(QtGui.QColor(QtCore.Qt.lightGray),
+            width=1))
+        Vplot.getAxis('left').setLabel('Voltage', units='V')
+        Vplot.getAxis('bottom').setLabel('Pulse')
+        Vplot.setXLink("resistance")
+
+        containerLayout.addWidget(gv)
+
+        saveButton = QtWidgets.QPushButton("Export data")
+        saveCb = partial(functions.writeDelimitedData, np.column_stack((V, R)))
+        saveButton.clicked.connect(partial(functions.saveFuncToFilename, saveCb,
+            "Save data to...", parent))
+
+        bottomLayout = QtWidgets.QHBoxLayout()
+        bottomLayout.addItem(QtWidgets.QSpacerItem(40, 10,
+            QtWidgets.QSizePolicy.Expanding))
+        bottomLayout.addWidget(saveButton)
+
+        containerLayout.addItem(bottomLayout)
+
+        dialog.setLayout(containerLayout)
+
+        return dialog
+
+
+tags = { 'top': ModTag(tag, "Endurance", Endurance.display) }
