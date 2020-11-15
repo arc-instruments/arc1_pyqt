@@ -52,6 +52,7 @@ class HistoryTreeAntenna(QObject):
     updateTree_short=pyqtSignal()
     clearTree=pyqtSignal()
     changeSessionName=pyqtSignal()
+    rebuildTreeTopLevel = pyqtSignal(int, int)
 
     def __init__(self):
         super().__init__()

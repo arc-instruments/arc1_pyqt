@@ -205,6 +205,15 @@ class HistoryTreeModel(QtCore.QAbstractItemModel):
         self._root.clear()
         self.endResetModel()
 
+    def clearTopLevel(self, w, b):
+        toplevelIdx = self.findTopLevel(w, b)
+        if toplevelIdx is None:
+            return
+        toplevel = toplevelIdx.internalPointer()
+        self.beginResetModel()
+        toplevel.clear()
+        self.endResetModel()
+
     def parent(self, idx):
         if not idx.isValid():
             return QtCore.QModelIndex()

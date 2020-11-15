@@ -45,6 +45,7 @@ class HistoryWidget(QtWidgets.QWidget):
 
         functions.historyTreeAntenna.updateTree.connect(self._updateTree)
         functions.historyTreeAntenna.updateTree_short.connect(self._updateTree)
+        functions.historyTreeAntenna.rebuildTreeTopLevel.connect(self._rebuildTopLevel)
         functions.historyTreeAntenna.clearTree.connect(self._clearTree)
         functions.historyTreeAntenna.changeSessionName.connect(self.changeSessionName)
         functions.cbAntenna.selectDeviceSignal.connect(self._switchTopLevel)
@@ -69,7 +70,12 @@ class HistoryWidget(QtWidgets.QWidget):
     def _clearTree(self):
         self.historyView.model().clear()
 
-    def _updateTree(self, w, b):
+    def _updateTree(self, w, b, historyIdx=-1):
+        # historyIdx is used if we want to update the tree
+        # using a specific end tag index rather than the last
+        # tag available; this defaults to "the last added item"
+        # which is typically an 'S R' tag, a 'P' tag or a regular
+        # 'XXX_e' tag.
 
         existingItem = self.historyView.model().findTopLevel(w, b)
 
@@ -87,7 +93,7 @@ class HistoryWidget(QtWidgets.QWidget):
         self._deunderline()
         toplevel.setActive(True)
 
-        item = self.createItem(w, b)
+        item = self.createItem(w, b, historyIdx)
 
         if toplevel.childCount() > 0:
             previousItem = toplevel.children[-1]
@@ -178,14 +184,31 @@ class HistoryWidget(QtWidgets.QWidget):
         for (i, child) in enumerate(self.historyView.model().children()):
             self.historyView.model().setActive(i, False)
 
-    def createItem(self, w, b):
+    def _rebuildTopLevel(self, w, b):
+        # force rebuild of a toplevel entry
+        # this may be required when a toplevel entry has corrupted data
+        # and indices need to be updated to salvage as much as possible
+        model = self.historyView.model()
+
+        # first clear this toplevel
+        model.clearTopLevel(w, b)
+
+        # traverse the current history
+        for (counter, row) in enumerate(CB.history[w][b]):
+            tag = row[3]
+
+            # and re-add data
+            if 'S R' in tag or tag.endswith('_e') or tag == 'P':
+                self._updateTree(w, b, counter)
+
+    def createItem(self, w, b, historyIdx=-1):
 
         item = HistoryTreeItem()
         item.setCoords(w, b)
 
         # get the (full) tag of the last item in history
         # for instance RET_xxx_i
-        tag = CB.history[w][b][-1][3]
+        tag = CB.history[w][b][historyIdx][3]
         # and that's the module tag, for instance RET
         modTag = None
 
@@ -241,25 +264,48 @@ class HistoryWidget(QtWidgets.QWidget):
 
             try:
                 lastIndex = None
+                traverse = True
+
+                # check first if we have stored the index of the tag
+                # in the crossbar history data structure
+                # [W][B][
+                #   [.....],
+                #   [.....],
+                #   [R, V, PW, tag, readopt, Vread, startidx] <- last item for this (W,B)
+                #                                     ^^^^
+                #                         check if this is > 0
+                # ]
+                # for any non read/pulse tags (what we call standard tags) the last item on
+                # the list should be an _e tag which typically saves this start index value.
+                if CB.history[w][b][historyIdx][-1] > 0:
+                    # great the start index of the block is stored
+                    # this is our start, no need to traverse the tree backwards
+                    start = CB.history[w][b][historyIdx][-1] + 1
+                    traverse = False
+
                 # traverse the entries in reverse (-1) to find the ranges
-                for (i, row) in enumerate(CB.history[w][b][::-1]):
-                    # and extract the tag from the history entry
-                    # [Resistance, Voltage, PulseWidth, tag, read opt., Vread]
-                    #                                   ^^^
-                    #                                this one
-                    tag = row[3]
-                    # if this matches the current modTag and it's a start tag (_s)
-                    # we found the start! stop traversing.
-                    # we are using `startswith` rather than equality because
-                    # tags might have multiple parts, such as MSS1, MSS2, MSS3
-                    if tag.startswith(modTag) and tag.endswith('_s'):
-                        lastIndex = i
-                        break
+                # if for some reason the start index was not saved in the end
+                # tag then resort to traverse the history backwards to find
+                # the start tag; these shouldn't be triggered really
+                if traverse:
+                    for (i, row) in enumerate(CB.history[w][b][::-1]):
 
-                if lastIndex is None:
-                    lastIndex = tagList.index(modTag + '_s')
+                        # and extract the tag from the history entry
+                        # [Resistance, Voltage, PulseWidth, tag, read opt., Vread, startidx]
+                        #                                   ^^^
+                        #                                this one
+                        tag = row[3]
+                        # if this matches the current modTag and it's a start tag (_s)
+                        # we found the start! stop traversing.
+                        # we are using `startswith` rather than equality because
+                        # tags might have multiple parts, such as MSS1, MSS2, MSS3
+                        if tag.startswith(modTag) and tag.endswith('_s'):
+                            lastIndex = i
+                            break
 
-                start = end - lastIndex
+                    if lastIndex is None:
+                        lastIndex = tagList.index(modTag + '_s')
+                    start = end - lastIndex
             except ValueError:
                 pass
 
