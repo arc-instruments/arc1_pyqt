@@ -625,7 +625,7 @@ class Arcontrol(QtWidgets.QMainWindow):
                         CB.append(w, b, m, a, pw, str(tag), readTag, readVoltage)
 
                         # ignore Read All points
-                        if 'S R' in tag or tag[-1]=='e' or tag[0]=='P':
+                        if 'S R' in tag or tag[-1]=='e' or tag == 'P':
                             functions.historyTreeAntenna.updateTree.emit(w, b)
                     except ValueError:
                         error = 1
@@ -740,7 +740,9 @@ class Arcontrol(QtWidgets.QMainWindow):
                     for b in range(1,HW.conf.bits+1):
                         for row in range(len(CB.history[w][b])):
                             rowdata = [w, b]
-                            for item in CB.history[w][b][row]:
+                            # drop the start index, it's ephemeral
+                            # and it's only needed for runtime
+                            for item in CB.history[w][b][row][:-1]:
                                 if item is not None:
                                     rowdata.append(item)
                                 else:

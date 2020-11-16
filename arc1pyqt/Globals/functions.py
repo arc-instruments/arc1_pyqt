@@ -7,11 +7,6 @@
 
 ####################################
 
-
-from .. import state
-HW = state.hardware
-CB = state.crossbar
-
 from ._antennae import CBAntenna, DisplayUpdateAntenna, HistoryTreeAntenna
 from ._antennae import InterfaceAntenna, SAantenna, HoverAntenna, AddressAntenna
 from PyQt5 import QtGui, QtWidgets, QtCore
@@ -29,6 +24,11 @@ interfaceAntenna = InterfaceAntenna()
 SAantenna = SAantenna()
 hoverAntenna = HoverAntenna()
 addressAntenna = AddressAntenna()
+
+
+from .. import state
+HW = state.hardware
+CB = state.crossbar
 
 
 # Update history function
