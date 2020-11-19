@@ -8,9 +8,9 @@ import time
 import threading
 
 from arc1pyqt import ProgPanels
-import arc1pyqt.ProgPanels.Basic
-import arc1pyqt.ProgPanels.Basic.Loops
-from arc1pyqt.ProgPanels.Basic.Loops import Loop, End
+import arc1pyqt.ProgPanels.SMUtils
+import arc1pyqt.ProgPanels.SMUtils.Loops
+from arc1pyqt.ProgPanels.SMUtils.Loops import Loop, End
 from arc1pyqt import Graphics
 from arc1pyqt import state
 HW = state.hardware
@@ -56,8 +56,8 @@ def _load_modules(mod):
 
 
 progPanelList = _load_modules(ProgPanels)
-progPanelList_basic = _load_modules(arc1pyqt.ProgPanels.Basic)
-progPanelList_basic_loops = _load_modules(arc1pyqt.ProgPanels.Basic.Loops)
+progPanelList_basic = _load_modules(arc1pyqt.ProgPanels.SMUtils)
+progPanelList_basic_loops = _load_modules(arc1pyqt.ProgPanels.SMUtils.Loops)
 
 
 placed_module_height=20

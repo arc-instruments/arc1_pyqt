@@ -8,50 +8,81 @@
 ####################################
 
 from PyQt5 import QtGui, QtCore, QtWidgets
+import sys
+from copy import copy
 import time
 
+from arc1pyqt import state
+HW = state.hardware
+APP = state.app
+CB = state.crossbar
 from arc1pyqt.Globals import fonts, functions, styles
+from arc1pyqt.modutils import BaseThreadWrapper
 
 
-class ThreadWrapper(QtCore.QObject):
+class ThreadWrapper(BaseThreadWrapper):
 
-    finished=QtCore.pyqtSignal()
-    disableInterface=QtCore.pyqtSignal(bool)
-
-    def __init__(self,delay):
+    def __init__(self, Vread, readType):
         super().__init__()
-        self.delay=delay
+        self.Vread=Vread
+        self.readType=readType
 
+    @BaseThreadWrapper.runner
     def run(self):
 
-        self.disableInterface.emit(True)
+        global tag
 
-        time.sleep(self.delay)
+        needsUpdate = False
 
-        self.disableInterface.emit(False)
+        if self.Vread != HW.conf.Vread or self.readType != HW.conf.readmode:
+            # if current read configuration is different than the global one
+            # make sure you set it back once we're done so set `needsUpdate` to
+            # True.
+            needsUpdate = True
+            # Update Read
+            conf = copy(HW.conf)
+            conf.readmode = self.readType
+            conf.Vread = self.Vread
+            HW.ArC.update_read(conf)
 
-        self.finished.emit()
+        job="1"
+        HW.ArC.write_b(job+"\n")
+        HW.ArC.write_b(str(CB.word)+"\n")
+        HW.ArC.write_b(str(CB.bit)+"\n")
+
+        Mnow=HW.ArC.read_floats(1)
+
+        tag='S R'+str(self.readType)+' V='+str(self.Vread)
+        self.sendData.emit(CB.word, CB.bit, Mnow, float(self.Vread), 0, tag)
+
+        self.displayData.emit()
+        self.updateTree.emit(CB.word, CB.bit)
 
 
-class Delay(QtWidgets.QWidget):
-    
+        # set read configuration back to its original state
+        if needsUpdate == True:
+            HW.ArC.update_read(HW.conf)
+
+
+class Read(QtWidgets.QWidget):
+
     def __init__(self, short=False):
         super().__init__()
         self.short=short
         self.initUI()
-        
-    def initUI(self):      
+
+    def initUI(self):
+        self.Vread = HW.conf.Vread
+        self.readOption = HW.conf.readmode
 
         vbox1=QtWidgets.QVBoxLayout()
+        hbox1=QtWidgets.QHBoxLayout()
 
-        titleLabel = QtWidgets.QLabel('Delay')
+        titleLabel = QtWidgets.QLabel('Read')
         titleLabel.setFont(fonts.font1)
-        descriptionLabel = QtWidgets.QLabel('A time delay.')
+        descriptionLabel = QtWidgets.QLabel('Apply a Read operation.')
         descriptionLabel.setFont(fonts.font3)
         descriptionLabel.setWordWrap(True)
-
-        isInt=QtGui.QIntValidator()
-        isFloat=QtGui.QDoubleValidator()
 
         gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
@@ -63,7 +94,6 @@ class Delay(QtWidgets.QWidget):
         gridLayout.setColumnStretch(6,1)
         if self.short==False:
             gridLayout.setColumnStretch(7,2)
-        #gridLayout.setSpacing(2)
 
         #setup a line separator
         lineLeft=QtWidgets.QFrame()
@@ -73,26 +103,24 @@ class Delay(QtWidgets.QWidget):
 
         gridLayout.addWidget(lineLeft, 0, 2, 2, 1)
 
-
         # ========== ComboBox ===========
-        
-        self.delay_mag=QtWidgets.QLineEdit()
-        self.delay_mag.setValidator(isFloat)
-        self.delay_mag.setText("1")
-        self.delay_DropDown=QtWidgets.QComboBox()
-        self.delay_DropDown.setStyleSheet(styles.comboStylePulse)
+        self.combo_readType=QtWidgets.QComboBox()
+        self.combo_readType.setStyleSheet(styles.comboStyle)
+        self.combo_readType.insertItems(1, ['Classic', 'TIA', 'TIA4P'])
+        self.combo_readType.currentIndexChanged.connect(self.updateReadType)
+        self.combo_readType.setCurrentIndex(2)
 
-        self.unitsFull=[['s',1],['ms',0.001]]
-        self.units=[e[0] for e in self.unitsFull]
-        self.multiply=[e[1] for e in self.unitsFull]
+        self.read_voltage=QtWidgets.QDoubleSpinBox()
+        self.read_voltage.setStyleSheet(styles.spinStyle)
+        self.read_voltage.setMinimum(-12)
+        self.read_voltage.setMaximum(12)
+        self.read_voltage.setSingleStep(0.05)
+        self.read_voltage.setValue(0.5)
+        self.read_voltage.setSuffix(' V')
+        self.read_voltage.valueChanged.connect(self.setVread)
 
-        self.delay_DropDown.insertItems(1,self.units)
-        self.delay_DropDown.setCurrentIndex(2)
-
-
-        gridLayout.addWidget(self.delay_mag,0,0)
-        gridLayout.addWidget(self.delay_DropDown,0,1)
-
+        gridLayout.addWidget(self.combo_readType,0,0)
+        gridLayout.addWidget(self.read_voltage,0,1)
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
 
@@ -132,8 +160,6 @@ class Delay(QtWidgets.QWidget):
 
             vbox1.addLayout(self.hboxProg)
 
-        self.extractParams()
-
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
 
@@ -149,52 +175,52 @@ class Delay(QtWidgets.QWidget):
                 layoutWidgets.append([i,'QComboBox', item.currentIndex()])
             if isinstance(item, QtWidgets.QCheckBox):
                 layoutWidgets.append([i,'QCheckBox', item.checkState()])
+            if isinstance(item, QtWidgets.QDoubleSpinBox):
+                layoutWidgets.append([i,'QDoubleSpinBox', item.value()])
 
         
         #self.setPanelParameters(layoutWidgets)
         return layoutWidgets
 
     def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
+        for i,w_type,value in layoutWidgets:
+            if w_type=='QLineEdit':
                 self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
+            if w_type=='QComboBox':
                 self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
+            if w_type=='QCheckBox':
                 self.gridLayout.itemAt(i).widget().setChecked(value)
+            if w_type=='QDoubleSpinBox':
+                self.gridLayout.itemAt(i).widget().setValue(value)
 
+    def setVread(self, value):
+        self.Vread=value
+
+    def updateReadType(self, value):
+        self.readOption=value
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         return False
 
+
     def programOne(self):
-        self.extractParams()
+
         self.thread=QtCore.QThread()
-        self.threadWrapper=ThreadWrapper(self.delay)
+        self.threadWrapper=ThreadWrapper(self.Vread, self.readOption)
         self.threadWrapper.moveToThread(self.thread)
         self.thread.started.connect(self.threadWrapper.run)
         self.threadWrapper.finished.connect(self.thread.quit)
         self.threadWrapper.finished.connect(self.threadWrapper.deleteLater)
         self.thread.finished.connect(self.threadWrapper.deleteLater)
+        self.threadWrapper.sendData.connect(functions.updateHistory)
+        self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
+        self.threadWrapper.displayData.connect(functions.displayUpdate.cast)
+        self.threadWrapper.updateTree.connect(functions.historyTreeAntenna.updateTree.emit)
         self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
         self.thread.finished.connect(functions.interfaceAntenna.wakeUp)
 
+
         self.thread.start()
-
-
-    def extractParams(self):
-        duration=float(self.delay_mag.text())
-        unit=float(self.multiply[self.delay_DropDown.currentIndex()])        
-        self.delay=duration*unit
-
-        if self.delay<0.01:
-            self.delay_mag.setText(str(10))
-            self.delay_DropDown.setCurrentIndex(1)
-            self.delay=0.01
-        if self.delay>10:
-            self.delay_mag.setText(str(10))
-            self.delay_DropDown.setCurrentIndex(0)
-            self.delay=10
 
