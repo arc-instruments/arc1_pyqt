@@ -400,24 +400,24 @@ class Arcontrol(QtWidgets.QMainWindow):
     def showAbout(self):
 
         try:
-            self.aboutSesh.show()
+            self.aboutWidget.show()
             return
         except AttributeError:
             pass
 
-        self.aboutSesh = AboutWidget()
-        self.aboutSesh.setFixedWidth(600)
-        self.aboutSesh.setFixedHeight(320)
+        self.aboutWidget = AboutWidget()
+        self.aboutWidget.setFixedWidth(600)
+        self.aboutWidget.setFixedHeight(320)
 
-        frameGm = self.aboutSesh.frameGeometry()
+        frameGm = self.aboutWidget.frameGeometry()
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
-        self.aboutSesh.move(frameGm.topLeft())
+        self.aboutWidget.move(frameGm.topLeft())
 
-        self.aboutSesh.setWindowTitle("About ArC Instruments Ltd.")
-        self.aboutSesh.setWindowIcon(Graphics.getIcon('appicon'))
+        self.aboutWidget.setWindowTitle("About ArC ONE")
+        self.aboutWidget.setWindowIcon(Graphics.getIcon('appicon'))
 
-        self.aboutSesh.show()
+        self.aboutWidget.show()
 
     def updateCOMList(self):
         self.comPorts.clear()

@@ -239,9 +239,9 @@ QFrame{\
 	"""
 
 
-groupStyleNewSesh="""\
+groupStyleNewSession="""\
 QGroupBox {\
-	border-top: 1px solid rgb(0,32,87); \	
+	border-top: 1px solid rgb(0,32,87); \
 	border-bottom: 0px; \
 	border-left: 0px; \
 	border-right: 0px; \

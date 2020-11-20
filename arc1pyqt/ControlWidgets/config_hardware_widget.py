@@ -29,7 +29,7 @@ class ConfigHardwareWidget(QtWidgets.QWidget):
 
         # Setup mCAT settings
         self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
-        self.hwSettings.setStyleSheet(styles.groupStyleNewSesh)
+        self.hwSettings.setStyleSheet(styles.groupStyleNewSession)
         self.hwSettings.setFont(fonts.font2)
 
         hwSetLayout=QtWidgets.QGridLayout()

@@ -42,7 +42,7 @@ class NewSessionDialog(QtWidgets.QDialog):
 
         # Setup general settings
         self.generalSettings = QtWidgets.QGroupBox('General Settings')
-        self.generalSettings.setStyleSheet(styles.groupStyleNewSesh)
+        self.generalSettings.setStyleSheet(styles.groupStyleNewSession)
         self.generalSettings.setFont(fonts.font2)
         genSetLayout=QtWidgets.QGridLayout()
         genSetLayout.setContentsMargins(10,20,10,20)
@@ -97,7 +97,7 @@ class NewSessionDialog(QtWidgets.QDialog):
 
         # Setup mCAT settings
         self.hwSettings = QtWidgets.QGroupBox('Hardware Settings')
-        self.hwSettings.setStyleSheet(styles.groupStyleNewSesh)
+        self.hwSettings.setStyleSheet(styles.groupStyleNewSession)
         self.hwSettings.setFont(fonts.font2)
 
         hwSetLayout=QtWidgets.QGridLayout()
