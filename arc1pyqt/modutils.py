@@ -289,6 +289,7 @@ class BaseProgPanel(QtWidgets.QWidget):
         self.title = title
         self.description = description
         self.short = short
+        self.propertyWidgets = {}
         self.thread = None
 
     def execute(self, wrapper, entrypoint=None):
@@ -329,6 +330,91 @@ class BaseProgPanel(QtWidgets.QWidget):
         self.threadWrapper.deleteLater()
         self.threadWrapper = None
         self.thread = None
+
+    def registerPropertyWidget(self, wdg, name):
+        """
+        Register a widget owned by this panel as a save-able property. If `wdg`
+        is one of ``QtWidgets.QLineEdit``, ``QtWidgets.QComboBox``,
+        ``QtWidgets.QCheckBox``, ``QtWidgets.QSpinBox`` and
+        ``QtWidgets.QDoubleSpinBox`` their values will reinstated when
+        `BaseProgPanel.setPanelData` is called. Also see
+        `BaseProgPanel.extractPanelData`.
+        """
+        self.propertyWidgets[name] = wdg
+        wdg.setProperty("key", name)
+
+    def extractPanelData(self):
+        """
+        Iterate through all widgets registered as save-able with
+        `BaseProgPanel.registerPropertyWidget` and collect their current
+        values. This function will automatically process common widgets:
+        ``QtWidgets.QLineEdit``, ``QtWidgets.QComboBox``,
+        ``QtWidgets.QCheckBox``, ``QtWidgets.QSpinBox`` and
+        ``QtWidgets.QDoubleSpinBox``.  If further data needs to be saved child
+        widgets must override this functions
+
+        >>> def extractPanelData(self):
+        >>>     # call superclass function
+        >>>     data = super().extractPanelData()
+        >>>     data["foo"] = "bar"
+        >>>     # more data collection
+        >>>     return data
+        """
+
+        items = {}
+
+        for (_, item) in self.propertyWidgets.items():
+            key = item.property("key")
+            wdg = item
+            if key is None:
+                continue
+
+            if isinstance(item, QtWidgets.QLineEdit):
+                data = wdg.text()
+            elif isinstance(item, QtWidgets.QComboBox):
+                data = wdg.currentIndex()
+            elif isinstance(item, QtWidgets.QCheckBox):
+                data = wdg.checkState()
+            elif isinstance(item, QtWidgets.QSpinBox) or \
+                isinstance(item, QtWidgets.QDoubleSpinBox):
+                data = wdg.value()
+            else:
+                data = None
+
+            if data is not None:
+                items[key] = data
+
+        return items
+
+    def setPanelData(self, data):
+        """
+        Restore widget values from the dict `data`. Field keys are the same as
+        defined with `BaseProgPanel.registerPropertyWidget`.  This function
+        will only process common widgets: ``QtWidgets.QLineEdit``,
+        ``QtWidgets.QComboBox``, ``QtWidgets.QCheckBox``,
+        ``QtWidgets.QSpinBox`` and ``QtWidgets.QDoubleSpinBox``. If further
+        state is required to be recovered from `data` child panels should
+        override this function
+
+        >>> def setPanelData(self, data):
+        >>>     super().setPanelData(data)
+        >>>     do_smth_with(data["key"])
+        """
+
+        for (k, value) in data.items():
+            wdg = self.propertyWidgets.get(k, None)
+            if wdg is None:
+                continue
+
+            if isinstance(wdg, QtWidgets.QLineEdit):
+                wdg.setText(value)
+            elif isinstance(wdg, QtWidgets.QComboBox):
+                wdg.setCurrentIndex(value)
+            elif isinstance(wdg, QtWidgets.QCheckBox):
+                wdg.setChecked(value)
+            elif isinstance(wdg, QtWidgets.QSpinBox) or \
+                isinstance(wdg, QtWidgets.QDoubleSpinBox):
+                wdg.setValue(value)
 
     def makeControlButton(self, text, slot=None):
         btn = QtWidgets.QPushButton(text)
