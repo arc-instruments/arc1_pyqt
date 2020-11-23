@@ -236,32 +236,22 @@ class SwitchSeeker(BaseProgPanel):
             vbox1.addLayout(self.hboxProg)
 
         self.gridLayout=gridLayout
-        self.extractPanelParameters()
         self.setLayout(vbox1)
 
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
+        self.registerPropertyWidget(self.leftEdits[0], "numreads")
+        self.registerPropertyWidget(self.leftEdits[1], "numpulses")
+        self.registerPropertyWidget(self.leftEdits[2], "pw")
+        self.registerPropertyWidget(self.leftEdits[3], "vmin")
+        self.registerPropertyWidget(self.leftEdits[4], "vstep")
+        self.registerPropertyWidget(self.leftEdits[5], "vmax")
+        self.registerPropertyWidget(self.leftEdits[6], "cycles")
+        self.registerPropertyWidget(self.leftEdits[7], "tolerance")
+        self.registerPropertyWidget(self.leftEdits[8], "interpulse")
+        self.registerPropertyWidget(self.leftEdits[9], "threshold")
+        self.registerPropertyWidget(self.checkRead, "pulseread")
+        self.registerPropertyWidget(self.modeSelectionCombo, "mode")
+        self.registerPropertyWidget(self.polarityCombo, "polarity")
+        self.registerPropertyWidget(self.skipICheckBox, "skip_stageI")
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

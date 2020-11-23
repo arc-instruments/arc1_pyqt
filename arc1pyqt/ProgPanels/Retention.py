@@ -127,7 +127,6 @@ class Retention(BaseProgPanel):
 
         self.leftEdits=[]
         rightLabels=[]
-        self.rightEdits=[]
 
         gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
@@ -159,16 +158,10 @@ class Retention(BaseProgPanel):
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
 
-        for i in range(len(rightLabels)):
-            lineLabel=QtWidgets.QLabel()
-            lineLabel.setText(rightLabels[i])
-            #lineLabel.setFixedHeight(50)
-            gridLayout.addWidget(lineLabel, i,4)
-
-            lineEdit=QtWidgets.QLineEdit()
-            lineEdit.setValidator(isFloat)
-            self.rightEdits.append(lineEdit)
-
+        # self.leftEdits[0].setProperty("key", "duration")
+        # self.leftEdits[1].setProperty("key", "interval")
+        self.registerPropertyWidget(self.leftEdits[0], "duration")
+        self.registerPropertyWidget(self.leftEdits[1], "interval")
 
         # ========== ComboBox ===========
         every_lay=QtWidgets.QHBoxLayout()
@@ -186,8 +179,12 @@ class Retention(BaseProgPanel):
 
         self.every_dropDown.insertItems(1,self.units)
         self.every_dropDown.setCurrentIndex(0)
+        # self.every_dropDown.setProperty("key", "interval_multiplier")
+        self.registerPropertyWidget(self.every_dropDown, "interval_multiplier")
         self.duration_dropDown.insertItems(1,self.units)
         self.duration_dropDown.setCurrentIndex(1)
+        # self.duration_dropDown.setProperty("key", "duration_multiplier")
+        self.registerPropertyWidget(self.duration_dropDown, "duration_multiplier")
 
         gridLayout.addWidget(self.leftEdits[0],0,1)
         gridLayout.addWidget(self.every_dropDown,0,3)
@@ -230,30 +227,6 @@ class Retention(BaseProgPanel):
 
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
-
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

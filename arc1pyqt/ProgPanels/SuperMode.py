@@ -3,11 +3,10 @@ import sys, os
 import pickle
 import pkgutil
 import importlib
-import pickle
+import json
 import time
 import threading
 
-from arc1pyqt import ProgPanels
 import arc1pyqt.ProgPanels.SMUtils
 import arc1pyqt.ProgPanels.SMUtils.Loops
 from arc1pyqt.ProgPanels.SMUtils.Loops import Loop, End
@@ -21,7 +20,6 @@ from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 
 
-progPanelList=[]
 progPanelList_basic=[]
 progPanelList_basic_loops=[]
 
@@ -29,17 +27,17 @@ progPanelList_basic_loops=[]
 mutex = QtCore.QMutex()
 
 # Modules that are not compatible with SuperMode or there
-# is no point in trying to run them withing that context.
-MODULE_BLACKLIST = [
+# is no point in trying to run them within that context.
+MODULE_BLACKLIST = (
     "arc1pyqt.ProgPanels.SuperMode",
     "arc1pyqt.ProgPanels.CT_LIVE",
     "arc1pyqt.ProgPanels.MultiBias",
-]
+)
 
 def _load_modules(mod):
 
     mods = []
-    # List all non-package modules in `ProgPanels`
+    # List all non-package modules
     for (_, modname, ispkg) in pkgutil.iter_modules(mod.__path__):
         if ispkg:
             continue
@@ -55,7 +53,6 @@ def _load_modules(mod):
     return mods
 
 
-progPanelList = _load_modules(ProgPanels)
 progPanelList_basic = _load_modules(arc1pyqt.ProgPanels.SMUtils)
 progPanelList_basic_loops = _load_modules(arc1pyqt.ProgPanels.SMUtils.Loops)
 
@@ -222,7 +219,7 @@ class DraggableButtonPlaced(QtWidgets.QPushButton):
         self.setVisible(False)
         self.deleteContainer.emit()
         self.deleteLater()
-        selected = QtCore.QByteArray(self.ID)
+        selected = self.ID
 
         mimeData = QtCore.QMimeData()
         mimeData.setData("application/x-module-placed", selected)
@@ -513,17 +510,20 @@ class SuperMode(BaseProgPanel):
         separator3.setFrameShape(QtWidgets.QFrame.HLine)
         separator3.setLineWidth(2)
 
-        for module in progPanelList:
-            btn=DraggableButton(module)
+        for (_, modinfo) in APP.modules.items():
+            if modinfo.module is None or modinfo.toplevel is None:
+                continue
+            if modinfo.module.__name__.startswith(MODULE_BLACKLIST):
+                continue
+            btn = DraggableButton(modinfo.module.__name__)
             vboxLeft.addWidget(btn)
-        vboxLeft.addWidget(separator1)
 
+        vboxLeft.addWidget(separator1)
 
         for module in progPanelList_basic:
             btn=DraggableButton(module)
             vboxLeft.addWidget(btn)
         vboxLeft.addWidget(separator2)
-
 
         progPanelList_basic_loops.reverse()
         for module in progPanelList_basic_loops:
@@ -534,10 +534,10 @@ class SuperMode(BaseProgPanel):
         vboxLeft.addStretch()
 
         push_save = QtWidgets.QPushButton("Save")
-        push_save.clicked.connect(self.savePickle)
+        push_save.clicked.connect(self.saveSequence)
         push_save.setStyleSheet(styles.btnStyle2)
         push_load = QtWidgets.QPushButton("Load")
-        push_load.clicked.connect(self.loadPickle)
+        push_load.clicked.connect(self.loadSequence)
         push_load.setStyleSheet(styles.btnStyle2)
 
         self.loaded_label = QtWidgets.QLabel()
@@ -614,104 +614,110 @@ class SuperMode(BaseProgPanel):
         self.setLayout(mainLayout)
         self.show()
 
-    def savePickle(self):
-        layoutItems = self.dropWidget.vbox
-        items = [layoutItems.itemAt(i).widget().btn.module for i in range(layoutItems.count())]
-        result = self.checkLoopOrder(items)
-        if result:
-            if APP.workingDirectory:
-                curDir = APP.workingDirectory
-            else:
-                curDir = ''
+    def saveSequence(self):
 
-            saveFileName = QtWidgets.QFileDialog.getSaveFileName(self,
-                    'Save File', curDir, 'PKL(*.pkl)')[0]
-            path_ = QtCore.QFileInfo(saveFileName)
-            path = path_
+        layout = self.dropWidget.vbox
+        items = [layout.itemAt(i).widget().btn.module for i in range(layout.count())]
 
-            if path:
-
-                chainList=[]
-                for module in items:
-                    chainList.append([module.__class__.__module__, module.extractPanelParameters()])
-
-                with open(path, 'wb') as output:
-                    pickle.dump(chainList, output, pickle.HIGHEST_PROTOCOL)
-
-            self.loaded_label.setText(os.path.basename(saveFileName))
-        else:
+        if not self.checkLoopOrder(items):
             self.throw_wrong_loops_dialogue()
+            return
 
-    def loadPickle(self):
-        global globalID
-
-        proceed=False
-
-        if self.dropWidget.vbox.count()>0:
-            reply = QtWidgets.QMessageBox.question(self, "Load a measurement chain",
-                "Loading a measurement chain will replace the current one. Do you want to proceed?",
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
+        if APP.workingDirectory:
+            curDir = APP.workingDirectory
         else:
-            proceed=True
+            curDir = ''
 
-        if proceed or reply == QtWidgets.QMessageBox.Yes:
-            for i in reversed(range(self.dropWidget.vbox.count())):
-                self.dropWidget.vbox.itemAt(i).widget().setParent(None)
+        try:
+            saveFileName = QtWidgets.QFileDialog.getSaveFileName(self,
+                'Save File', curDir, 'Test Sequence (*.json)')[0]
+        except IndexError:
+            return
 
-            self.dropWidget.count=0
-            self.dropWidget.resizeHeight()
-            self.dropWidget.routerDisplayModule(None)
-            self.dropWidget.update()
+        fi = QtCore.QFileInfo(saveFileName)
+        path = QtCore.QFileInfo(saveFileName)
 
-            try:
-                path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
-                        getOpenFileName(self, 'Load file', "*.pkl")[0])
-            except IndexError:
-                # nothing selected
+        if path:
+            chainList = []
+            for mod in items:
+                fullmodname = ".".join([
+                    mod.__class__.__module__,
+                    mod.__class__.__name__])
+                chainList.append([fullmodname, mod.extractPanelData()])
+
+            with open(path, 'w') as f:
+                json.dump(chainList, f)
+
+    def loadSequence(self):
+        global globalID
+        proceed = False
+
+        if self.dropWidget.vbox.count() > 0:
+            reply = QtWidgets.QMessageBox.question(self,
+                "Load a measurement chain",
+                "Loading a chain will replace the current one. Continue?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+
+            if reply == QtWidgets.QMessageBox.Yes:
                 return
 
-            name=path.fileName()
-            self.loaded_label.setText(name)
+        for i in reversed(range(self.dropWidget.vbox.count())):
+            self.dropWidget.vbox.itemAt(i).widget().setParent(None)
 
-            file=QtCore.QFile(path.filePath())
+        self.dropWidget.count = 0
+        self.dropWidget.resizeHeight()
+        self.dropWidget.routerDisplayModule(None)
+        self.dropWidget.update()
 
-            with open(path.filePath(), 'rb') as inputFile:
-                chainList= pickle.load(inputFile)
-            globalID=0
+        try:
+            path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
+                getOpenFileName(self, 'Load file', '',
+                filter="Test Sequence (*.json)")[0])
+        except IndexError:
+            return
 
-            for moduleName, layoutWidgets in chainList:
-                # import the module
-                thisPanel = importlib.import_module(moduleName)
-                # get its main class
-                baseModuleName = moduleName.split(".")[-1]
-                panel_class = getattr(thisPanel, baseModuleName)
-                moduleHandle = panel_class(short=True)
-                moduleHandle.setPanelParameters(layoutWidgets)
+        name = path.fileName()
+        self.loaded_label.setText(name)
 
-                if baseModuleName == 'Loop':
-                    newBtn = DraggableLoopPlaced(baseModuleName, moduleHandle)
-                    newBtn.setText("Start Loop")
-                elif baseModuleName == 'End':
-                    newBtn = DraggableLoopPlacedEnd(baseModuleName, moduleHandle)
-                    newBtn.setText("End Loop")
-                else:
-                    newBtn = DraggableButtonPlaced(baseModuleName, moduleHandle)
+        with open(path.filePath(), 'rb') as inputFile:
+            chainList = json.load(inputFile)
 
-                newBtn.ID = str(globalID)
-                module_id_dict[newBtn.ID] = moduleHandle
+        globalID = 0
 
-                newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
+        for (modpath, data) in chainList:
+            if modpath is None:
+                continue
 
-                newCenterWidget=CenterWidget(newBtn)
-                newBtn.deleteContainer.connect(newCenterWidget.deleteContainer)
-                newBtn.decrementCount.connect(self.dropWidget.decrement_and_resize)
+            (modname, classname) = modpath.rsplit('.', 1)
+            panelMod = importlib.import_module(modname)
+            klass = getattr(panelMod, classname)
+            panel = klass(short=True)
+            panel.setPanelData(data)
 
-                self.dropWidget.vbox.addWidget(newCenterWidget)
-                globalID+=1
+            if classname == 'Loop':
+                newBtn = DraggableLoopPlaced(classname, panel)
+                newBtn.setText("Start Loop")
+            elif classname == 'End':
+                newBtn = DraggableLoopPlacedEnd(classname, panel)
+                newBtn.setText("End Loop")
+            else:
+                newBtn = DraggableButtonPlaced(classname, panel)
 
-            self.dropWidget.count=self.dropWidget.vbox.count()
-            self.dropWidget.resizeHeight()
-            self.dropWidget.update()
+            newBtn.ID = str(globalID)
+            module_id_dict[newBtn.ID] = panel
+
+            newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
+
+            newCenterWidget = CenterWidget(newBtn)
+            newBtn.deleteContainer.connect(newCenterWidget.deleteContainer)
+            newBtn.decrementCount.connect(self.dropWidget.decrement_and_resize)
+
+            self.dropWidget.vbox.addWidget(newCenterWidget)
+            globalID += 1
+
+        self.dropWidget.count = self.dropWidget.vbox.count()
+        self.dropWidget.resizeHeight()
+        self.dropWidget.update()
 
     def displayModule(self, module):
         try:
@@ -740,7 +746,6 @@ class SuperMode(BaseProgPanel):
             return False
 
     def checkLoopOrder(self, items):
-        print("Checking loop order...")
 
         # every loop start represents a 1
         # every loop end represents a -1

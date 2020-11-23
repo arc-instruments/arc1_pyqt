@@ -298,29 +298,13 @@ class VolatilityRead(BaseProgPanel):
         self.vW.setFixedWidth(self.size().width())
         self.gridLayout=gridLayout
 
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
+        self.registerPropertyWidget(self.leftEdits[0], "vpulse")
+        self.registerPropertyWidget(self.leftEdits[1], "pwpulse")
+        self.registerPropertyWidget(self.leftEdits[2], "batch")
+        self.registerPropertyWidget(self.leftEdits[3], "cyclavg")
+        self.registerPropertyWidget(self.rightEdits[0], "stoptime")
+        self.registerPropertyWidget(self.rightEdits[1], "stoptmetric")
+        self.registerPropertyWidget(self.rightEdits[2], "stoptolerance")
 
     def updateStopOptions(self, event):
         if self.combo_stopOptions.currentText() == 'FixTime':

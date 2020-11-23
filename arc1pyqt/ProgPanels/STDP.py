@@ -210,8 +210,6 @@ class STDP(BaseProgPanel):
                     '1']
 
         self.leftEdits=[]
-        rightLabels=[]
-        self.rightEdits=[]
 
         gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
@@ -255,7 +253,7 @@ class STDP(BaseProgPanel):
         self.leftEdits[0].textChanged.connect(self.scale_voltage)
         self.leftEdits[1].textChanged.connect(self.warp_time)
 
-        self.check_single=QtWidgets.QCheckBox("Only single event ->")
+        self.check_single=QtWidgets.QCheckBox("Only single event")
         gridLayout.addWidget(self.check_single, 8,0)
 
         self.gain=1
@@ -377,16 +375,23 @@ class STDP(BaseProgPanel):
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
 
-        self.pre_voltage=[]
-        self.pre_time=[]
-        self.post_voltage=[]
-        self.post_time=[]
+        self.pre_voltage = []
+        self.pre_time = []
+        self.post_voltage = []
+        self.post_time = []
+        self.pre_full_filename = None
+        self.post_full_filename = None
 
         self.dt=0
 
+        self.registerPropertyWidget(self.leftEdits[0], 'vscale')
+        self.registerPropertyWidget(self.leftEdits[1], 'tscale')
+        self.registerPropertyWidget(self.leftEdits[2], 'tstep')
+        self.registerPropertyWidget(self.check_identical, 'identical_spikes')
+        self.registerPropertyWidget(self.check_single, 'single_event')
+
     def updateDescription(self,value):
         self.spikes_description.setText(str(value))
-
 
     def handleCheckIdentical(self, value):
         if value:
@@ -394,11 +399,15 @@ class STDP(BaseProgPanel):
         else:
             self.push_load_post.setEnabled(True)
 
-    def load_post(self):
+    def load_post(self, filePath=None):
 
-        openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
-                'Open spike file', "*.txt")[0]
-        path = QtCore.QFileInfo(openFileName)
+        # if no filename provided, ask for one
+        if not filePath:
+            openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
+                    'Open spike file', "*.txt")[0]
+            path = QtCore.QFileInfo(openFileName)
+        else:
+            path = QtCore.QFileInfo(filePath)
 
         voltage = []
         time = []
@@ -420,10 +429,10 @@ class STDP(BaseProgPanel):
                 self.fix_spike_timescales()
                 self.updateSpikes(50.0)
 
+            self.post_full_filename = path.canonicalFilePath()
             self.post_filename.setText(path.baseName())
 
         except BaseException as exc:
-            print(exc)
             errMessage = QtWidgets.QMessageBox()
             errMessage.setText("Invalid spike file! " +
                     "Possible problem with voltage-time series syntax.")
@@ -431,11 +440,15 @@ class STDP(BaseProgPanel):
             errMessage.setWindowTitle("Error")
             errMessage.exec_()
 
-    def load_pre(self):
+    def load_pre(self, filePath=None):
 
-        openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
-                'Open spike file', "*.txt")[0]
-        path = QtCore.QFileInfo(openFileName)
+        # if no filename provided, ask for one
+        if not filePath:
+            openFileName = QtWidgets.QFileDialog().getOpenFileName(self,
+                    'Open spike file', "*.txt")[0]
+            path = QtCore.QFileInfo(openFileName)
+        else:
+            path = QtCore.QFileInfo(filePath)
 
         voltage = []
         time = []
@@ -464,6 +477,7 @@ class STDP(BaseProgPanel):
                 self.slider.setValue(50)
                 self.updateSpikes(50.0)
 
+            self.pre_full_filename = path.canonicalFilePath()
             self.pre_filename.setText(path.baseName())
 
         except BaseException as exc:
@@ -491,6 +505,7 @@ class STDP(BaseProgPanel):
             self.pre_voltage.append(self.pre_time[-1])
 
     def updateSpikes(self, sliderValue):
+
         # Updates the spike figure when the slider is moved.
 
         self.dt=self.max_spike_time*(self.slider.value()-50)/50.0*self.warp
@@ -585,38 +600,44 @@ class STDP(BaseProgPanel):
         self.curve_post.setData(post_time,post_voltage)
         self.curve_total.setData(total_time, total_voltage)
 
+    def extractPanelData(self):
+        data = super().extractPanelData()
 
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
+        data['pre_filename'] = self.pre_full_filename
+        data['post_filename'] = self.post_full_filename
+        data['slider'] = self.slider.value()
 
-        layoutWidgets=[]
+        return data
 
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
+    def setPanelData(self, data):
 
-        return layoutWidgets
+        # prevent the text edit events from firing
+        # because the panel data are not fully
+        # initialised
+        self.leftEdits[0].textChanged.disconnect()
+        self.leftEdits[1].textChanged.disconnect()
+        super().setPanelData(data)
 
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
+        self.load_pre(data['pre_filename'])
+        if data['post_filename']:
+            self.load_post(data['post_filename'])
+
+        self.slider.setValue(data['slider'])
+
+        # reconnect the events above
+        self.leftEdits[0].textChanged.connect(self.scale_voltage)
+        self.leftEdits[1].textChanged.connect(self.warp_time)
+
+        # and force them to fire to make sure everything is
+        # up to date
+        self.scale_voltage(self.leftEdits[0].text())
+        self.warp_time(self.leftEdits[1].text())
+        self.updateSpikes(self.slider.value())
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         return False
-
-    def sendParams(self):
-        pass
 
     def prepare_time_steps(self):
         timeSteps=[]

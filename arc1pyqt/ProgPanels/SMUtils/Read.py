@@ -17,7 +17,7 @@ HW = state.hardware
 APP = state.app
 CB = state.crossbar
 from arc1pyqt.Globals import fonts, functions, styles
-from arc1pyqt.modutils import BaseThreadWrapper
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -64,10 +64,10 @@ class ThreadWrapper(BaseThreadWrapper):
             HW.ArC.update_read(HW.conf)
 
 
-class Read(QtWidgets.QWidget):
+class Read(BaseProgPanel):
 
     def __init__(self, short=False):
-        super().__init__()
+        super().__init__(title='SuperMode Read', description='')
         self.short=short
         self.initUI()
 
@@ -139,59 +139,11 @@ class Read(QtWidgets.QWidget):
         vbox1.addWidget(scrlArea)
         vbox1.addStretch()
 
-        if self.short==False:
-            self.hboxProg=QtWidgets.QHBoxLayout()
-
-            push_single=QtWidgets.QPushButton('Apply to One')
-            push_range=QtWidgets.QPushButton('Apply to Range')
-            push_all=QtWidgets.QPushButton('Apply to All')
-
-            push_single.setStyleSheet(styles.btnStyle)
-            push_range.setStyleSheet(styles.btnStyle)
-            push_all.setStyleSheet(styles.btnStyle)
-
-            push_single.clicked.connect(self.programOne)
-            push_range.clicked.connect(self.programRange)
-            push_all.clicked.connect(self.programAll)
-
-            self.hboxProg.addWidget(push_single)
-            self.hboxProg.addWidget(push_range)
-            self.hboxProg.addWidget(push_all)
-
-            vbox1.addLayout(self.hboxProg)
-
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
 
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-            if isinstance(item, QtWidgets.QDoubleSpinBox):
-                layoutWidgets.append([i,'QDoubleSpinBox', item.value()])
-
-        
-        #self.setPanelParameters(layoutWidgets)
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,w_type,value in layoutWidgets:
-            if w_type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if w_type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if w_type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
-            if w_type=='QDoubleSpinBox':
-                self.gridLayout.itemAt(i).widget().setValue(value)
+        self.registerPropertyWidget(self.combo_readType, 'readtype')
+        self.registerPropertyWidget(self.read_voltage, 'vread')
 
     def setVread(self, value):
         self.Vread=value
@@ -203,7 +155,6 @@ class Read(QtWidgets.QWidget):
         if event.type()==QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width()-object.verticalScrollBar().width())
         return False
-
 
     def programOne(self):
 

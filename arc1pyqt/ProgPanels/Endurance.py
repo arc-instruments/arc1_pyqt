@@ -207,6 +207,17 @@ class Endurance(BaseProgPanel):
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
 
+        self.registerPropertyWidget(self.leftEdits[0], "vpos")
+        self.registerPropertyWidget(self.leftEdits[1], "pwpos")
+        self.registerPropertyWidget(self.leftEdits[2], "ccpos")
+        self.registerPropertyWidget(self.leftEdits[3], "numpos")
+        self.registerPropertyWidget(self.leftEdits[4], "cycles")
+        self.registerPropertyWidget(self.leftEdits[5], "interpulse")
+        self.registerPropertyWidget(self.rightEdits[0], "vneg")
+        self.registerPropertyWidget(self.rightEdits[1], "pwneg")
+        self.registerPropertyWidget(self.rightEdits[2], "ccneg")
+        self.registerPropertyWidget(self.rightEdits[3], "numneg")
+
     # if pw is set to below 30us and current cut-off is activated, increase
     # pulse width to 30us
     def imposeLimitsOnPW_p(self):
@@ -242,30 +253,6 @@ class Endurance(BaseProgPanel):
                 self.rightEdits[2].setText("1000")
             if float(self.leftEdits[1].text())<30:
                 self.rightEdits[1].setText("30")
-
-    def extractPanelParameters(self):
-
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

@@ -178,6 +178,10 @@ class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
                     self.applyRangeButton]:
                 wdg.hide()
 
+        self.registerPropertyWidget(self.biasEdit, "bias")
+        self.registerPropertyWidget(self.pwEdit, "pw")
+        self.registerPropertyWidget(self.numReadsBox, "num_reads")
+
     def applyValidators(self):
         floatValidator = QtGui.QDoubleValidator()
         intValidator = QtGui.QIntValidator()

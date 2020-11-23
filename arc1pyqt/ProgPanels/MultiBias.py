@@ -85,16 +85,11 @@ class MultiBias(BaseProgPanel):
                     'WRITE pulse width (us)',\
                     'READ voltage (V)']
 
-        rightLabels=[]
-
         leftInit=  ['1',\
                     '100', \
                     '0.5']
 
-        rightInit=  []
-
         self.leftEdits=[]
-        self.rightEdits=[]
 
         gridLayout=QtWidgets.QGridLayout()
         gridLayout.setColumnStretch(0,3)
@@ -135,7 +130,6 @@ class MultiBias(BaseProgPanel):
         gridLayout.addWidget(self.edit_current,1,3)
         gridLayout.addWidget(label_suffix,1,4)
 
-
         for i in range(len(leftLabels)):
             lineLabel=QtWidgets.QLabel()
             #lineLabel.setFixedHeight(50)
@@ -147,18 +141,6 @@ class MultiBias(BaseProgPanel):
             lineEdit.setValidator(isFloat)
             self.leftEdits.append(lineEdit)
             gridLayout.addWidget(lineEdit, i+2,1)
-
-        for i in range(len(rightLabels)):
-            lineLabel=QtWidgets.QLabel()
-            lineLabel.setText(rightLabels[i])
-            #lineLabel.setFixedHeight(50)
-            gridLayout.addWidget(lineLabel, i+2,4)
-
-            lineEdit=QtWidgets.QLineEdit()
-            lineEdit.setText(rightInit[i])
-            lineEdit.setValidator(isFloat)
-            self.rightEdits.append(lineEdit)
-            gridLayout.addWidget(lineEdit, i+2,5)
 
         vbox1.addWidget(titleLabel)
         vbox1.addWidget(descriptionLabel)
@@ -192,6 +174,10 @@ class MultiBias(BaseProgPanel):
 
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
+
+        self.registerPropertyWidget(self.leftEdits[0], "vwrite")
+        self.registerPropertyWidget(self.leftEdits[1], "pwwrite")
+        self.registerPropertyWidget(self.leftEdits[2], "vread")
 
     def apply_multiBias(self, RW):
         wLines=self.extract_wordlines()
@@ -251,30 +237,6 @@ class MultiBias(BaseProgPanel):
 
     def updateCurrentRead(self, value):
         self.edit_current.setText(str(value*1000000))
-
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

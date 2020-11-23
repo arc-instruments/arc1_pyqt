@@ -248,6 +248,21 @@ class FormFinder(BaseProgPanel):
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
 
+        self.registerPropertyWidget(self.leftEdits[0], "vmin")
+        self.registerPropertyWidget(self.leftEdits[1], "vstep")
+        self.registerPropertyWidget(self.leftEdits[2], "vmax")
+        self.registerPropertyWidget(self.leftEdits[3], "pwmin")
+        self.registerPropertyWidget(self.leftEdits[4], "pwstep")
+        self.registerPropertyWidget(self.leftEdits[5], "pwmax")
+        self.registerPropertyWidget(self.leftEdits[6], "interpulse")
+        self.registerPropertyWidget(self.rightEdits[0], "numpulses")
+        self.registerPropertyWidget(self.rightEdits[1], "threshold")
+        self.registerPropertyWidget(self.rightEdits[2], "threshold_pc")
+        self.registerPropertyWidget(self.rightEdits[3], "psr")
+        self.registerPropertyWidget(self.pulsingModeCombo, "pulsemode")
+        self.registerPropertyWidget(self.checkNeg, "negative")
+        self.registerPropertyWidget(self.checkRthr, "useRthr")
+
     def pulsingModeComboIndexChanged(self, idx):
         data = self.pulsingModeCombo.itemData(idx)
         mode = data["mode"]
@@ -256,32 +271,6 @@ class FormFinder(BaseProgPanel):
             self.leftLabels[4].setText("Pulse width step (us)")
         else:
             self.leftLabels[4].setText("Pulse width step (%)")
-
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-        
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        
-        #self.setPanelParameters(layoutWidgets)
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

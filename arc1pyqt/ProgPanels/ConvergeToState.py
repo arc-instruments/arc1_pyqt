@@ -211,6 +211,18 @@ class ConvergeToState(Ui_CTSParent, BaseProgPanel):
                     self.applyRangeButton]:
                 wdg.hide()
 
+        self.registerPropertyWidget(self.resTargetEdit, "res_target")
+        self.registerPropertyWidget(self.targetToleranceEdit, "res_target_tolerance")
+        self.registerPropertyWidget(self.initialToleranceEdit, "res_initial_tolerance")
+        self.registerPropertyWidget(self.interpulseEdit, "interpulse")
+        self.registerPropertyWidget(self.pulsesEdit, "pulses")
+        self.registerPropertyWidget(self.voltMinEdit, "vmin")
+        self.registerPropertyWidget(self.voltStepEdit, "vstep")
+        self.registerPropertyWidget(self.voltMaxEdit, "vmax")
+        self.registerPropertyWidget(self.pwMinEdit, "pwmin")
+        self.registerPropertyWidget(self.pwStepEdit, "pwstep")
+        self.registerPropertyWidget(self.pwMaxEdit, "pwmax")
+
     def applyValidators(self):
         floatValidator = QtGui.QDoubleValidator()
         intValidator = QtGui.QIntValidator()

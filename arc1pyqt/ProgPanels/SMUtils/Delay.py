@@ -11,6 +11,7 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 import time
 
 from arc1pyqt.Globals import fonts, functions, styles
+from arc1pyqt.modutils import BaseProgPanel
 
 
 class ThreadWrapper(QtCore.QObject):
@@ -33,10 +34,10 @@ class ThreadWrapper(QtCore.QObject):
         self.finished.emit()
 
 
-class Delay(QtWidgets.QWidget):
+class Delay(BaseProgPanel):
 
     def __init__(self, short=False):
-        super().__init__()
+        super().__init__(title='SuperMode Delay', description='')
         self.initUI()
 
     def initUI(self):
@@ -95,30 +96,8 @@ class Delay(QtWidgets.QWidget):
         self.setLayout(vbox)
         self.gridLayout=gridLayout
 
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] \
-            for i in range(self.gridLayout.count())]
-
-        layoutWidgets = []
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
+        self.registerPropertyWidget(self.delay_mag, "delay")
+        self.registerPropertyWidget(self.delay_mult, "delay_mult")
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:

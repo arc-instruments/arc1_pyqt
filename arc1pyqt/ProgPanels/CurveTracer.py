@@ -239,10 +239,10 @@ class CurveTracer(BaseProgPanel):
         self.leftEdits[4].editingFinished.connect(self.imposeLimitsOnStepWidth)
 
 
-        returnCheckBox = QtWidgets.QCheckBox("Halt and return.")
-        returnCheckBox.stateChanged.connect(self.toggleReturn)
+        self.returnCheckBox = QtWidgets.QCheckBox("Halt and return.")
+        self.returnCheckBox.stateChanged.connect(self.toggleReturn)
         self.returnCheck=0
-        gridLayout.addWidget(returnCheckBox, 4, 5)
+        gridLayout.addWidget(self.returnCheckBox, 4, 5)
 
         lineLabel=QtWidgets.QLabel()
         lineLabel.setText('Bias type:')
@@ -300,6 +300,19 @@ class CurveTracer(BaseProgPanel):
         self.vW.setFixedWidth(self.size().width())
         self.gridLayout=gridLayout
 
+        self.registerPropertyWidget(self.leftEdits[0], "vposmax")
+        self.registerPropertyWidget(self.leftEdits[1], "vnegmax")
+        self.registerPropertyWidget(self.leftEdits[2], "vstep")
+        self.registerPropertyWidget(self.leftEdits[3], "vstart")
+        self.registerPropertyWidget(self.leftEdits[4], "pw")
+        self.registerPropertyWidget(self.rightEdits[0], "cycles")
+        self.registerPropertyWidget(self.rightEdits[1], "interpulse")
+        self.registerPropertyWidget(self.rightEdits[2], "ccpos")
+        self.registerPropertyWidget(self.rightEdits[3], "ccneg")
+        self.registerPropertyWidget(self.combo_IVtype, "ivtype")
+        self.registerPropertyWidget(self.combo_IVoption, "ivoption")
+        self.registerPropertyWidget(self.returnCheckBox, "haltreturn")
+
     def goLive(self):
         self.liveWindow.show()
 
@@ -334,30 +347,6 @@ class CurveTracer(BaseProgPanel):
             self.returnCheck=0
         else:
             self.returnCheck=1
-
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
-
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type == 'QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type == 'QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type == 'QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
 
     def updateIVtype(self, event):
         pass

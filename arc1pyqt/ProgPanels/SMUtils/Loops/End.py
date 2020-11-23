@@ -9,12 +9,13 @@
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 from arc1pyqt.Globals import fonts
+from arc1pyqt.modutils import BaseProgPanel
 
 
-class End(QtWidgets.QWidget):
+class End(BaseProgPanel):
 
     def __init__(self, short=False):
-        super().__init__()
+        super().__init__(title='SuperMode End Loop', description='')
         self.initUI()
 
     def initUI(self):
@@ -33,9 +34,3 @@ class End(QtWidgets.QWidget):
         vbox.addStretch()
 
         self.setLayout(vbox)
-
-    def extractPanelParameters(self):
-        return []
-
-    def setPanelParameters(self, layoutWidgets):
-        pass

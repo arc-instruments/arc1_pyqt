@@ -813,6 +813,24 @@ class ParameterFit(Ui_PFParent, BaseProgPanel):
         self.IVTypeCombo.addItem("Staircase", 0)
         self.IVTypeCombo.addItem("Pulsed", 1)
 
+        self.registerPropertyWidget(self.nrPulsesEdit, "pulses")
+        self.registerPropertyWidget(self.pulseWidthEdit, "pulse_width")
+        self.registerPropertyWidget(self.interpulseEdit, "interpulse")
+        self.registerPropertyWidget(self.VStartPosEdit, "vstart_pos")
+        self.registerPropertyWidget(self.VStepPosEdit, "vstep_pos")
+        self.registerPropertyWidget(self.VStopPosEdit, "vstop_pos")
+        self.registerPropertyWidget(self.VStartNegEdit, "vstart_neg")
+        self.registerPropertyWidget(self.VStepNegEdit, "vstep_neg")
+        self.registerPropertyWidget(self.VStopNegEdit, "vstop_neg")
+        self.registerPropertyWidget(self.IVStartEdit, "ivstart")
+        self.registerPropertyWidget(self.IVStepEdit, "ivstep")
+        self.registerPropertyWidget(self.IVStopPosEdit, "ivstop_pos")
+        self.registerPropertyWidget(self.IVStopNegEdit, "ivstop_neg")
+        self.registerPropertyWidget(self.IVInterpulseEdit, "iv_interpulse")
+        self.registerPropertyWidget(self.noIVCheckBox, "dont_run_iv")
+        self.registerPropertyWidget(self.IVPwEdit, "ivpw")
+        self.registerPropertyWidget(self.IVTypeCombo, "ivtype")
+
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.Resize:
             self.vW.setFixedWidth(event.size().width() - object.verticalScrollBar().width())

@@ -14,7 +14,7 @@ HW = state.hardware
 APP = state.app
 CB = state.crossbar
 from arc1pyqt.Globals import fonts, functions, styles
-from arc1pyqt.modutils import BaseThreadWrapper
+from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel
 
 
 class ThreadWrapper(BaseThreadWrapper):
@@ -44,10 +44,10 @@ class ThreadWrapper(BaseThreadWrapper):
         self.updateTree.emit(CB.word, CB.bit)
 
 
-class Pulse(QtWidgets.QWidget):
+class Pulse(BaseProgPanel):
     
     def __init__(self, short=False):
-        super().__init__()
+        super().__init__(title='SuperMode Read', description='')
         self.short=short
         self.initUI()
         
@@ -135,58 +135,14 @@ class Pulse(QtWidgets.QWidget):
         vbox1.addWidget(scrlArea)
         vbox1.addStretch()
 
-        if self.short==False:
-            self.hboxProg=QtWidgets.QHBoxLayout()
-
-            push_single=QtWidgets.QPushButton('Apply to One')
-            push_range=QtWidgets.QPushButton('Apply to Range')
-            push_all=QtWidgets.QPushButton('Apply to All')
-
-            push_single.setStyleSheet(styles.btnStyle)
-            push_range.setStyleSheet(styles.btnStyle)
-            push_all.setStyleSheet(styles.btnStyle)
-
-            push_single.clicked.connect(self.programOne)
-            push_range.clicked.connect(self.programRange)
-            push_all.clicked.connect(self.programAll)
-
-            self.hboxProg.addWidget(push_single)
-            self.hboxProg.addWidget(push_range)
-            self.hboxProg.addWidget(push_all)
-
-            vbox1.addLayout(self.hboxProg)
-
         self.extractParams()
 
         self.setLayout(vbox1)
         self.gridLayout=gridLayout
-
-    def extractPanelParameters(self):
-        layoutItems=[[i,self.gridLayout.itemAt(i).widget()] for i in range(self.gridLayout.count())]
         
-        layoutWidgets=[]
-
-        for i,item in layoutItems:
-            if isinstance(item, QtWidgets.QLineEdit):
-                layoutWidgets.append([i,'QLineEdit', item.text()])
-            if isinstance(item, QtWidgets.QComboBox):
-                layoutWidgets.append([i,'QComboBox', item.currentIndex()])
-            if isinstance(item, QtWidgets.QCheckBox):
-                layoutWidgets.append([i,'QCheckBox', item.checkState()])
-
-        
-        #self.setPanelParameters(layoutWidgets)
-        return layoutWidgets
-
-    def setPanelParameters(self, layoutWidgets):
-        for i,type,value in layoutWidgets:
-            if type=='QLineEdit':
-                self.gridLayout.itemAt(i).widget().setText(value)
-            if type=='QComboBox':
-                self.gridLayout.itemAt(i).widget().setCurrentIndex(value)
-            if type=='QCheckBox':
-                self.gridLayout.itemAt(i).widget().setChecked(value)
-
+        self.registerPropertyWidget(self.pulse_V, 'vpulse')
+        self.registerPropertyWidget(self.pulse_pw, 'pwpulse')
+        self.registerPropertyWidget(self.pw_DropDown, 'pwpulse_mult')
 
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
