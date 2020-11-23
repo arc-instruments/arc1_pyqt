@@ -294,9 +294,9 @@ class BaseProgPanel(QtWidgets.QWidget):
     def execute(self, wrapper, entrypoint=None):
         """
         This functions schedules a wrapper for execution taking care of the
-        standard signals. The wrapped action (``wrapper``) will be passed
-        along a thread which will call the ``entrypoint`` function of
-        ``wrapper``. If ``entrypoint`` is None the default ``wrapper.run``
+        standard signals. The wrapped action (`wrapper`) will be passed
+        along a thread which will call the `entrypoint` function of
+        `wrapper`. If `entrypoint` is None the default `wrapper.run`
         entrypoint will be used.
         """
         if (HW.ArC is None) or (self.thread is not None):
@@ -375,6 +375,10 @@ class BaseThreadWrapper(QtCore.QObject):
     """ Toggle interface interaction """
 
     def runner(func):
+        """
+        Decorator used to signify a runnable function within a custom measuring
+        thread as described in `BaseThreadWrapper`.
+        """
         def inner(self):
             self.disableInterface.emit(True)
             func(self)
