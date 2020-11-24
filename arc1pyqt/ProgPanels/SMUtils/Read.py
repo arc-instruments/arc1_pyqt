@@ -45,19 +45,13 @@ class ThreadWrapper(BaseThreadWrapper):
             conf.Vread = self.Vread
             HW.ArC.update_read(conf)
 
-        job="1"
-        HW.ArC.write_b(job+"\n")
-        HW.ArC.write_b(str(CB.word)+"\n")
-        HW.ArC.write_b(str(CB.bit)+"\n")
-
-        Mnow=HW.ArC.read_floats(1)
+        Mnow = HW.ArC.read_one(CB.word, CB.bit)
 
         tag='S R'+str(self.readType)+' V='+str(self.Vread)
         self.sendData.emit(CB.word, CB.bit, Mnow, float(self.Vread), 0, tag)
 
         self.displayData.emit()
         self.updateTree.emit(CB.word, CB.bit)
-
 
         # set read configuration back to its original state
         if needsUpdate == True:

@@ -50,10 +50,7 @@ class ThreadWrapper(BaseThreadWrapper):
             b=device[1]
             self.highlight.emit(w,b)
 
-            HW.ArC.write_b("1\n")
-            HW.ArC.queue_select(w, b)
-
-            Mnow = HW.ArC.read_floats(1)
+            Mnow = HW.ArC.read_one(w, b)
             tag_ = tag+"_s"
             self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
             self.displayData.emit()
@@ -66,10 +63,7 @@ class ThreadWrapper(BaseThreadWrapper):
                 b=device[1]
                 self.highlight.emit(w,b)
 
-                HW.ArC.write_b("1\n")
-                HW.ArC.queue_select(w, b)
-
-                Mnow=HW.ArC.read_floats(1)
+                Mnow = HW.ArC.read_one(w, b)
                 tag_=tag+"_"+ str(time.time())
                 self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
                 self.displayData.emit()
@@ -87,10 +81,7 @@ class ThreadWrapper(BaseThreadWrapper):
             b=device[1]
             self.highlight.emit(w,b)
 
-            HW.ArC.write_b("1\n")
-            HW.ArC.queue_select(w, b)
-
-            Mnow=HW.ArC.read_floats(1)
+            Mnow = HW.ArC.read_one(w, b)
             tag_=tag+"_e"
             self.sendData.emit(w,b,Mnow,self.Vread,0,tag_)
             self.displayData.emit()

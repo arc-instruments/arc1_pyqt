@@ -61,10 +61,16 @@ class VirtualArC(Instrument):
 
         if job=="3":
             self.write=self.get_pulse
+
+        if job=="04":
+            self.write=self.get_pulseonly
+
         if job=="191":
             self.write=self.get_endurance
+
         if job=="152":
             self.write=self.get_switchseeker_slow
+
         if job=="15":
             self.write=self.get_switchseeker_fast
 
@@ -91,6 +97,9 @@ class VirtualArC(Instrument):
         if job=="3":
             self.write=self.get_pulse
 
+        if job=="04":
+            self.write=self.get_pulseonly
+
         if job=="191":
             self.write=self.get_endurance
 
@@ -115,12 +124,44 @@ class VirtualArC(Instrument):
         """
         self.write_b("%d\n" % int(word))
         self.write_b("%d\n" % int(bit))
+        self.w = word
+        self.b = bit
 
     def select(self, word, bit):
         """
         For VirtualArC that's exactly the same as `VirtualArC.queue_select`.
         """
         self.queue_select(word, bit)
+
+    def read_one(self, word, bit):
+        """
+        Read resistance of device located at word, bit
+        """
+        self.write_b("1\n")
+        self.queue_select(word, bit)
+
+        return float(self.read_floats(1))
+
+    def pulseread_one(self, word, bit, voltage, pw):
+        """
+        Pulse a device at `word × bit` and read its value
+        """
+        self.write_b("3\n")
+        self.queue_select(word, bit)
+
+        self.write_b("%f\n" % voltage)
+        self.write_b("%f\n" % pw)
+
+        return float(self.read_floats(1))
+
+    def pulse_active(self, voltage, pw):
+        """
+        Pulse currently selected device. Selection must be previously
+        done with `arc1pyqt.VirtualArC.VirtualArC.select`.
+        """
+        self.write_b("04\n")
+        self.write_b("%f\n" % voltage)
+        self.write_b("%f\n" % pw)
 
     def write_b(self, value):
         self.write(value)
@@ -721,6 +762,13 @@ class VirtualArC(Instrument):
             self.compute_pulse()
             self.counter=0
 
+    def get_pulseonly(self, value):
+        sel.counter += 1
+        self.q_int.put(value.rstrip())
+        if self.counter == 2:
+            self.compute_pulse_only()
+            self.counter = 0
+
     def compute_pulse(self):
         w=int(self.q_in.get())
         b=int(self.q_in.get())
@@ -729,6 +777,14 @@ class VirtualArC(Instrument):
 
         self.crossbar=pulse(self.crossbar,w,b,ampl,pw,self.dt)
         self.q_out.put(str(read(self.crossbar,w,b))+"\n")
+        self.write=self.base_write
+
+    def compute_pulse_only(self):
+        ampl=float(self.q_in.get())
+        pw=float(self.q_in.get())
+
+        self.crossbar=pulse(self.crossbar,self.w,self.b,ampl,pw,self.dt)
+        self.q_out.put(str(read(self.crossbar,self.w,self.b))+"\n")
         self.write=self.base_write
 
     def close(self):

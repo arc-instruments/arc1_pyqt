@@ -409,12 +409,8 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
     def readSingle(self):
         if HW.ArC is not None:
-            job="1"
-            HW.ArC.write_b(job+"\n")
-            HW.ArC.write_b(str(CB.word)+"\n")
-            HW.ArC.write_b(str(CB.bit)+"\n")
 
-            currentM = float(HW.ArC.read_floats(1))
+            currentM = HW.ArC.read_one(CB.word, CB.bit)
 
             tag='S R'+str(HW.conf.readmode)+' V='+str(HW.conf.Vread)
             functions.updateHistory(CB.word, CB.bit, currentM, float(HW.conf.Vread), \
@@ -423,7 +419,6 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
             functions.displayUpdate.updateSignal.emit(CB.word, CB.bit, 2, APP.displayPoints,99)
             functions.historyTreeAntenna.updateTree.emit(CB.word, CB.bit)
-
 
     def readAll(self):
         if HW.ArC is not None:
@@ -520,16 +515,8 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
     def pulse(self):
         if HW.ArC is not None:
-            arc = HW.ArC
-            job="3"
-            arc.write_b(job+"\n")
-            arc.write_b(str(CB.word)+"\n")
-            arc.write_b(str(CB.bit)+"\n")
 
-            arc.write_b(str(float(self.amplitude))+"\n")
-            arc.write_b(str(float(self.pw))+"\n")
-
-            res = float(arc.read_floats(1))
+            res = HW.ArC.pulseread_one(CB.word, CB.bit, self.amplitude, self.pw)
 
             tag='P'
             functions.updateHistory(CB.word, CB.bit, res, self.amplitude, self.pw, tag)

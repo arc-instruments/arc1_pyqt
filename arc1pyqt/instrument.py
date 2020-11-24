@@ -100,6 +100,36 @@ class ArC1(Instrument):
         self.write_b("02\n")
         self.queue_select(word, bit)
 
+    def read_one(self, word, bit):
+        """
+        Read resistance of device located at word, bit
+        """
+        self.write_b("1\n")
+        self.queue_select(word, bit)
+
+        return float(self.read_floats(1))
+
+    def pulseread_one(self, word, bit, voltage, pw):
+        """
+        Pulse a device at `word × bit` and read its value
+        """
+        self.write_b("3\n")
+        self.queue_select(word, bit)
+
+        self.write_b("%f\n" % voltage)
+        self.write_b("%f\n" % pw)
+
+        return float(self.read_floats(1))
+
+    def pulse_active(self, voltage, pw):
+        """
+        Pulse currently selected device. Selection must be previously
+        done with `arc1pyqt.instrument.ArC1.select`.
+        """
+        self.write_b("04\n")
+        self.write_b("%f\n" % voltage)
+        self.write_b("%f\n" % pw)
+
     def reset(self):
         """
         Force an mbed reset
