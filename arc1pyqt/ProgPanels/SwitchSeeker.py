@@ -222,7 +222,7 @@ class SwitchSeeker(BaseProgPanel):
         if self.short==False:
             self.hboxProg=QtWidgets.QHBoxLayout()
 
-            push_single = self.makeControlButton('Appy to One', \
+            push_single = self.makeControlButton('Apply to One', \
                     self.programOne)
             push_range = self.makeControlButton('Apply to Range', \
                     self.programRange)
