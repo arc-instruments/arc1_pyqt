@@ -191,7 +191,7 @@ def compile_ui(src, dst, force=False, from_imports=True, rc_suffix='_rc'):
 
     with open(dst, 'w', encoding='utf-8') as out:
         uic.compileUi(src, out, execute=False, indent=4,
-            from_imports=from_imports, rc_suffix=rc_suffix)
+            from_imports=from_imports, resource_suffix=rc_suffix)
 
 
 def compile_rc(files, dst, force=False):
