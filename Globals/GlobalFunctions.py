@@ -29,7 +29,9 @@ addressAntenna = AddressAntenna()
 
 
 # Update history function
-def updateHistory(w,b,m,a,pw,tag,Vread=g.Vread):
+def updateHistory(w,b,m,a,pw,tag,Vread=None):
+    if Vread is None:
+        Vread = g.Vread
     readTag='R'+str(g.readOption)
     if g.sessionMode==1:
         g.Mnow=m/2
