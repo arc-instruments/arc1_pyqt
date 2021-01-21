@@ -5,7 +5,9 @@
 # ARC_PYI_CONSOLE (optional): Set to 0 to disable the console window
 
 import os
+import sys
 import os.path
+import semver
 
 try:
     PATHEX = os.environ['ARC_PYI_PATHEX']
@@ -15,22 +17,47 @@ except KeyError:
 
 CONSOLE = bool(int(os.environ.get('ARC_PYI_CONSOLE', 1)))
 
-added_files = [('Graphics/*.png','Graphics'),
-        ('Documentation/ArC_ONE.pdf','Documentation'),
-        ('ProgPanels/*.py','ProgPanels'),
-        ('GeneratedUiElements/*.py','GeneratedUiElements'),
-        ('ProgPanels/Basic/*.py','ProgPanels/Basic'),
-        ('ProgPanels/Basic/Loops/*.py','ProgPanels/Basic/Loops'),
-        ('Helper/*.txt','Helper'),
-        ('source/*.*','source')]
+__HERE__ = "."
+__VERSION_FILE__ = os.path.join(__HERE__, 'arc1pyqt', 'version.txt')
+__VERSION_RAW__ = open(__VERSION_FILE__).read().splitlines()[1].strip()
+__VERSION_SEMVER__ = semver.VersionInfo.parse(__VERSION_RAW__)
+
+tmpl = open("win32_version_info.tmpl").read()
+version_keys = {'major': __VERSION_SEMVER__.major,
+    'minor': __VERSION_SEMVER__.minor,
+    'patch': __VERSION_SEMVER__.patch,
+    'version_text': __VERSION_RAW__}
+print(version_keys)
+with open(os.path.join("build", "ArC1", "version_info.txt"), 'w') as version_file:
+    version_file.write(tmpl.format(**version_keys))
 
 
-a = Analysis(['main.py'],
+added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
+        ('arc1pyqt/ProgPanels/*.py','arc1pyqt/ProgPanels'),
+        ('arc1pyqt/ExtPanels/*.py','arc1pyqt/ExtPanels'),
+        ('arc1pyqt/GeneratedUiElements/*.py','arc1pyqt/GeneratedUiElements'),
+        ('arc1pyqt/ProgPanels/Basic/*.py','arc1pyqt/ProgPanels/Basic'),
+        ('arc1pyqt/ProgPanels/Basic/Loops/*.py','arc1pyqt/ProgPanels/Basic/Loops'),
+        ('arc1pyqt/Helper/*.txt','arc1pyqt/Helper'),
+        ('arc1pyqt/version.txt','arc1pyqt')]
+
+modimports=['arc1pyqt', 'scipy', 'scipy.optimize',
+    'scipy.linalg', 'scipy.stats']
+
+try:
+    import arc1docs
+    manual = os.path.join(arc1docs.__path__[0], arc1docs._fname)
+    if os.path.exists(manual):
+        modimports.append('arc1docs')
+        added_files.append((manual, arc1docs.__name__))
+except Exception as exc:
+    print("Could not find arc1docs, skipping...", exc, file=sys.stderr)
+
+a = Analysis(['run.py'],
         pathex=[PATHEX],
         binaries=None,
         datas=added_files,
-        hiddenimports=['Globals.modutils', 'scipy', 'scipy.optimize',
-            'scipy.linalg', 'scipy.stats'],
+        hiddenimports=modimports,
         hookspath=[],
         runtime_hooks=[],
         excludes=[],
@@ -47,8 +74,9 @@ exe = EXE(pyz,
         debug=False,
         strip=False,
         upx=True,
-        icon=os.path.join('Graphics', 'applogo.ico'),
-        console=CONSOLE)
+        icon=os.path.join('arc1pyqt', 'Graphics', 'applogo.ico'),
+        console=CONSOLE,
+        version=os.path.join("build", "ArC1", "version_info.txt"))
 
 coll = COLLECT(exe,
         a.binaries,
