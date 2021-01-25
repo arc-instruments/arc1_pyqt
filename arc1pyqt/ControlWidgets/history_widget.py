@@ -44,7 +44,7 @@ class HistoryWidget(QtWidgets.QWidget):
         self.historyView.doubleClicked.connect(self._displayResults)
 
         functions.historyTreeAntenna.updateTree.connect(self._updateTree)
-        functions.historyTreeAntenna.updateTree_short.connect(self._updateTree)
+        functions.historyTreeAntenna.updateTree_batch.connect(self._updateTree_batch)
         functions.historyTreeAntenna.rebuildTreeTopLevel.connect(self._rebuildTopLevel)
         functions.historyTreeAntenna.clearTree.connect(self._clearTree)
         functions.historyTreeAntenna.changeSessionName.connect(self.changeSessionName)
@@ -69,6 +69,13 @@ class HistoryWidget(QtWidgets.QWidget):
 
     def _clearTree(self):
         self.historyView.model().clear()
+
+    def _updateTree_batch(self, w, b, idx):
+        # Update tree for a specific word/bit starting
+        # from idx down to the latest item in the
+        # device history
+        for i in range(idx, len(CB.history[w][b])):
+            self._updateTree(w, b, i)
 
     def _updateTree(self, w, b, historyIdx=-1):
         # historyIdx is used if we want to update the tree

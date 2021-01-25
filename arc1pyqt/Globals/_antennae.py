@@ -49,7 +49,7 @@ class DisplayUpdateAntenna(QObject):
 class HistoryTreeAntenna(QObject):
     # used for signaling the device history tree list to update its contents
     updateTree=pyqtSignal(int,int)
-    updateTree_short=pyqtSignal()
+    updateTree_batch = pyqtSignal(int, int, int)
     clearTree=pyqtSignal()
     changeSessionName=pyqtSignal()
     rebuildTreeTopLevel = pyqtSignal(int, int)

@@ -5,6 +5,7 @@ import inspect
 from pkgutil import iter_modules
 import importlib.util as imputil
 from glob import glob
+from functools import partial
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
@@ -291,14 +292,20 @@ class BaseProgPanel(QtWidgets.QWidget):
         self.short = short
         self.propertyWidgets = {}
         self.thread = None
+        self._deferredUpdates = {}
 
-    def execute(self, wrapper, entrypoint=None):
+    def execute(self, wrapper, entrypoint=None, deferredUpdate=False):
         """
-        This functions schedules a wrapper for execution taking care of the
+        This function schedules a wrapper for execution taking care of the
         standard signals. The wrapped action (`wrapper`) will be passed
         along a thread which will call the `entrypoint` function of
         `wrapper`. If `entrypoint` is None the default `wrapper.run`
-        entrypoint will be used.
+        entrypoint will be used. Argument `deferredUpdate` prevents the history
+        tree from updating until the thread operation has finished. This can
+        be useful in situations where multiple different devices are used or
+        when a module uses many individual operations that would otherwise
+        trigger a tree update (for instance hundreds of reads/pulses over
+        ten different devices).
         """
         if (HW.ArC is None) or (self.thread is not None):
             return
@@ -309,18 +316,28 @@ class BaseProgPanel(QtWidgets.QWidget):
         self.threadWrapper = wrapper
         self.thread = QtCore.QThread()
 
+        # When deferring tree updates store current point in history for the
+        # whole crossbar. Once the operation is finished the history tree will
+        # then be populated starting from this point in history
+        if deferredUpdate:
+            for (r, row) in enumerate(CB.history):
+                for (c, col) in enumerate(row):
+                    self._deferredUpdates['%d%d' % (r, c)] = (r, c, len(col))
+
         self.threadWrapper.moveToThread(self.thread)
         self.thread.started.connect(entrypoint)
         self.threadWrapper.finished.connect(self.thread.quit)
         self.threadWrapper.sendData.connect(functions.updateHistory)
         self.threadWrapper.highlight.connect(functions.cbAntenna.cast)
         self.threadWrapper.displayData.connect(functions.displayUpdate.cast)
-        self.threadWrapper.updateTree.connect(functions.historyTreeAntenna.updateTree.emit)
+        if not deferredUpdate:
+            self.threadWrapper.updateTree.connect(\
+                functions.historyTreeAntenna.updateTree.emit)
         self.threadWrapper.disableInterface.connect(functions.interfaceAntenna.cast)
-        self.thread.finished.connect(self._onThreadFinished)
+        self.thread.finished.connect(partial(self._onThreadFinished, deferredUpdate))
         self.thread.start()
 
-    def _onThreadFinished(self):
+    def _onThreadFinished(self, deferredUpdate=False):
         """ Clean up running threads and wake up the interface """
         if self.thread is None:
             return
@@ -330,6 +347,12 @@ class BaseProgPanel(QtWidgets.QWidget):
         self.threadWrapper.deleteLater()
         self.threadWrapper = None
         self.thread = None
+
+        # If updates were deferred do them now in batch
+        if deferredUpdate:
+            for (_, (w, b, idx)) in self._deferredUpdates.items():
+                functions.historyTreeAntenna.updateTree_batch.emit(w, b, idx)
+            self._deferredUpdates.clear()
 
     def registerPropertyWidget(self, wdg, name):
         """
