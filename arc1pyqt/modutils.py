@@ -266,10 +266,10 @@ def makeDeviceList(isRange):
         minW = CB.limits['words'][0]
         maxW = CB.limits['words'][1]
         minB = CB.limits['bits'][0]
-        maxB = CB.limits['words'][1]
+        maxB = CB.limits['bits'][1]
 
     # Find how many SA devices are contained in the range
-    if CB.checkSA == False:
+    if not CB.checkSA:
         for w in range(minW, maxW+1):
             for b in range(minB, maxB+1):
                 devices.append([w, b])
