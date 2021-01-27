@@ -10,7 +10,6 @@ import queue
 
 readNoise = 0.01
 write_scheme = {'V/2':0.5}
-Vread = 0.5
 
 
 class VirtualArC(Instrument):
@@ -50,6 +49,9 @@ class VirtualArC(Instrument):
 
     def inWaiting(self):
         return self.q_out.qsize()
+
+    def update_read(self, config):
+        self.Vread = config.Vread
 
     def base_write(self,value):
         job=value.rstrip()
