@@ -125,31 +125,38 @@ class ProgPanelWidget(QtWidgets.QWidget):
 
     def loadPanel(self):
         try:
-            panelDataFileName = QtWidgets.QFileDialog.getOpenFileName(self,
-                'Open panel from file...', '', 'Panel data (*.json)')[0]
+            panelDataFileNames = QtWidgets.QFileDialog.getOpenFileNames(self,
+                'Open panel from file(s)...', '', 'Panel data (*.json)')[0]
         except IndexError:
             return
 
-        if panelDataFileName:
-            with open(panelDataFileName, 'rb') as inputFile:
-                (modpath, data) = json.load(inputFile)
+        errors = []
 
-            if (not modpath) or (not data):
-                return
+        if panelDataFileNames:
+            for panelDataFileName in panelDataFileNames:
+                with open(panelDataFileName, 'rb') as inputFile:
+                    (modpath, data) = json.load(inputFile)
 
-            (modname, classname) = modpath.rsplit('.', 1)
-            try:
-                panelMod = importlib.import_module(modname)
-                klass = getattr(panelMod, classname)
-                tag = getattr(panelMod, 'tags')
-                panel = klass()
-                panel.setPanelData(data)
+                if (not modpath) or (not data):
+                    errors.append(panelDataFileName)
+                    continue
 
-                self.tabFrame.addTab(panel, tag['top'].name)
-                self.tabFrame.setCurrentWidget(panel)
-            except:
+                (modname, classname) = modpath.rsplit('.', 1)
+                try:
+                    panelMod = importlib.import_module(modname)
+                    klass = getattr(panelMod, classname)
+                    tag = getattr(panelMod, 'tags')
+                    panel = klass()
+                    panel.setPanelData(data)
+
+                    self.tabFrame.addTab(panel, tag['top'].name)
+                    self.tabFrame.setCurrentWidget(panel)
+                except:
+                    errors.append(panelDataFileName)
+
+            if len(errors) > 0:
                 QtWidgets.QMessageBox.warning(self, "Invalid module data",
-                    "Module could not be found or panel data invalid",
+                    "Could not load modules from [%s]" % ', '.join(errors),
                     QtWidgets.QMessageBox.Ok)
 
     def setEnabled(self, state):
