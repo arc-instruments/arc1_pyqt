@@ -824,7 +824,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
 
 def main():
-
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName("arc1pyqt")
     Graphics.initialise()
