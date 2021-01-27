@@ -207,8 +207,8 @@ class DataDisplayWidget(QtWidgets.QWidget):
                 PList.append(item[1])
                 PList.append(0)
                 if (item[2]==0):
-                    PMarkerList.append(None)
-                    PWList.append(None)
+                    PMarkerList.append(np.nan)
+                    PWList.append(np.nan)
                 else:
                     PMarkerList.append(item[1])
                     PWList.append(item[2])
