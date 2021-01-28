@@ -76,6 +76,11 @@ QPushButton:hover{\
 	} \
 QPushButton:pressed{\
 	margin: 3px; \
+	} \
+QPushButton:disabled{\
+	background-color: rgb(244, 244, 244); \
+    border: 1px solid rgb(180, 180, 180); \
+	color: rgb(180, 180, 180); \
 	}"""
 
 btnLive="""\
@@ -110,7 +115,12 @@ QPushButton:hover{\
 	} \
 QPushButton:pressed{\
 	margin: 3px; \
-	}"""
+	}\
+QPushButton:disabled{\
+	background-color: rgb(244, 244, 244); \
+    border: 1px solid rgb(180, 180, 180); \
+	color: rgb(180, 180, 180); \
+    }"""
 
 groupStyle="""\
 QGroupBox {\
