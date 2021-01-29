@@ -26,9 +26,6 @@ from functools import partial
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QStandardPaths
 import ctypes
-# ensure we are using the `Qt5Agg` backend only
-import matplotlib
-matplotlib.rcParams['backend'] = 'Qt5Agg'
 
 from . import state
 HW = state.hardware
