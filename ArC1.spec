@@ -36,8 +36,8 @@ added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
         ('arc1pyqt/ProgPanels/*.py','arc1pyqt/ProgPanels'),
         ('arc1pyqt/ExtPanels/*.py','arc1pyqt/ExtPanels'),
         ('arc1pyqt/GeneratedUiElements/*.py','arc1pyqt/GeneratedUiElements'),
-        ('arc1pyqt/ProgPanels/Basic/*.py','arc1pyqt/ProgPanels/Basic'),
-        ('arc1pyqt/ProgPanels/Basic/Loops/*.py','arc1pyqt/ProgPanels/Basic/Loops'),
+        ('arc1pyqt/ProgPanels/SMUtils/*.py','arc1pyqt/ProgPanels/SMUtils'),
+        ('arc1pyqt/ProgPanels/SMUtils/Loops/*.py','arc1pyqt/ProgPanels/SMUtils/Loops'),
         ('arc1pyqt/Helper/*.txt','arc1pyqt/Helper'),
         ('arc1pyqt/version.txt','arc1pyqt')]
 
