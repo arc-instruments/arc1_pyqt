@@ -141,13 +141,13 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
             self.devTopLeft=self.matrix.cells[minW][minB]
             self.devBotRight=self.matrix.cells[maxW][maxB]
 
-            x1=self.devTopLeft.x()-4
-            y1=self.devTopLeft.y()-4
+            x1=self.devTopLeft.x()
+            y1=self.devTopLeft.y()
 
-            x2=self.devBotRight.x()+self.devBotRight.width()+4
-            y2=self.devBotRight.y()+self.devBotRight.height()+4
+            x2=self.devBotRight.x()+self.devBotRight.width()
+            y2=self.devBotRight.y()+self.devBotRight.height()
 
-            self.rangeRect.setCoords(x1,y1,x2,y2)
+            self.rangeRect.setCoords(x1+5,y1+5,x2+8,y2+8)
 
             self.rectWidget.setGeometry(self.rangeRect)
             self.rectWidget.setStyleSheet("border: 3px solid red")
@@ -156,13 +156,13 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
     def eventFilter(self, object, event):
         if event.type()==QtCore.QEvent.Resize:
             try:
-                x1=self.devTopLeft.x()-4
-                y1=self.devTopLeft.y()-4
+                x1=self.devTopLeft.x()
+                y1=self.devTopLeft.y()
 
-                x2=self.devBotRight.x()+self.devBotRight.width()+4
-                y2=self.devBotRight.y()+self.devBotRight.height()+4
+                x2=self.devBotRight.x()+self.devBotRight.width()
+                y2=self.devBotRight.y()+self.devBotRight.height()
 
-                self.rangeRect.setCoords(x1,y1,x2,y2)
+                self.rangeRect.setCoords(x1+5,y1+5,x2+8,y2+8)
                 self.rectWidget.setGeometry(self.rangeRect)
 
             except AttributeError:
