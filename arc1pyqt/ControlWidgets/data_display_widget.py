@@ -20,16 +20,26 @@ from .. import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
+from ..state import DisplayMode
 from ..Globals import functions
 
 
+
 class DataDisplayWidget(QtWidgets.QWidget):
+
+    __valueFormatter = {
+        DisplayMode.RESISTANCE: ('Ω', 'Resistance', lambda r, v: r),
+        DisplayMode.CONDUCTANCE: ('S', 'Conductance', lambda r, v: 1.0/r),
+        DisplayMode.CURRENT: ('A', 'Current', lambda r, v: v/r)
+    }
 
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
+
+        (unit, label, _) = self.__valueFormatter[APP.displayMode]
 
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
@@ -59,7 +69,7 @@ class DataDisplayWidget(QtWidgets.QWidget):
         self.plot_mem.setMouseEnabled(True,False)
         self.curveM=self.plot_mem.plot(pen=penM, symbolPen=None, symbolBrush=(255,0,0), symbol='s', symbolSize=5, pxMode=True)
         labelM_style = {'color': '#000000', 'font-size': '10pt'}
-        self.plot_mem.getAxis('left').setLabel('Resistance\n', units='Ω', **labelM_style)
+        self.plot_mem.getAxis('left').setLabel(label+'\n', units=unit, **labelM_style)
         self.plot_mem.getAxis('left').setGrid(50)
         self.plot_mem.getAxis('left').setWidth(60)
         self.plot_mem.showAxis('right')
@@ -135,7 +145,9 @@ class DataDisplayWidget(QtWidgets.QWidget):
 
     def updateLogScale(self,event):
         self.log=event
-        self.plot_mem.setLogMode(False,event)
+        self.plot_mem.setLogMode(False, event)
+        self.plot_mem.getAxis('left').enableAutoSIPrefix(not(event > 0))
+
 
     def wheelEventOverride(self, event):
         pass
@@ -177,6 +189,10 @@ class DataDisplayWidget(QtWidgets.QWidget):
 
     def bulk_updateDisplay(self,w,b,type,points,slider):
 
+        (unit, label, func) = self.__valueFormatter[APP.displayMode]
+
+        self.plot_mem.getAxis('left').setLabel(label + '\n', units=unit)
+
         lastPoint2 = len(CB.history[CB.word][CB.bit])
         lastPoint = lastPoint2
         firstPoint = lastPoint-points+1
@@ -202,7 +218,10 @@ class DataDisplayWidget(QtWidgets.QWidget):
             ReadMarkerList=[]
 
             for item in CB.history[CB.word][CB.bit][firstPoint:lastPoint]:
-                Mlist.append(item[0])
+                if self.log > 0:
+                    Mlist.append(np.abs(func(item[0], item[1])))
+                else:
+                    Mlist.append(func(item[0], item[1]))
                 PList.append(0)
                 PList.append(item[1])
                 PList.append(0)

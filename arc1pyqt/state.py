@@ -1,7 +1,15 @@
+from enum import IntEnum
 from dataclasses import dataclass
 import numpy as np
 from PyQt5.QtCore import QMutex, QWaitCondition
 from .instrument import HWConfig
+
+
+class DisplayMode(IntEnum):
+    RESISTANCE = 0
+    CONDUCTANCE = 1
+    CURRENT = 2
+
 
 @dataclass
 class Crossbar:
@@ -91,6 +99,7 @@ class Application:
     scalingFactor = 1.0
     displayPoints = 100
     globalDisable = False
+    displayMode = DisplayMode.RESISTANCE
     mutex = QMutex()
     waitCondition = QWaitCondition()
 

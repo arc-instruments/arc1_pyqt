@@ -31,6 +31,7 @@ from . import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
+from .state import DisplayMode
 from . import constants
 
 from .ControlWidgets import CrossbarWidget
@@ -151,6 +152,26 @@ class Arcontrol(QtWidgets.QMainWindow):
         setCWDAction.setStatusTip('Set current working directory')
         setCWDAction.triggered.connect(self.setCWD)
 
+        displayResistanceAction = QtWidgets.QAction('Display Resistance')
+        displayResistanceAction.setCheckable(True)
+        displayResistanceAction.triggered.connect(partial(self.displayModeChanged,
+            mode=DisplayMode.RESISTANCE))
+        displayConductanceAction = QtWidgets.QAction('Display Conductance')
+        displayConductanceAction.setCheckable(True)
+        displayConductanceAction.triggered.connect(partial(self.displayModeChanged,
+            mode=DisplayMode.CONDUCTANCE))
+        displayCurrentAction = QtWidgets.QAction('Display Current')
+        displayCurrentAction.setCheckable(True)
+        displayCurrentAction.triggered.connect(partial(self.displayModeChanged,
+            mode=DisplayMode.CURRENT))
+
+        self.displayModeGroup = QtWidgets.QActionGroup(self)
+        self.displayModeGroup.setExclusive(True)
+        self.displayModeGroup.addAction(displayResistanceAction)
+        self.displayModeGroup.addAction(displayConductanceAction)
+        self.displayModeGroup.addAction(displayCurrentAction)
+        displayResistanceAction.setChecked(True)
+
         configAction = QtWidgets.QAction('Modify hardware settings', self)
         configAction.setStatusTip('Modify hardware settings')
         configAction.triggered.connect(self.showConfig)
@@ -161,6 +182,10 @@ class Arcontrol(QtWidgets.QMainWindow):
         # Populate settings menu
         settingsMenu.addAction(configAction)
         settingsMenu.addAction(setCWDAction)
+        settingsMenu.addSeparator()
+        settingsMenu.addAction(displayResistanceAction)
+        settingsMenu.addAction(displayConductanceAction)
+        settingsMenu.addAction(displayCurrentAction)
         settingsMenu.addSeparator()
         settingsMenu.addAction(openModuleDirAction)
         settingsMenu.addSeparator()
@@ -369,6 +394,10 @@ class Arcontrol(QtWidgets.QMainWindow):
         else:
             msg.setText("Your ArC ONE installation is up to date!")
         msg.exec_()
+
+    def displayModeChanged(self, _, mode):
+        APP.displayMode = mode
+        functions.displayUpdate.cast()
 
     def showConfig(self):
         from .ControlWidgets import ConfigHardwareWidget
