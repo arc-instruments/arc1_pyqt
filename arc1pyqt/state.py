@@ -9,6 +9,7 @@ class DisplayMode(IntEnum):
     RESISTANCE = 0
     CONDUCTANCE = 1
     CURRENT = 2
+    ABS_CURRENT = 3
 
 
 @dataclass

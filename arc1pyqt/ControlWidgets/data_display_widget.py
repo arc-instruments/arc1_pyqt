@@ -30,7 +30,8 @@ class DataDisplayWidget(QtWidgets.QWidget):
     __valueFormatter = {
         DisplayMode.RESISTANCE: ('Ω', 'Resistance', lambda r, v: r),
         DisplayMode.CONDUCTANCE: ('S', 'Conductance', lambda r, v: 1.0/r),
-        DisplayMode.CURRENT: ('A', 'Current', lambda r, v: v/r)
+        DisplayMode.CURRENT: ('A', 'Current', lambda r, v: v/r),
+        DisplayMode.ABS_CURRENT: ('A', 'Abs. Current', lambda r, v: np.abs(v/r))
     }
 
     def __init__(self):
