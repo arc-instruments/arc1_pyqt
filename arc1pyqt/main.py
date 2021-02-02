@@ -152,24 +152,33 @@ class Arcontrol(QtWidgets.QMainWindow):
         setCWDAction.setStatusTip('Set current working directory')
         setCWDAction.triggered.connect(self.setCWD)
 
-        displayResistanceAction = QtWidgets.QAction('Display Resistance')
+        displayResistanceAction = QtWidgets.QAction(Graphics.getSvgIcon('display-res'),
+            'Display Resistance')
         displayResistanceAction.setCheckable(True)
         displayResistanceAction.triggered.connect(partial(self.displayModeChanged,
             mode=DisplayMode.RESISTANCE))
-        displayConductanceAction = QtWidgets.QAction('Display Conductance')
+        displayConductanceAction = QtWidgets.QAction(Graphics.getSvgIcon('display-cond'),
+            'Display Conductance')
         displayConductanceAction.setCheckable(True)
         displayConductanceAction.triggered.connect(partial(self.displayModeChanged,
             mode=DisplayMode.CONDUCTANCE))
-        displayCurrentAction = QtWidgets.QAction('Display Current')
+        displayCurrentAction = QtWidgets.QAction(Graphics.getSvgIcon('display-cur'),
+            'Display Current')
         displayCurrentAction.setCheckable(True)
         displayCurrentAction.triggered.connect(partial(self.displayModeChanged,
             mode=DisplayMode.CURRENT))
+        displayAbsCurrentAction = QtWidgets.QAction(Graphics.getSvgIcon('display-abs-cur'),
+            'Display Absolute Current')
+        displayAbsCurrentAction.setCheckable(True)
+        displayAbsCurrentAction.triggered.connect(partial(self.displayModeChanged,
+            mode=DisplayMode.ABS_CURRENT))
 
         self.displayModeGroup = QtWidgets.QActionGroup(self)
         self.displayModeGroup.setExclusive(True)
         self.displayModeGroup.addAction(displayResistanceAction)
         self.displayModeGroup.addAction(displayConductanceAction)
         self.displayModeGroup.addAction(displayCurrentAction)
+        self.displayModeGroup.addAction(displayAbsCurrentAction)
         displayResistanceAction.setChecked(True)
 
         configAction = QtWidgets.QAction('Modify hardware settings', self)
@@ -183,10 +192,7 @@ class Arcontrol(QtWidgets.QMainWindow):
         settingsMenu.addAction(configAction)
         settingsMenu.addAction(setCWDAction)
         settingsMenu.addSeparator()
-        settingsMenu.addAction(displayResistanceAction)
-        settingsMenu.addAction(displayConductanceAction)
-        settingsMenu.addAction(displayCurrentAction)
-        settingsMenu.addSeparator()
+        #settingsMenu.addSeparator()
         settingsMenu.addAction(openModuleDirAction)
         settingsMenu.addSeparator()
         settingsMenu.addAction(self.updateAction_menu)
@@ -246,6 +252,12 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.toolbar.addWidget(self.comPorts)
         self.toolbar.addWidget(self.refresh)
         self.toolbar.addWidget(self.discBtn)
+        self.toolbar.addSeparator()
+
+        self.toolbar.addAction(displayResistanceAction)
+        self.toolbar.addAction(displayConductanceAction)
+        self.toolbar.addAction(displayCurrentAction)
+        self.toolbar.addAction(displayAbsCurrentAction)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.clearAction)
 

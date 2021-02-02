@@ -20,6 +20,10 @@ _pixmap_files = [
 ]
 
 _svg_files = [
+    'display-res.svg',
+    'display-cond.svg',
+    'display-cur.svg',
+    'display-abs-cur.svg'
 ]
 
 _pixmaps = {}
