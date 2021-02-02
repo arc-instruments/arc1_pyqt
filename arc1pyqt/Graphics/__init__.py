@@ -68,12 +68,20 @@ def getSvgScaled(name, ratio=1.0):
     Convert an SVG into a pixmap
     """
 
-    svg = self.getSvgRenderer(name)
+    svg = getSvgRenderer(name)
     img_w = svg.defaultSize().width()*ratio
     img_h = svg.defaultSize().height()*ratio
 
     img = QtGui.QPixmap(img_w, img_h)
+    img.fill(QtCore.Qt.transparent)
     painter = QtGui.QPainter(img)
     svg.render(painter)
 
     return img
+
+def getSvgIcon(name, ratio=1.0):
+    """
+    Convert an SVG into an Icon
+    (SVG -> Pixmap -> Icon)
+    """
+    return QtGui.QIcon(getSvgScaled(name, ratio=ratio))
