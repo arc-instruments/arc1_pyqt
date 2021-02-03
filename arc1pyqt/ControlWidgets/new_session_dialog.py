@@ -223,9 +223,12 @@ class NewSessionDialog(QtWidgets.QDialog):
         mainLayout.addLayout(startLay)
 
         self.setContentsMargins(0,0,0,0)
-        self.setLayout(mainLayout)
-        #self.setGeometry()
         self.updateCB()
+        self.setLayout(mainLayout)
+        # frame geometry won't be updated properly due to matrix
+        # widget repaint
+        self.show()
+        self.hide()
 
     def selectWDir(self):
         folderDialog=QtWidgets.QFileDialog()
@@ -236,7 +239,7 @@ class NewSessionDialog(QtWidgets.QDialog):
     def matrixSizeChanged(self, *args):
         w = self.cb_w.value()
         b = self.cb_b.value()
-        #self.cbWindow.redrawArray(w, b)
+        self.cbWindow.redrawArray(w, b)
         self.updateCB(w, b)
 
     def updateCB(self, w=HW.conf.words, b=HW.conf.bits):
@@ -254,11 +257,9 @@ class NewSessionDialog(QtWidgets.QDialog):
 
 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, \
-                QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(1)
-        matrix = MatrixWidget(words=w, bits=b, passive=True, width=(15, 25), \
-                height=(10, 20*APP.scalingFactor))
+                QtWidgets.QSizePolicy.Maximum)
+        matrix = MatrixWidget(words=w, bits=b, passive=True, width=(10, 12), \
+                height=(12, 14*APP.scalingFactor))
         matrix.setSizePolicy(sizePolicy)
 
         gridLayout.addWidget(wordline, 0, 1, 1, 1)

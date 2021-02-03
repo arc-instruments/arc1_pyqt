@@ -558,7 +558,6 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.deleteAllData()
         newSession = NewSessionDialog()
         newSession.setFixedWidth(500)
-        newSession.setMaximumHeight(int(850*APP.scalingFactor))
 
         frameGm = newSession.frameGeometry()
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
