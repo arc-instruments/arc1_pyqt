@@ -715,7 +715,7 @@ class SuperMode(BaseProgPanel):
             else:
                 newBtn = DraggableButtonPlaced(classname, panel)
 
-            newBtn.ID = str(globalID)
+            newBtn.ID = str(globalID).encode()
             module_id_dict[newBtn.ID] = panel
 
             newBtn.displayModule.connect(self.dropWidget.routerDisplayModule)
@@ -778,10 +778,14 @@ class SuperMode(BaseProgPanel):
             return True
 
     def clearChain(self):
+
+        reply = QtWidgets.QMessageBox.Yes
+
         if self.dropWidget.vbox.count()>0:
             reply = QtWidgets.QMessageBox.question(self, "Clear chain",
                 "Are you sure?",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+
         if reply == QtWidgets.QMessageBox.Yes:
             for i in reversed(range(self.dropWidget.vbox.count())):
                 self.dropWidget.vbox.itemAt(i).widget().setParent(None)
