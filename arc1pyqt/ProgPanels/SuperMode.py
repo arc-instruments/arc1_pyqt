@@ -616,6 +616,8 @@ class SuperMode(BaseProgPanel):
 
     def saveSequence(self):
 
+        filters = ['Test sequence (*.json)', 'All files (*.*)']
+
         layout = self.dropWidget.vbox
         items = [layout.itemAt(i).widget().btn.module for i in range(layout.count())]
 
@@ -628,29 +630,39 @@ class SuperMode(BaseProgPanel):
         else:
             curDir = ''
 
-        try:
-            saveFileName = QtWidgets.QFileDialog.getSaveFileName(self,
-                'Save File', curDir, 'Test Sequence (*.json)')[0]
-        except IndexError:
+        (saveFileName, fltr) = QtWidgets.QFileDialog.getSaveFileName(self,
+            'Save File', curDir, ';;'.join(filters))
+
+        if (not saveFileName) or (len(saveFileName) == 0):
             return
 
-        fi = QtCore.QFileInfo(saveFileName)
-        path = QtCore.QFileInfo(saveFileName)
+        if (fltr == filters[0]) and (not saveFileName.lower().endswith('.json')):
+            finalSaveFileName = saveFileName + ".json"
+        else:
+            finalSaveFileName = saveFileName
 
-        if path:
-            chainList = []
-            for mod in items:
-                fullmodname = ".".join([
-                    mod.__class__.__module__,
-                    mod.__class__.__name__])
-                chainList.append([fullmodname, mod.extractPanelData()])
+        chainList = []
+        for mod in items:
+            fullmodname = ".".join([
+                mod.__class__.__module__,
+                mod.__class__.__name__])
+            chainList.append([fullmodname, mod.extractPanelData()])
 
-            with open(path, 'w') as f:
-                json.dump(chainList, f)
+        if os.path.exists(finalSaveFileName):
+            res = QtWidgets.QMessageBox.question(self, '',
+                "File %s exists. Overwrite?" % finalSaveFileName,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if res == QtWidgets.QMessageBox.No:
+                return
+
+        with open(finalSaveFileName, 'w') as f:
+            json.dump(chainList, f)
 
     def loadSequence(self):
         global globalID
         proceed = False
+
+        filters = ['Test sequence (*.json)', 'All files (*.*)']
 
         if self.dropWidget.vbox.count() > 0:
             reply = QtWidgets.QMessageBox.question(self,
@@ -672,7 +684,7 @@ class SuperMode(BaseProgPanel):
         try:
             path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
                 getOpenFileName(self, 'Load file', '',
-                filter="Test Sequence (*.json)")[0])
+                filter=';;'.join(filters))[0])
         except IndexError:
             return
 

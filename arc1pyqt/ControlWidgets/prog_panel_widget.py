@@ -107,26 +107,41 @@ class ProgPanelWidget(QtWidgets.QWidget):
             'arc1pyqt.ProgPanels.SuperMode'))
 
     def savePanel(self):
+        filters = ['Panel data (*.json)', 'All files (*.*)']
         wdg = self.tabFrame.currentWidget()
 
-        try:
-            saveFileName = QtWidgets.QFileDialog.getSaveFileName(self,
-                'Save panel parameters', '', 'Panel data (*.json)')[0]
-        except IndexError:
+        (saveFileName, fltr) = QtWidgets.QFileDialog.getSaveFileName(self,
+            'Save panel parameters', '', ';;'.join(filters))
+
+        if (not saveFileName) or (len(saveFileName) == 0):
             return
 
-        if saveFileName and hasattr(wdg, 'extractPanelData'):
+        if hasattr(wdg, 'extractPanelData'):
             fullmodname = ".".join([
                 wdg.__class__.__module__,
                 wdg.__class__.__name__])
 
-            with open(saveFileName, 'w') as f:
+            if (fltr == filters[0]) and (not saveFileName.lower().endswith('.json')):
+                finalSaveFileName = saveFileName + ".json"
+            else:
+                finalSaveFileName = saveFileName
+
+            if os.path.exists(finalSaveFileName):
+                res = QtWidgets.QMessageBox.question(self, '',
+                    "File %s exists. Overwrite?" % finalSaveFileName,
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                if res == QtWidgets.QMessageBox.No:
+                    return
+            with open(finalSaveFileName, 'w') as f:
                 json.dump([fullmodname, wdg.extractPanelData()], f)
 
     def loadPanel(self):
+
+        filters = ['Panel data (*.json)', 'All files (*.*)']
+
         try:
             panelDataFileNames = QtWidgets.QFileDialog.getOpenFileNames(self,
-                'Open panel from file(s)...', '', 'Panel data (*.json)')[0]
+                'Open panel from file(s)...', '', ';;'.join(filters))[0]
         except IndexError:
             return
 
