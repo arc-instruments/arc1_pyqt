@@ -9,6 +9,7 @@
 
 import sys
 import os
+import itertools
 from copy import copy
 import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -40,6 +41,9 @@ class _ReadAllWorker(QtCore.QObject):
         job="2"
         HW.ArC.write_b(job+"\n")
 
+        all_devices = itertools.product(range(1, HW.conf.words+1),
+            range(1, HW.conf.bits+1))
+
         # Check for standalone/custom array
         if CB.checkSA == False:
             # send the type of read - currently read All devices
@@ -47,21 +51,23 @@ class _ReadAllWorker(QtCore.QObject):
             HW.ArC.write_b(str(HW.conf.words)+"\n")
             HW.ArC.write_b(str(HW.conf.bits)+"\n")
 
+            devices = all_devices
             # perform standard read All
-            for word in range(1, HW.conf.words+1):
-                for bit in range(1,HW.conf.bits+1):
-                    Mnow=float(HW.ArC.read_floats(1))
+            for (word, bit) in devices:
+                Mnow=float(HW.ArC.read_floats(1))
 
-                    self.sendData.emit(word,bit,Mnow,self.Vread,0,self.tag)
-                    self.sendPosition.emit(word,bit)
+                self.sendData.emit(word,bit,Mnow,self.Vread,0,self.tag)
+                self.sendPosition.emit(word,bit)
         else:
             # send the type of read - read stand alone custom array
             HW.ArC.write_b(str(2)+"\n")
             HW.ArC.write_b(str(HW.conf.words)+"\n")
             HW.ArC.write_b(str(HW.conf.bits)+"\n")
             HW.ArC.write_b(str(len(CB.customArray))+"\n")
-            for cell in CB.customArray:
-                word,bit=cell
+
+            devices = [cell for cell in all_devices if cell in CB.customArray]
+
+            for (word, bit) in devices:
                 HW.ArC.write_b(str(word)+"\n")
                 HW.ArC.write_b(str(bit)+"\n")
 
@@ -375,7 +381,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
             for row in arraydata:
                 (w, b) = row
-                customArray.append([w, b])
+                customArray.append((w, b))
 
                 # check if w and b are within bounds
                 if (int(w) < 1 or int(w) > HW.conf.words or

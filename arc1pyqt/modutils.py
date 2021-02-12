@@ -6,6 +6,7 @@ from pkgutil import iter_modules
 import importlib.util as imputil
 from glob import glob
 from functools import partial
+import itertools
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
@@ -255,32 +256,20 @@ def makeDeviceList(isRange):
     crossbar.
     """
 
-    devices = []
-
     if isRange == False:
-        minW = 1
-        maxW = HW.conf.words
-        minB = 1
-        maxB = HW.conf.bits
+        (minW, maxW) = (1, HW.conf.words)
+        (minB, maxB) = (1, HW.conf.bits)
     else:
-        minW = CB.limits['words'][0]
-        maxW = CB.limits['words'][1]
-        minB = CB.limits['bits'][0]
-        maxB = CB.limits['bits'][1]
+        (minW, maxW) = CB.limits['words']
+        (minB, maxB) = CB.limits['bits']
+
+    all_devices = itertools.product(range(minW, maxW+1), range(minB, maxB+1))
 
     # Find how many SA devices are contained in the range
     if not CB.checkSA:
-        for w in range(minW, maxW+1):
-            for b in range(minB, maxB+1):
-                devices.append([w, b])
+        return list(all_devices)
     else:
-        for w in range(minW, maxW+1):
-            for b in range(minB, maxB+1):
-                for device in CB.customArray:
-                    if (device[0] == w and device[1] == b):
-                        devices.append(device)
-
-    return devices
+        return [cell for cell in all_devices if cell in CB.customArray]
 
 
 class BaseProgPanel(QtWidgets.QWidget):
