@@ -787,6 +787,15 @@ class Arcontrol(QtWidgets.QMainWindow):
                             writer.writerow(rowdata)
             self.saveAction.setEnabled(False)
 
+    def closeEvent(self, evt):
+        reply = QtWidgets.QMessageBox.question(self, "Exit Application",
+            "Are you sure you want to exit?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
+            evt.accept()
+        else:
+            evt.ignore()
+
     def exitApplication(self):
         reply = QtWidgets.QMessageBox.question(self, "Exit Application",
             "Are you sure you want to exit?",
