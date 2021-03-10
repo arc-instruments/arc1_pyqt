@@ -239,7 +239,6 @@ class NewSessionDialog(QtWidgets.QDialog):
     def matrixSizeChanged(self, *args):
         w = self.cb_w.value()
         b = self.cb_b.value()
-        self.cbWindow.redrawArray(w, b)
         self.updateCB(w, b)
 
     def updateCB(self, w=HW.conf.words, b=HW.conf.bits):
