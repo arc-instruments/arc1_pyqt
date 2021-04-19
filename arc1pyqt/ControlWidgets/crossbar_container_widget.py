@@ -93,11 +93,12 @@ class CrossbarContainerWidget(QtWidgets.QWidget):
                 functions.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
                 functions.displayUpdate.updateSignal_short.emit()
             else:
-                if [int(w),int(b)] in CB.customArray:
+                if (int(w),int(b)) in CB.customArray:
                     self.changeDevice(int(w),int(b))
                     # signal the crossbar antenna that this device has been selected
                     functions.cbAntenna.selectDeviceSignal.emit(int(w), int(b))
                     functions.displayUpdate.updateSignal_short.emit()
+
 
             if  HW.ArC is not None and HW.conf.sessionmode == 2:
                 HW.ArC.write_b("02\n")
