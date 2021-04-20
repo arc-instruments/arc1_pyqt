@@ -27,7 +27,7 @@ else:
 requirements = [
     'numpy>=1.14.0',
     'PyQt5>=5.12.0',
-    'pyqtgraph>=0.11.0rc0',
+    'pyqtgraph>=0.11.0',
     'pyserial>=3.0',
     'requests>=2.20.0',
     'scipy>=1.3.0',
@@ -147,9 +147,9 @@ setup(
         "Operating System :: POSIX",
         "Operating System :: MacOS :: MacOS X",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8"
+        "Programming Language :: Python :: 3.9"
 
     ],
     packages = packages,

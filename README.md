@@ -19,7 +19,7 @@ driver](https://os.mbed.com/handbook/Windows-serial-configuration).
 
 ### On anything supported by Python + Qt5
 
-You need to have **Python ≥3.6** and **git** installed in your system. You can
+You need to have **Python ≥3.7** and **git** installed in your system. You can
 install the latest snapshot using the command.
 
 ```
