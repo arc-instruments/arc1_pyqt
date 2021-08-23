@@ -677,7 +677,7 @@ class Arcontrol(QtWidgets.QMainWindow):
 
     def findAndLoadFile(self):
 
-        path = QtGui.QFileDialog.getOpenFileName(self, 'Open File',
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File',
             filter=constants.OPEN_FI_PATTERN)[0]
 
         if not os.path.isfile(path):
