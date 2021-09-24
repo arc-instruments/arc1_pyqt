@@ -11,12 +11,15 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import os
 import time
+import pyqtgraph
+import numpy as np
+from functools import partial
 
 from arc1pyqt import state
 HW = state.hardware
 APP = state.app
 CB = state.crossbar
-from arc1pyqt.Globals import fonts
+from arc1pyqt.Globals import fonts, functions
 from arc1pyqt.modutils import BaseThreadWrapper, BaseProgPanel, \
         makeDeviceList, ModTag
 
@@ -313,7 +316,7 @@ class FormFinder(BaseProgPanel):
 
         HW.ArC.write_b(str(float(self.leftEdits[6].text())/1000)+"\n")
         time.sleep(0.05)
-        
+
         HW.ArC.write_b(str(float(self.rightEdits[1].text()))+"\n")
         #HW.ArC.write_b(str(float(self.rightEdits[2].text()))+"\n")
         time.sleep(0.05)
@@ -356,5 +359,88 @@ class FormFinder(BaseProgPanel):
         else:
             self.hboxProg.setEnabled(True)
 
+    @staticmethod
+    def display(w, b, data, parent=None):
 
-tags = { 'top': ModTag(tag, "FormFinder", None) }
+        siFormat = pyqtgraph.siFormat
+        def _updateLinkedPlots(base, overlay):
+            overlay.setGeometry(base.vb.sceneBoundingRect())
+            overlay.linkedViewChanged(base.vb, overlay.XAxis)
+
+        dialog = QtWidgets.QDialog(parent)
+
+        containerLayout = QtWidgets.QVBoxLayout()
+        dialog.setWindowTitle("FormFinder W=%d | B=%d" % (w, b))
+
+        R = np.empty(len(data)-1)
+        V = np.empty(len(data)-1)
+        P = np.empty(len(data)-1)
+        for (i, line) in enumerate(data[1:]):
+            R[i] = line[0]
+            V[i] = line[1]
+            P[i] = line[2]
+
+        Vidx = np.repeat(np.arange(0, len(R)), 2)
+
+        gv = pyqtgraph.GraphicsLayoutWidget(show=False)
+        Rplot = gv.addPlot(name="resistance")
+        Rplot.plot(R, pen=pyqtgraph.mkPen('r', width=1), symbolPen=None,
+            symbolBrush=(255,0,0), symbolSize=5, symbol='s')
+        Rplot.getAxis('left').setLabel('Resistance', units='Ω')
+        Rplot.getAxis('bottom').setLabel('Pulse')
+
+        gv.nextRow()
+
+        Vplot = gv.addPlot(name="voltage")
+        Vplot.plot(V, pen=None, symbolPen=None, symbolBrush=(0,0,255),
+            symbolSize=5, symbol='s', connect='pairs')
+        Vplot.plot(Vidx, np.dstack((np.zeros(V.shape[0]), V)).flatten(),
+            pen='b', symbolPen=None, symbolBrush=None, connect='pairs')
+        Vplot.getAxis('left').setLabel('Voltage', units='V')
+        Vplot.getAxis('bottom').setLabel('Pulse')
+        Vplot.setXLink("resistance")
+
+        Pview = pyqtgraph.ViewBox()
+        Vplot.scene().addItem(Pview)
+        Vplot.showAxis('right')
+        Vplot.getAxis('right').setLabel('Pulse width', units='s')
+        Pview.setXLink(Vplot)
+        Vplot.getAxis('right').linkToView(Pview)
+        Pview.enableAutoRange(Pview.XAxis, True)
+        Pview.enableAutoRange(Pview.YAxis, True)
+
+        _updateLinkedPlots(Vplot, Pview)
+        Vplot.vb.sigResized.connect(partial(_updateLinkedPlots, base=Vplot, \
+            overlay=Pview))
+
+        Pplot = pyqtgraph.ScatterPlotItem(symbol='+')
+        Pplot.setPen(pyqtgraph.mkPen(color=QtGui.QColor(QtCore.Qt.darkGreen), \
+            width=1))
+        Pplot.setBrush(pyqtgraph.mkBrush(color=QtGui.QColor(QtCore.Qt.darkGreen)))
+        Pplot.setData(np.arange(0, len(data)-1), P)
+        Pview.addItem(Pplot)
+
+        containerLayout.addWidget(gv)
+
+        saveButton = QtWidgets.QPushButton("Export data")
+        saveCb = partial(functions.writeDelimitedData, np.column_stack((V, R, P)))
+        saveButton.clicked.connect(partial(functions.saveFuncToFilename, saveCb,
+            "Save data to...", parent))
+
+        bottomLayout = QtWidgets.QHBoxLayout()
+        labelText = 'Final resistance: %s recorded after a %s %s pulse' % \
+            (siFormat(R[-1], suffix='Ω'), siFormat(V[-1], suffix='V'), \
+                siFormat(P[-1], suffix='s'))
+        bottomLayout.addWidget(QtWidgets.QLabel(labelText))
+        bottomLayout.addItem(QtWidgets.QSpacerItem(40, 10,
+            QtWidgets.QSizePolicy.Expanding))
+        bottomLayout.addWidget(saveButton)
+
+        containerLayout.addItem(bottomLayout)
+
+        dialog.setLayout(containerLayout)
+
+        return dialog
+
+
+tags = { 'top': ModTag(tag, "FormFinder", FormFinder.display) }
