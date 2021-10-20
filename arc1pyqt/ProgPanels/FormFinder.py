@@ -125,7 +125,7 @@ class FormFinder(BaseProgPanel):
         rightLabels=['Nr of pulses', \
                     'Resistance threshold', \
                     'Resistance threshold (%)', \
-                    'pSR 1-1k, 4-1M, 7-short']
+                    'Series Resistance']
         self.rightEdits=[]
         rightInit=  ['1',\
                     '1000000',\
@@ -182,11 +182,22 @@ class FormFinder(BaseProgPanel):
             #lineLabel.setFixedHeight(50)
             gridLayout.addWidget(lineLabel, i,4)
 
-            lineEdit=QtWidgets.QLineEdit()
-            lineEdit.setText(rightInit[i])
-            lineEdit.setValidator(isFloat)
-            self.rightEdits.append(lineEdit)
-            gridLayout.addWidget(lineEdit, i,5)
+            if i != 3:
+                lineEdit = QtWidgets.QLineEdit()
+                lineEdit.setText(rightInit[i])
+                lineEdit.setValidator(isFloat)
+                self.rightEdits.append(lineEdit)
+                gridLayout.addWidget(lineEdit, i, 5)
+            else:
+                lineCombo = QtWidgets.QComboBox()
+                lineCombo.addItem('None', 7)
+                lineCombo.addItem('1 kΩ', 1)
+                lineCombo.addItem('10 kΩ', 2)
+                lineCombo.addItem('100 kΩ', 3)
+                lineCombo.addItem('1 MΩ', 4)
+                lineCombo.setCurrentIndex(0)
+                self.rightEdits.append(lineCombo)
+                gridLayout.addWidget(lineCombo, i, 5)
 
         gridLayout.addWidget(QtWidgets.QLabel("Pulse width progression"), 4, 4)
         self.pulsingModeCombo = QtWidgets.QComboBox()
@@ -329,7 +340,8 @@ class FormFinder(BaseProgPanel):
         if job != "14": # newer version of formfinder
             HW.ArC.write_b(str(int(pmode))+"\n")
 
-        HW.ArC.write_b(str(int(self.rightEdits[3].text()))+"\n")
+        pSR = self.rightEdits[3].currentData()
+        HW.ArC.write_b(str(int(pSR))+"\n")
         HW.ArC.write_b(str(int(self.rightEdits[0].text()))+"\n")
         time.sleep(0.05)
 
