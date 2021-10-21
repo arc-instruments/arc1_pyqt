@@ -4,14 +4,13 @@ from distutils.command.build import build
 import os, sys
 import os.path
 import glob
-import time
 
 __HERE__ = os.path.abspath(os.path.dirname(__file__))
 __VERSION_FILE__ = os.path.join(__HERE__, 'arc1pyqt', 'version.txt')
 __VERSION_SEMVER__ = open(__VERSION_FILE__).read().splitlines()[1].strip()
 
 __NAME__ = "arc1_pyqt"
-__DESC__ = "ArC1 Control Interface",
+__DESC__ = "ArC1 Control Interface"
 __MAINTAINER__ = "Spyros Stathopoulos"
 __EMAIL__ = "devel@arc-instruments.co.uk"
 __VERSION__ = __VERSION_SEMVER__.replace('-','')
@@ -25,9 +24,9 @@ else:
 
 
 requirements = [
-    'numpy>=1.14.0',
+    'numpy>=1.18.0',
     'PyQt5>=5.12.0',
-    'pyqtgraph>=0.11.0',
+    'pyqtgraph>=0.12.3',
     'pyserial>=3.0',
     'requests>=2.20.0',
     'scipy>=1.3.0',
@@ -148,8 +147,8 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8"
-        "Programming Language :: Python :: 3.9"
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
 
     ],
     packages = packages,
