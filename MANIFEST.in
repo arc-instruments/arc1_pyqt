@@ -1,0 +1,7 @@
+include uis/*ui
+include */version.txt
+exclude */GeneratedUiElements/*.py
+include */GeneratedUiElements/__init__.py
+exclude win32_version_info.tmpl
+exclude ArC1.spec
+exclude run.py
