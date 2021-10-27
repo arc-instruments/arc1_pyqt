@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>364</width>
-    <height>249</height>
+    <width>497</width>
+    <height>261</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,8 +38,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>344</width>
-        <height>156</height>
+        <width>477</width>
+        <height>168</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -63,7 +63,7 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QGridLayout" name="gridLayout" columnstretch="0,2,5">
           <item row="3" column="0">
            <spacer name="verticalSpacer">
             <property name="orientation">
@@ -87,7 +87,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Bias duration (ms)</string>
+             <string>Bias duration</string>
             </property>
            </widget>
           </item>
@@ -95,13 +95,6 @@
            <widget class="QLabel" name="label_3">
             <property name="text">
              <string>Number of reads</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="pwEdit">
-            <property name="text">
-             <string>100</string>
             </property>
            </widget>
           </item>
@@ -134,6 +127,26 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1">
+            <item>
+             <widget class="QLineEdit" name="pwValEdit">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>10</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="pwMulComboBox"/>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

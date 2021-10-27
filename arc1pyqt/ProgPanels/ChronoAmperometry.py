@@ -164,6 +164,11 @@ class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
         self.titleLabel.setFont(fonts.font1)
         self.descriptionLabel.setFont(fonts.font3)
 
+        self.pwMulComboBox.addItem('ms', 1.0e-3)
+        self.pwMulComboBox.addItem('s', 1.0)
+        self.pwMulComboBox.addItem('min', 60.0)
+        self.pwMulComboBox.setCurrentIndex(1)
+
         self.applyValidators()
 
         if not self.short:
@@ -179,7 +184,7 @@ class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
                 wdg.hide()
 
         self.registerPropertyWidget(self.biasEdit, "bias")
-        self.registerPropertyWidget(self.pwEdit, "pw")
+        self.registerPropertyWidget(self.pwValEdit, "pw")
         self.registerPropertyWidget(self.numReadsBox, "num_reads")
 
     def applyValidators(self):
@@ -187,7 +192,7 @@ class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
         intValidator = QtGui.QIntValidator()
 
         self.biasEdit.setValidator(floatValidator)
-        self.pwEdit.setValidator(floatValidator)
+        self.pwValEdit.setValidator(floatValidator)
 
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.Resize:
@@ -198,7 +203,8 @@ class ChronoAmperometry(Ui_ChronoAmpParent, BaseProgPanel):
         result = {}
 
         result["bias"] = float(self.biasEdit.text())
-        result["pw"] = float(self.pwEdit.text())/1000.0
+        multiplier = self.pwMulComboBox.currentData()
+        result["pw"] = float(self.pwValEdit.text()) * multiplier
         result["num_reads"] = int(self.numReadsBox.value())
 
         return result
