@@ -68,12 +68,24 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
-        <width>590</width>
-        <height>288</height>
+        <y>-14</y>
+        <width>576</width>
+        <height>298</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QFrame" name="frame">
          <property name="sizePolicy">
@@ -83,7 +95,7 @@
           </sizepolicy>
          </property>
          <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+          <enum>QFrame::NoFrame</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>423</width>
+    <width>489</width>
     <height>281</height>
    </rect>
   </property>
@@ -62,11 +62,23 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>386</width>
-        <height>194</height>
+        <width>455</width>
+        <height>192</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QFrame" name="frame">
          <property name="sizePolicy">
@@ -76,7 +88,7 @@
           </sizepolicy>
          </property>
          <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+          <enum>QFrame::NoFrame</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
