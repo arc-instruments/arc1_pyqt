@@ -1,2 +1,2 @@
 DO NOT MODIFY!
-2.0.0-rc0
+2.0.0-rc1
