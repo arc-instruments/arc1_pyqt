@@ -158,8 +158,8 @@ setup(
         'console_scripts': ['arc1pyqt = arc1pyqt.main:main']
     },
     package_data = {
-        'arc1pyqt': ['Graphics/*png', 'Graphics/*svg', 'version.txt',
-            'Helper/*']
+        'arc1pyqt': ['Graphics/*png', 'Graphics/*svg', 'Graphics/*ico',\
+            'version.txt', 'Helper/*']
     },
     cmdclass = cmdclass
 )
