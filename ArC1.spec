@@ -11,8 +11,8 @@ import semver
 
 try:
     PATHEX = os.environ['ARC_PYI_PATHEX']
-except KeyError:
-    raise ValueError("Environment variable ARC_PYI_PATHEX must be set to the "
+except (ValueError, KeyError):
+    raise ValueError("Environment variable ARC_PYI_PATHEX must be set to the "+
             "full path of your arc1_pyqt source")
 
 CONSOLE = bool(int(os.environ.get('ARC_PYI_CONSOLE', 1)))
@@ -33,6 +33,7 @@ with open(os.path.join("build", "ArC1", "version_info.txt"), 'w') as version_fil
 
 
 added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
+        ('arc1pyqt/Graphics/*.svg','arc1pyqt/Graphics'),
         ('arc1pyqt/ProgPanels/*.py','arc1pyqt/ProgPanels'),
         ('arc1pyqt/ExtPanels/*.py','arc1pyqt/ExtPanels'),
         ('arc1pyqt/GeneratedUiElements/*.py','arc1pyqt/GeneratedUiElements'),
@@ -44,14 +45,26 @@ added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
 modimports=['arc1pyqt', 'scipy', 'scipy.optimize',
     'scipy.linalg', 'scipy.stats']
 
-try:
-    import arc1docs
-    manual = os.path.join(arc1docs.__path__[0], arc1docs._fname)
-    if os.path.exists(manual):
-        modimports.append('arc1docs')
-        added_files.append((manual, arc1docs.__name__))
-except Exception as exc:
-    print("Could not find arc1docs, skipping...", exc, file=sys.stderr)
+# Check for docs in local dir and pick it up
+if os.path.exists(os.path.join(PATHEX, 'arc1docs')) and \
+    os.path.isdir(os.path.join(PATHEX, 'arc1docs')):
+
+    docdir = os.path.join(PATHEX, 'arc1docs')
+
+    # check if the manual has been built
+    if os.path.isfile(os.path.join(docdir, 'manual.pdf')):
+        added_files.append(('arc1docs', 'arc1docs'))
+# if not then search sys.path as normal
+else:
+    try:
+        import arc1docs
+        manual = os.path.join(arc1docs.__path__[0], arc1docs._fname)
+        if os.path.exists(manual):
+            modimports.append('arc1docs')
+            added_files.append((manual, arc1docs.__name__))
+    except Exception as exc:
+        print("Could not find arc1docs, skipping...", exc, file=sys.stderr)
+
 
 a = Analysis(['run.py'],
         pathex=[PATHEX],
@@ -61,7 +74,8 @@ a = Analysis(['run.py'],
         hookspath=[],
         runtime_hooks=[],
         excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter',
-            'Tkinter', 'IPython', 'jedi', 'matplotlib'],
+            'Tkinter', 'IPython', 'jedi', 'matplotlib', 'PyQt4',
+            'PyQt6'],
         win_no_prefer_redirects=False,
         win_private_assemblies=False,
         cipher=None)
