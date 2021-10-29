@@ -51,9 +51,6 @@ class ThreadWrapper(BaseThreadWrapper):
             endCommand=0
 
             valuesNew=HW.ArC.read_floats(3)
-            # valuesNew.append(float(HW.ArC.readline().rstrip()))
-            # valuesNew.append(float(HW.ArC.readline().rstrip()))
-            # valuesNew.append(float(HW.ArC.readline().rstrip()))
 
             if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                 tag_=tag+'_s'
@@ -64,9 +61,6 @@ class ThreadWrapper(BaseThreadWrapper):
                 valuesOld=valuesNew
 
                 valuesNew=HW.ArC.read_floats(3)
-                # valuesNew.append(float(HW.ArC.readline().rstrip()))
-                # valuesNew.append(float(HW.ArC.readline().rstrip()))
-                # valuesNew.append(float(HW.ArC.readline().rstrip()))
 
                 if (float(valuesNew[0])!=0 or float(valuesNew[1])!=0 or float(valuesNew[2])!=0):
                     self.sendData.emit(w,b,valuesOld[0],valuesOld[1],valuesOld[2],tag_)
@@ -78,9 +72,6 @@ class ThreadWrapper(BaseThreadWrapper):
                     self.displayData.emit()
                     endCommand=1
 
-                #print " "
-                #print valuesNew
-                #print "End command " + str(endCommand)
             self.updateTree.emit(w,b)
 
 
@@ -398,7 +389,13 @@ class FormFinder(BaseProgPanel):
         Rplot = gv.addPlot(name="resistance")
         Rplot.plot(R, pen=pyqtgraph.mkPen('r', width=1), symbolPen=None,
             symbolBrush=(255,0,0), symbolSize=5, symbol='s')
+        Rplot.showAxis('right')
         Rplot.getAxis('left').setLabel('Resistance', units='Ω')
+        Rplot.getAxis('left').setStyle(tickTextWidth=40, autoExpandTextSpace=False)
+        Rplot.getAxis('left').setGrid(50)
+        Rplot.getAxis('bottom').setGrid(50)
+        Rplot.getAxis('right').setWidth(40)
+        Rplot.getAxis('right').setStyle(showValues=False)
         Rplot.getAxis('bottom').setLabel('Pulse')
 
         gv.nextRow()
@@ -409,6 +406,9 @@ class FormFinder(BaseProgPanel):
         Vplot.plot(Vidx, np.dstack((np.zeros(V.shape[0]), V)).flatten(),
             pen='b', symbolPen=None, symbolBrush=None, connect='pairs')
         Vplot.getAxis('left').setLabel('Voltage', units='V')
+        Vplot.getAxis('left').setGrid(50)
+        Vplot.getAxis('bottom').setGrid(50)
+        Vplot.getAxis('left').setStyle(tickTextWidth=40, autoExpandTextSpace=False)
         Vplot.getAxis('bottom').setLabel('Pulse')
         Vplot.setXLink("resistance")
 
