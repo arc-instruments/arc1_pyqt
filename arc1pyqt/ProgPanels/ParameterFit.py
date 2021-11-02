@@ -292,7 +292,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
             self.mechanismModelCombo.addItem(k, v)
 
         if len(self.IVs) < 1:
-            mechanismTab = self.tabWidget.findChild(QtGui.QWidget, \
+            mechanismTab = self.tabWidget.findChild(QtWidgets.QWidget, \
                 "mechanismTab")
             idx = self.tabWidget.indexOf(mechanismTab)
             if idx > 0:
