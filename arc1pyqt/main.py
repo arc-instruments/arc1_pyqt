@@ -489,7 +489,8 @@ class Arcontrol(QtWidgets.QMainWindow):
         self.arcStatusLabel.update()
 
     def redrawCrossbar(self):
-        self.cp.deleteLater()
+        self.cp.setParent(None)
+        del self.cp
         self.cp = CrossbarWidget()
 
         self.layoutBot.addWidget(self.cp)
@@ -606,8 +607,8 @@ class Arcontrol(QtWidgets.QMainWindow):
             HW.conf.words = 32
             HW.conf.bits = 32
             self.setModeOffline()
-            self.findAndLoadFile()
             self.redrawCrossbar()
+            self.findAndLoadFile()
             functions.interfaceAntenna.changeArcStatus.emit('Disc')
             functions.interfaceAntenna.changeSessionMode.emit('Offline')
 
