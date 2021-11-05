@@ -23,12 +23,11 @@ You need to have **Python ≥3.7** and **git** installed in your system. You can
 install the latest snapshot using the command.
 
 ```
-python -m pip install https://github.com/arc-instruments/arc1_pyqt
+pip install git+https://github.com/arc-instruments/arc1_pyqt
 ```
 
-If you need specific versions add the `@VERSION` suffix at the URL above for
-any version `≥2.0.0`. Once version `2.0.0` is stabilised python wheels will
-also be made available for each version.
+Starting with v2.0.0-rc0 arc1_pyqt is also available from PyPI: `pip install
+arc1_pyqt`.
 
 ## Use
 
