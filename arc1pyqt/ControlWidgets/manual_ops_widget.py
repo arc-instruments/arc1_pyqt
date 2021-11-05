@@ -370,8 +370,10 @@ class ManualOpsWidget(QtWidgets.QWidget):
         try:
             path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
                     getOpenFileName(self, 'Open file', "*.txt")[0])
+            if (not path.exists()) or (not path.isFile()) or (not path.isReadable()):
+                return False
         except IndexError: # nothing selected
-            return
+            return False
 
         customArray = []
 
