@@ -9,10 +9,13 @@
 
 import sys
 import os
+import os.path
 import itertools
 from copy import copy
 import numpy as np
 from PyQt5 import QtGui, QtCore, QtWidgets
+
+import arc1pyqt
 
 from .. import state
 HW = state.hardware
@@ -85,6 +88,8 @@ class ManualOpsWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.standAlonePath = os.path.join(os.path.dirname(arc1pyqt.__file__), \
+            'Helper')
 
     def initUI(self):
 
@@ -368,8 +373,9 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
     def findSAfile(self):
         try:
-            path = QtCore.QFileInfo(QtWidgets.QFileDialog().\
-                    getOpenFileName(self, 'Open file', "*.txt")[0])
+            path = QtCore.QFileInfo(QtWidgets.QFileDialog.\
+                    getOpenFileName(self, 'Open file', self.standAlonePath,\
+                    "Array files (*.txt)")[0])
             if (not path.exists()) or (not path.isFile()) or (not path.isReadable()):
                 return False
         except IndexError: # nothing selected
@@ -402,6 +408,7 @@ class ManualOpsWidget(QtWidgets.QWidget):
 
         self.customArrayFileName.setText(path.baseName())
         CB.customArray = customArray
+        self.standAlonePath = path.absoluteDir().absolutePath()
         return True
 
     def setM(self, w, b):
