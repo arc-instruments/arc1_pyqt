@@ -279,14 +279,22 @@ class Retention(BaseProgPanel):
         retentionPlot = view.addPlot()
         retentionCurve = retentionPlot.plot(symbolPen=None,
                 symbolBrush=(0,0,255), symbol='s', symbolSize=5, pxMode=True)
-        retentionPlot.getAxis('left').setLabel('Resistance', units='Ohms', **label_style)
+        retentionPlot.getAxis('left').setLabel('Resistance', units='Ω', **label_style)
         retentionPlot.getAxis('bottom').setLabel('Time', units='s', **label_style)
         retentionPlot.getAxis('left').setGrid(50)
         retentionPlot.getAxis('bottom').setGrid(50)
 
-        resLayout = QtWidgets.QHBoxLayout()
+        resLayout = QtWidgets.QVBoxLayout()
         resLayout.addWidget(view)
         resLayout.setContentsMargins(0, 0, 0, 0)
+        statsLayout = QtWidgets.QHBoxLayout()
+        statsLayout.setContentsMargins(6, 3, 6, 6)
+        statsLayout.addWidget(
+            QtWidgets.QLabel('Total readings: %d - Average: %s - Std. Deviation: %s' % (
+                len(m),
+                pg.siFormat(np.average(np.asarray(m)), suffix='Ω'),
+                pg.siFormat(np.std(np.asarray(m)), suffix='Ω'))))
+        resLayout.addItem(statsLayout)
 
         resultWindow = QtWidgets.QWidget()
         resultWindow.setGeometry(100,100,1000*APP.scalingFactor, 400)
