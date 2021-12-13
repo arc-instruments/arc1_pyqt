@@ -76,7 +76,7 @@ def getSvgScaled(name, ratio=1.0):
     img_w = svg.defaultSize().width()*ratio
     img_h = svg.defaultSize().height()*ratio
 
-    img = QtGui.QPixmap(img_w, img_h)
+    img = QtGui.QPixmap(int(img_w), int(img_h))
     img.fill(QtCore.Qt.transparent)
     painter = QtGui.QPainter(img)
     svg.render(painter)

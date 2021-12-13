@@ -35,7 +35,7 @@ class ProgPanelWidget(QtWidgets.QWidget):
 
         self.prog_panelList = QtWidgets.QComboBox()
         self.prog_panelList.setStyleSheet(styles.comboStyle)
-        self.prog_panelList.setMinimumWidth(150*APP.scalingFactor)
+        self.prog_panelList.setMinimumWidth(int(150*APP.scalingFactor))
 
         for (tag, mod) in APP.modules.items():
             if mod.module is None or tag == "CTLive":

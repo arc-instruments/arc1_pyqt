@@ -50,10 +50,10 @@ class MatrixWidget(QtWidgets.QWidget):
                 self._cells[r][c] = DeviceWidget(r, c, self.passive)
                 self._cells[r][c].setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, \
                         QtWidgets.QSizePolicy.MinimumExpanding)
-                self._cells[r][c].setMinimumWidth(self.cellWidth[0])
-                self._cells[r][c].setMinimumHeight(self.cellHeight[0])
-                self._cells[r][c].setMaximumWidth(self.cellWidth[1])
-                self._cells[r][c].setMaximumHeight(self.cellHeight[1])
+                self._cells[r][c].setMinimumWidth(int(self.cellWidth[0]))
+                self._cells[r][c].setMinimumHeight(int(self.cellHeight[0]))
+                self._cells[r][c].setMaximumWidth(int(self.cellWidth[1]))
+                self._cells[r][c].setMaximumHeight(int(self.cellHeight[1]))
                 self._cells[r][c].setWhatsThis(str(r)+" "+str(c))
 
                 layout.addWidget(self._cells[r][c],r+1,c+1)

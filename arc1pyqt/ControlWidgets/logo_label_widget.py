@@ -23,7 +23,7 @@ class _PixmapLogo:
         self.img = Graphics.getPixmap(img)
 
     def paint(self, painter, x, y, w, h):
-        painter.drawPixmap(x, y, w, h, self.img)
+        painter.drawPixmap(int(x), int(y), int(w), int(h), self.img)
 
     def width(self):
         return self.img.width()
@@ -91,7 +91,7 @@ class LogoLabelWidget(QtWidgets.QLabel):
         if self.img is not None:
             w = self.img.width()*self.logoScale
             h = self.img.height()*self.logoScale
-            return QtCore.QSize(w, h)
+            return QtCore.QSize(int(w), int(h))
         return QtCore.QSize(0, 0)
 
     def draw(self):
