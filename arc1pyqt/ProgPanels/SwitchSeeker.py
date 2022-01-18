@@ -403,7 +403,7 @@ class SwitchSeeker(BaseProgPanel):
 
         # setup display
         resultWindow = QtWidgets.QWidget()
-        resultWindow.setGeometry(100, 100, 1000*APP.scalingFactor, 500)
+        resultWindow.setGeometry(100, 100, int(1000*APP.scalingFactor), 500)
         resultWindow.setWindowTitle("SwitchSeeker: W="+ str(w) + " | B=" + str(b))
         resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
         resultWindow.show()

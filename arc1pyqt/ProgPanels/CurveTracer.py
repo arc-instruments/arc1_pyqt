@@ -457,7 +457,7 @@ class CurveTracer(BaseProgPanel):
 
         # setup display
         resultWindow = QtWidgets.QWidget()
-        resultWindow.setGeometry(100,100,1000*APP.scalingFactor,400)
+        resultWindow.setGeometry(100,100,int(1000*APP.scalingFactor),400)
         resultWindow.setWindowTitle("Curve Tracer: W="+ str(w) + " | B=" + str(b))
         resultWindow.setWindowIcon(Graphics.getIcon('appicon'))
         resultWindow.show()
