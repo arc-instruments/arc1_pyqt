@@ -174,7 +174,7 @@ class DraggableButton(QtWidgets.QPushButton):
 
         pixmap = QtWidgets.QWidget.grab(self)
 
-        drag.setHotSpot(QtCore.QPoint(pixmap.width()/2, pixmap.height()/2))
+        drag.setHotSpot(QtCore.QPoint(int(pixmap.width()/2), int(pixmap.height()/2)))
         drag.setPixmap(pixmap)
         result = drag.exec_(QtCore.Qt.MoveAction)
 
