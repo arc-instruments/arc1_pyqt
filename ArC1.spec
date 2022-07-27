@@ -9,6 +9,29 @@ import sys
 import os.path
 import semver
 
+from setuptools import find_packages
+from pkgutil import iter_modules
+
+
+def find_submodules(path, name=None):
+    modules = set()
+
+    for pkg in find_packages(path):
+        if name:
+            modules.add(name + '.' + pkg)
+        else:
+            modules.add(pkg)
+        pkgpath = os.path.join(path, pkg.replace('.', '/'))
+
+        for info in iter_modules([pkgpath]):
+            if not info.ispkg:
+                if name:
+                    modules.add(name + '.' + pkg + '.' + info.name)
+                else:
+                    modules.add(pkg + '.' + info.name)
+    return modules
+
+
 try:
     PATHEX = os.environ['ARC_PYI_PATHEX']
 except (ValueError, KeyError):
@@ -43,7 +66,17 @@ added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
         ('arc1pyqt/version.txt','arc1pyqt')]
 
 modimports=['arc1pyqt', 'scipy', 'scipy.optimize',
-    'scipy.linalg', 'scipy.stats']
+    'scipy.linalg', 'scipy.stats', 'pyqtgraph']
+
+# pyqtgraph has dynamic import of modules based on PyQt version. PyInstaller will
+# not pick these up so we need to find them and add them manually
+import pyqtgraph
+allpyqtgraphmods = find_submodules(os.path.dirname(pyqtgraph.__file__), name='pyqtgraph')
+for mod in allpyqtgraphmods:
+    if mod.endswith('Template_pyqt5') and not 'example' in mod:
+        print('Adding pyqtgraph hidden import:', mod)
+        modimports.append(mod)
+
 
 # Check for docs in local dir and pick it up
 if os.path.exists(os.path.join(PATHEX, 'arc1docs')) and \
