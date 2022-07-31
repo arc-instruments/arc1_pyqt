@@ -51,6 +51,13 @@ it up at startup.
 If you want to develop on `arc1_pyqt` itself clone this repository and install
 its dependencies with `python -m pip install -r requirements.txt`.
 
+## I have a question
+
+Feel free to make a new topic under
+[Discussions](https://github.com/arc-instruments/arc1_pyqt/discussions). This
+should be your first stop for support unless you are somewhat certain you run
+into a bug. In that case…
+
 ## I found a bug!
 
 If arc1_pyqt does not behave as you would expect please [open an
