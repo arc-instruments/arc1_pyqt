@@ -1,7 +1,7 @@
 # PyInstaller spec file. This only targets Windows presently
 # The script is driven from the following environment variables
 #
-# ARC_PYI_PATHEX (mandatory): This is the full path of the arc1_pyqt source
+# ARC_PYI_PATHEX (optional): This is the full path of the arc1_pyqt source
 # ARC_PYI_CONSOLE (optional): Set to 0 to disable the console window
 
 import os
@@ -32,38 +32,33 @@ def find_submodules(path, name=None):
     return modules
 
 
-try:
-    PATHEX = os.environ['ARC_PYI_PATHEX']
-except (ValueError, KeyError):
-    raise ValueError("Environment variable ARC_PYI_PATHEX must be set to the "+
-            "full path of your arc1_pyqt source")
-
+PATHEX = os.environ.get('ARC_PYI_PATHEX', os.path.dirname(SPECPATH))
 CONSOLE = bool(int(os.environ.get('ARC_PYI_CONSOLE', 1)))
 
-__HERE__ = "."
-__VERSION_FILE__ = os.path.join(__HERE__, 'arc1pyqt', 'version.txt')
+__HERE__ = os.path.dirname(SPECPATH)
+__VERSION_FILE__ = os.path.join(PATHEX, 'arc1pyqt', 'version.txt')
 __VERSION_RAW__ = open(__VERSION_FILE__).read().splitlines()[1].strip()
 __VERSION_SEMVER__ = semver.VersionInfo.parse(__VERSION_RAW__)
 
-tmpl = open("win32_version_info.tmpl").read()
+tmpl = open(os.path.join(PATHEX, 'pyi', 'win32-version-info.tmpl')).read()
 version_keys = {'major': __VERSION_SEMVER__.major,
     'minor': __VERSION_SEMVER__.minor,
     'patch': __VERSION_SEMVER__.patch,
     'version_text': __VERSION_RAW__}
-print(version_keys)
-with open(os.path.join("build", "ArC1", "version_info.txt"), 'w') as version_file:
+with open(os.path.join(PATHEX, "build", "ArC1", "version_info.txt"), 'w') as version_file:
     version_file.write(tmpl.format(**version_keys))
 
 
-added_files = [('arc1pyqt/Graphics/*.png','arc1pyqt/Graphics'),
-        ('arc1pyqt/Graphics/*.svg','arc1pyqt/Graphics'),
-        ('arc1pyqt/ProgPanels/*.py','arc1pyqt/ProgPanels'),
-        ('arc1pyqt/ExtPanels/*.py','arc1pyqt/ExtPanels'),
-        ('arc1pyqt/GeneratedUiElements/*.py','arc1pyqt/GeneratedUiElements'),
-        ('arc1pyqt/ProgPanels/SMUtils/*.py','arc1pyqt/ProgPanels/SMUtils'),
-        ('arc1pyqt/ProgPanels/SMUtils/Loops/*.py','arc1pyqt/ProgPanels/SMUtils/Loops'),
-        ('arc1pyqt/Helper/*.txt','arc1pyqt/Helper'),
-        ('arc1pyqt/version.txt','arc1pyqt')]
+added_files = [
+    (os.path.join(PATHEX, 'arc1pyqt/Graphics/*.png'),'arc1pyqt/Graphics'),
+    (os.path.join(PATHEX, 'arc1pyqt/Graphics/*.svg'),'arc1pyqt/Graphics'),
+    (os.path.join(PATHEX, 'arc1pyqt/ProgPanels/*.py'),'arc1pyqt/ProgPanels'),
+    (os.path.join(PATHEX, 'arc1pyqt/ExtPanels/*.py'),'arc1pyqt/ExtPanels'),
+    (os.path.join(PATHEX, 'arc1pyqt/GeneratedUiElements/*.py'),'arc1pyqt/GeneratedUiElements'),
+    (os.path.join(PATHEX, 'arc1pyqt/ProgPanels/SMUtils/*.py'),'arc1pyqt/ProgPanels/SMUtils'),
+    (os.path.join(PATHEX, 'arc1pyqt/ProgPanels/SMUtils/Loops/*.py'),'arc1pyqt/ProgPanels/SMUtils/Loops'),
+    (os.path.join(PATHEX, 'arc1pyqt/Helper/*.txt'),'arc1pyqt/Helper'),
+    (os.path.join(PATHEX, 'arc1pyqt/version.txt'),'arc1pyqt')]
 
 modimports=['arc1pyqt', 'scipy', 'scipy.optimize',
     'scipy.linalg', 'scipy.stats', 'pyqtgraph']
@@ -86,7 +81,7 @@ if os.path.exists(os.path.join(PATHEX, 'arc1docs')) and \
 
     # check if the manual has been built
     if os.path.isfile(os.path.join(docdir, 'manual.pdf')):
-        added_files.append(('arc1docs', 'arc1docs'))
+        added_files.append((os.path.join(PATHEX, 'arc1docs'), 'arc1docs'))
 # if not then search sys.path as normal
 else:
     try:
@@ -98,8 +93,7 @@ else:
     except Exception as exc:
         print("Could not find arc1docs, skipping...", exc, file=sys.stderr)
 
-
-a = Analysis(['run.py'],
+a = Analysis([os.path.join(PATHEX, 'run.py')],
         pathex=[PATHEX],
         binaries=None,
         datas=added_files,
@@ -122,9 +116,9 @@ exe = EXE(pyz,
         debug=False,
         strip=False,
         upx=True,
-        icon=os.path.join('arc1pyqt', 'Graphics', 'applogo.ico'),
+        icon=os.path.join(PATHEX, 'arc1pyqt', 'Graphics', 'applogo.ico'),
         console=CONSOLE,
-        version=os.path.join("build", "ArC1", "version_info.txt"))
+        version=os.path.join(PATHEX, "build", "ArC1", "version_info.txt"))
 
 coll = COLLECT(exe,
         a.binaries,
