@@ -310,8 +310,14 @@ class HistoryWidget(QtWidgets.QWidget):
                             lastIndex = i
                             break
 
+                    # this will happen when there is no proper start tag, essentially
+                    # if a module produced only one value (the '_e' one). In that case
+                    # there really isn't anything we can do with it so just skip the
+                    # entry altogether
                     if lastIndex is None:
-                        lastIndex = tagList.index(modTag + '_s')
+                        print('Could not find start/end indices when traversing the history tree for',
+                            modTag)
+                        return
                     start = end - lastIndex
             except ValueError:
                 pass
