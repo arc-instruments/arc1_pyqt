@@ -398,11 +398,11 @@ class CT_LIVE(QtWidgets.QWidget):
         self.bufferSize=50
 
         self.pens=[]
-        self.pens.append(pg.mkPen({'color':'F00', 'width':3}))
-        self.pens.append(pg.mkPen({'color':'F55', 'width':3}))
-        self.pens.append(pg.mkPen({'color':'F99', 'width':3}))
-        self.pens.append(pg.mkPen({'color':'FCC', 'width':3}))
-        self.pens.append(pg.mkPen({'color':'FEE', 'width':3}))
+        self.pens.append(pg.mkPen({'color':'#F00', 'width':3}))
+        self.pens.append(pg.mkPen({'color':'#F55', 'width':3}))
+        self.pens.append(pg.mkPen({'color':'#F99', 'width':3}))
+        self.pens.append(pg.mkPen({'color':'#FCC', 'width':3}))
+        self.pens.append(pg.mkPen({'color':'#FEE', 'width':3}))
 
         #parameters
         self.v_pmax=float(self.leftEdits[0].value())
