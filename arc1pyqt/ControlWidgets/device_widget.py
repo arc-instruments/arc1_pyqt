@@ -87,6 +87,8 @@ class DeviceWidget(QtWidgets.QWidget):
         minMlog=np.log10(constants.MIN_RES)
         normMlog=np.log10(constants.MAX_RES) - minMlog
 
+        color = QtGui.QColor(125, 125, 125)
+
         if M>0:
             try:
                 # get the log index out of 255 max values
