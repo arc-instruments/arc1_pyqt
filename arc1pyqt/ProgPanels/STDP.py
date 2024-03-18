@@ -294,7 +294,7 @@ class STDP(BaseProgPanel):
 
         self.plot_total=view.addPlot()
         self.plot_total.setMouseEnabled(False,False)
-        self.curve_total=self.plot_total.plot(pen=pg.mkPen(color="00F", width=2))
+        self.curve_total=self.plot_total.plot(pen=pg.mkPen(color="#00F", width=2))
         self.plot_total.getAxis('left').setLabel('Pre-Post', units='V', **labeltotal_style)
         #self.plot_total.setFixedHeight(plot_height)
         self.plot_total.getAxis('left').setGrid(50)
@@ -305,8 +305,8 @@ class STDP(BaseProgPanel):
 
         self.plot_p=view.addPlot()
         self.plot_p.setMouseEnabled(False,False)
-        self.curve_pre=self.plot_p.plot(pen=pg.mkPen(color="F00", width=2))
-        self.curve_post=self.plot_p.plot(pen=pg.mkPen(color="0F0", width=2))
+        self.curve_pre=self.plot_p.plot(pen=pg.mkPen(color="#F00", width=2))
+        self.curve_post=self.plot_p.plot(pen=pg.mkPen(color="#0F0", width=2))
         #self.plot_pre.setFixedHeight(plot_height)
         self.plot_p.getAxis('left').setLabel('Pre and Post', units='V', **labeltotal_style)
         self.plot_p.getAxis('left').setGrid(50)

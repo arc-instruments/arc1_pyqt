@@ -725,22 +725,22 @@ class MultiStateSeeker(Ui_MSSParent, BaseProgPanel):
 
         indices = numpy.arange(1, len(resStates)+1)
         mainCurve = plot.plot(indices, [x[0] for x in resStates],
-            pen = pyqtgraph.mkPen({'color': '000', 'width': 2}),
-            symbolBrush = pyqtgraph.mkBrush('000'),
+            pen = pyqtgraph.mkPen({'color': '#000', 'width': 2}),
+            symbolBrush = pyqtgraph.mkBrush('#000'),
             symbol = 'o', symbolSize = 6, pxMode = True)
         lowBoundCurve = plot.plot(indices, [x[1] for x in resStates],
-            pen = pyqtgraph.mkPen({'color': '00F', 'width': 1}),
-            symbolPen = pyqtgraph.mkPen({'color': '00F', 'width': 1}),
-            symbolBrush = pyqtgraph.mkBrush('00F'),
+            pen = pyqtgraph.mkPen({'color': '#00F', 'width': 1}),
+            symbolPen = pyqtgraph.mkPen({'color': '#00F', 'width': 1}),
+            symbolBrush = pyqtgraph.mkBrush('#00F'),
             symbol = '+', symbolSize = 6, pxMode = True)
         upperBoundCurve = plot.plot(indices, [x[2] for x in resStates],
-            pen = pyqtgraph.mkPen({'color': 'F00', 'width': 1}),
-            symbolPen = pyqtgraph.mkPen({'color': 'F00', 'width': 1}),
-            symbolBrush = pyqtgraph.mkBrush('F00'),
+            pen = pyqtgraph.mkPen({'color': '#F00', 'width': 1}),
+            symbolPen = pyqtgraph.mkPen({'color': '#F00', 'width': 1}),
+            symbolBrush = pyqtgraph.mkBrush('#F00'),
             symbol = '+', symbolSize = 6, pxMode = True)
 
         filler = pyqtgraph.FillBetweenItem(lowBoundCurve, upperBoundCurve,
-                brush=pyqtgraph.mkBrush('BBB'))
+                brush=pyqtgraph.mkBrush('#BBB'))
 
         plot.addItem(filler)
 

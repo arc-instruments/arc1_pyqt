@@ -260,7 +260,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
                 currentIV["data"][1].append(current)
 
         self.resistancePlot = self.responsePlotWidget.plot(self.resistances, clear=True,
-            pen=pyqtgraph.mkPen({'color': 'F00', 'width': 1}))
+            pen=pyqtgraph.mkPen({'color': '#F00', 'width': 1}))
 
         self.fitPlot = None
 
@@ -413,7 +413,7 @@ class FitDialog(Ui_FitDialogParent, QtWidgets.QDialog):
         self.modelData = result
 
         if self.fitPlot is None:
-            self.fitPlot = self.responsePlotWidget.plot(self.modelData,pen=pyqtgraph.mkPen({'color': '00F', 'width': 1}))
+            self.fitPlot = self.responsePlotWidget.plot(self.modelData,pen=pyqtgraph.mkPen({'color': '#00F', 'width': 1}))
         else:
             self.fitPlot.setData(self.modelData)
 
