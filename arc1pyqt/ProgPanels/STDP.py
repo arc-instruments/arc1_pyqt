@@ -675,7 +675,6 @@ class STDP(BaseProgPanel):
         timeSteps = self.prepare_time_steps()
 
         HW.ArC.write_b(job+"\n")
-        self.sendParams()
 
         wrapper = ThreadWrapper(devs, [self.gain, self.warp, self.max_spike_time, \
             self.pre_time, self.pre_voltage, self.post_time, self.post_voltage], \
