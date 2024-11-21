@@ -109,14 +109,14 @@ def discoverModules(paths, namespace="", force_register=False):
 
     for p in paths:
         for (finder, name, ispkg) in iter_modules([p]):
-            loader = finder.find_module(name)
+            loader = finder.find_spec(name, [""])
             try:
                 if namespace != "":
                     mod_full = '%s.%s' % (namespace, name)
                 else:
                     mod_full = name
 
-                spec = imputil.spec_from_file_location(mod_full, loader.path)
+                spec = finder.find_spec(mod_full)
                 mod = imputil.module_from_spec(spec)
                 spec.loader.exec_module(mod)
 
